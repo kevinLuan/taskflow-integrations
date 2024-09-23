@@ -7,7 +7,7 @@
     <artifactId>taskflow-sdk</artifactId>
     <name>${project.artifactId}</name>
     <version>0.0.2-beta</version>
-    <url>https://github.com/kevinLuan/taskflow-sdk</url>
+    <url>https://github.com/kevinLuan/taskflow-integrations</url>
     <description>taskflow platform integration sdk</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -206,7 +206,7 @@
     </licenses>
     <issueManagement>
         <system>Github Issues</system>
-        <url>https://github.com/kevinLuan/taskflow-sdk/issues</url>
+        <url>https://github.com/kevinLuan/taskflow-integrations/issues</url>
     </issueManagement>
     <!-- Developer passport -->
     <developers>
@@ -218,9 +218,9 @@
         </developer>
     </developers>
     <scm>
-        <url>https://github.com/kevinLuan/scan-classes</url>
-        <connection>scm:git:https://github.com/kevinLuan/taskflow-sdk.git</connection>
-        <developerConnection>scm:git:https://github.com/kevinLuan/taskflow-sdk.git</developerConnection>
+        <url>https://github.com/kevinLuan/taskflow-integrations</url>
+        <connection>scm:git:https://github.com/kevinLuan/taskflow-integrations.git</connection>
+        <developerConnection>scm:git:https://github.com/kevinLuan/taskflow-integrations.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 

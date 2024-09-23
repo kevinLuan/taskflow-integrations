@@ -1,0 +1,108 @@
+/*
+ * Copyright 2024 taskflow, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package cn.feiliu.taskflow.open.dto;
+
+import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+import java.util.Objects;
+
+/**
+ * SaveScheduleRequest
+ */
+@Setter
+@Getter
+@ToString
+public class SaveScheduleRequest {
+    /*调度名称*/
+    @NotNull(message = "name cannot be empty")
+    private String               name;
+    /*调度计划描述*/
+    private String               description;
+    /*cron表达式*/
+    @NotNull(message = "cronExpression cannot be empty")
+    private String               cronExpression;
+    /*是否暂停*/
+    @NotNull(message = "paused cannot be empty")
+    private Boolean              paused                      = false;
+    /**
+     * 参数用于控制调度程序是否应该执行错过的任务实例。具体含义如下：
+     * <p>
+     * (是否运行补偿任务实例)：此参数决定当调度程序重新启动或重新调度时，是否要运行在调度程序停止期间错过的任务实例。
+     * true：如果设置为 true，调度程序将在重新启动或重新调度时执行所有错过的任务实例。这确保了所有计划的任务都能被执行，即使调度程序在某些时段未运行。
+     * false：如果设置为 false，调度程序将不会执行错过的任务实例，只会执行从重新启动或重新调度时间点开始的任务实例。这可以防止在调度程序停止期间积累的任务突然在恢复后全部执行，从而避免过载。
+     * 这个参数的设置取决于你的任务调度需求以及系统的容错能力。
+     * 如果需要确保每一个任务实例都被执行，那么应设置为 true。如果系统无法处理在调度程序停止期间积累的所有任务实例，或这些任务实例可以被安全地忽略，则应设置为 false。
+     */
+    @NotNull(message = "runCatchupScheduleInstances cannot be empty")
+    private Boolean              runCatchupScheduleInstances = false;
+    /*调度开始时间*/
+    @NotNull(message = "scheduleStartTime cannot be empty")
+    private Date                 scheduleStartTime;
+    /**
+     * 调度结束时间
+     */
+    @NotNull(message = "scheduleEndTime cannot be empty")
+    private Date                 scheduleEndTime;
+
+    /**
+     * 调度执行时用于启动工作流请求
+     */
+    @NotNull(message = "startWorkflowRequest cannot be empty")
+    @Valid
+    private StartWorkflowRequest startWorkflowRequest;
+    /*创建人*/
+    private String               createdBy                   = null;
+    /*最后更新人*/
+    private String               updatedBy                   = null;
+    /**
+     *  当开启覆盖更新时，若存在相同名称的调度，则更新调度，否则创建调度。
+     *  <p>注意：</p>
+     *  <ul>
+     *      <li>当覆盖更新时，需要确保调度计划处于暂停或未开始状态(系统尚未生成调度实例)，否则系统会拒绝执行覆盖更新操作，并抛出异常。</li>
+     *      <li>若需要执行你应该先调用：pauseSchedule() 将调度计task_kevin_flow_2024_04_30
+     *      划暂停后再执行</li>
+     *  </ul>
+     */
+    private boolean              overwrite                   = false;
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (object == null || getClass() != object.getClass())
+            return false;
+        SaveScheduleRequest request = (SaveScheduleRequest) object;
+        return Objects.equals(name, request.name) && Objects.equals(description, request.description)
+               && Objects.equals(cronExpression, request.cronExpression) && Objects.equals(paused, request.paused)
+               && Objects.equals(runCatchupScheduleInstances, request.runCatchupScheduleInstances)
+               && Objects.equals(scheduleStartTime, request.scheduleStartTime)
+               && Objects.equals(scheduleEndTime, request.scheduleEndTime)
+               && Objects.equals(startWorkflowRequest, request.startWorkflowRequest)
+               && Objects.equals(createdBy, request.createdBy) && Objects.equals(updatedBy, request.updatedBy)
+               && Objects.equals(overwrite, request.overwrite);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, cronExpression, paused, runCatchupScheduleInstances, scheduleStartTime,
+            scheduleEndTime, startWorkflowRequest, createdBy, updatedBy, overwrite);
+    }
+}
