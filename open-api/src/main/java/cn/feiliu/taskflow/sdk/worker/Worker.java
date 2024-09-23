@@ -19,7 +19,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.function.Function;
 
-import cn.feiliu.taskflow.sdk.config.PropertyFactory;
+import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ public interface Worker {
      * @return true if the worker is paused and no more tasks should be polled from server.
      */
     default boolean paused() {
-        return PropertyFactory.getBoolean(getTaskDefName(), "paused", false);
+        return WorkerPropertyManager.paused(getTaskDefName());
     }
 
     /**
@@ -88,15 +88,15 @@ public interface Worker {
      * @return interval in millisecond at which the server should be polled for worker tasks.
      */
     default int getPollingInterval() {
-        return PropertyFactory.getInteger(getTaskDefName(), "pollInterval", 1000);
+        return WorkerPropertyManager.getPollingInterval(getTaskDefName());
     }
 
     default boolean leaseExtendEnabled() {
-        return PropertyFactory.getBoolean(getTaskDefName(), "leaseExtendEnabled", false);
+        return WorkerPropertyManager.leaseExtendEnabled(getTaskDefName());
     }
 
     default int getBatchPollTimeoutInMS() {
-        return PropertyFactory.getInteger(getTaskDefName(), "batchPollTimeoutInMS", 100);
+        return WorkerPropertyManager.getBatchPollTimeoutInMS(getTaskDefName());
     }
 
     static Worker create(String taskType, Function<ExecutingTask, TaskExecResult> executor) {

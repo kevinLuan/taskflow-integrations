@@ -82,7 +82,7 @@
         <dependency>
             <groupId>cn.taskflow</groupId>
             <artifactId>taskflow-open-api</artifactId>
-            <version>0.0.1-beta</version>
+            <version>0.0.2-beta</version>
         </dependency>
         <!-- okhttp -->
         <dependency>

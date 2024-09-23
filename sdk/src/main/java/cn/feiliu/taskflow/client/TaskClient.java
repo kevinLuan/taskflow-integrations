@@ -16,7 +16,7 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.client.http.api.TaskResourceApi;
 import cn.feiliu.taskflow.client.api.ITaskClient;
-import cn.feiliu.taskflow.sdk.config.PropertyFactory;
+import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
 import cn.feiliu.taskflow.serialization.SerializerFactory;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
@@ -61,7 +61,7 @@ public class TaskClient implements ITaskClient {
 
     @Override
     public ExecutingTask pollTask(String taskType, String workerId, String domain) {
-        int timeout = PropertyFactory.getInteger(taskType, "batchPollTimeoutInMS", 1000);
+        int timeout = WorkerPropertyManager.getBatchPollTimeoutInMS(taskType);
         List<ExecutingTask> tasks = batchPollTasksInDomain(taskType, domain, workerId, 1, timeout);
         if (tasks == null || tasks.isEmpty()) {
             return null;
