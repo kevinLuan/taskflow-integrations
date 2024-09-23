@@ -14,8 +14,6 @@
  */
 package cn.feiliu.taskflow.client.grpc.workflow;
 
-import java.util.concurrent.CompletableFuture;
-
 import cn.feiliu.taskflow.common.model.WorkflowRun;
 import cn.feiliu.taskflow.mapper.MapperFactory;
 import cn.feiliu.taskflow.open.exceptions.ApiException;
@@ -24,6 +22,8 @@ import io.grpc.Status;
 import io.grpc.stub.ClientCallStreamObserver;
 import io.grpc.stub.ClientResponseObserver;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class StartWorkflowResponseStream

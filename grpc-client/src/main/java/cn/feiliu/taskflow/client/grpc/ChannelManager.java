@@ -14,10 +14,6 @@
  */
 package cn.feiliu.taskflow.client.grpc;
 
-import java.util.Map;
-import java.util.concurrent.*;
-import java.util.function.Supplier;
-
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.grpc.TaskflowServiceGrpc;
 import cn.feiliu.taskflow.grpc.TaskflowStreamServiceGrpc;
@@ -29,6 +25,13 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @Slf4j
 public final class ChannelManager {
@@ -100,7 +103,6 @@ public final class ChannelManager {
     public TaskflowServiceGrpc.TaskflowServiceFutureStub newTaskflowServiceFutureStub() {
         return createIfAbsent(TaskflowServiceGrpc.TaskflowServiceFutureStub.class, () -> {
             return TaskflowServiceGrpc.newFutureStub(getChannel())
-                    .withDeadline(Deadline.after(5, TimeUnit.SECONDS))
                     .withInterceptors(new HeaderClientInterceptor(apiClient));
         });
     }
@@ -108,7 +110,6 @@ public final class ChannelManager {
     public TaskflowStreamServiceGrpc.TaskflowStreamServiceBlockingStub newTaskflowStreamServiceBlockingStub() {
         return createIfAbsent(TaskflowStreamServiceGrpc.TaskflowStreamServiceBlockingStub.class, () -> {
             return TaskflowStreamServiceGrpc.newBlockingStub(getChannel())
-                    .withDeadline(Deadline.after(5, TimeUnit.SECONDS))
                     .withInterceptors(new HeaderClientInterceptor(apiClient));
         });
     }
@@ -116,7 +117,6 @@ public final class ChannelManager {
     public TaskflowServiceGrpc.TaskflowServiceBlockingStub newTaskflowServiceBlockingStub() {
         return createIfAbsent(TaskflowServiceGrpc.TaskflowServiceBlockingStub.class, () -> {
             return TaskflowServiceGrpc.newBlockingStub(getChannel())
-                    .withDeadline(Deadline.after(5, TimeUnit.SECONDS))
                     .withInterceptors(new HeaderClientInterceptor(apiClient));
         });
     }

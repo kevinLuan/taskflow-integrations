@@ -14,16 +14,14 @@
  */
 package cn.feiliu.taskflow.client.grpc;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import cn.feiliu.taskflow.client.ApiClient;
-import org.apache.commons.lang3.StringUtils;
-
 import io.grpc.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 @Slf4j
 public class HeaderClientInterceptor implements ClientInterceptor {

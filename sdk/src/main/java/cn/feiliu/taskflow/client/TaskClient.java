@@ -14,33 +14,25 @@
  */
 package cn.feiliu.taskflow.client;
 
-import cn.feiliu.taskflow.client.grpc.GrpcTaskClient;
 import cn.feiliu.taskflow.client.http.api.TaskResourceApi;
 import cn.feiliu.taskflow.client.api.ITaskClient;
+import cn.feiliu.taskflow.sdk.config.PropertyFactory;
 import cn.feiliu.taskflow.serialization.SerializerFactory;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class TaskClient implements ITaskClient, AutoCloseable {
+public class TaskClient implements ITaskClient {
 
     protected ApiClient     apiClient;
 
     private TaskResourceApi taskResourceApi;
 
-    private GrpcTaskClient  grpcTaskClient;
-
     public TaskClient(ApiClient apiClient) {
         this.apiClient = apiClient;
         this.taskResourceApi = new TaskResourceApi(apiClient);
-        if (apiClient.isUseGRPC()) {
-            this.grpcTaskClient = new GrpcTaskClient(apiClient);
-        }
     }
 
     public TaskClient withReadTimeout(int readTimeout) {
@@ -69,7 +61,8 @@ public class TaskClient implements ITaskClient, AutoCloseable {
 
     @Override
     public ExecutingTask pollTask(String taskType, String workerId, String domain) {
-        List<ExecutingTask> tasks = batchPollTasksInDomain(taskType, domain, workerId, 1, 100);
+        int timeout = PropertyFactory.getInteger(taskType, "batchPollTimeoutInMS", 1000);
+        List<ExecutingTask> tasks = batchPollTasksInDomain(taskType, domain, workerId, 1, timeout);
         if (tasks == null || tasks.isEmpty()) {
             return null;
         }
@@ -85,13 +78,17 @@ public class TaskClient implements ITaskClient, AutoCloseable {
     @Override
     public List<ExecutingTask> batchPollTasksInDomain(String taskType, String domain, String workerId, int count,
                                                       int timeoutInMillisecond) {
-        return taskResourceApi.batchPoll(taskType, workerId, domain, count, timeoutInMillisecond);
+        if (apiClient.isUseGRPC()) {
+            return apiClient.getGrpcApi().batchPollTask(taskType, workerId, domain, count, timeoutInMillisecond);
+        } else {
+            return taskResourceApi.batchPoll(taskType, workerId, domain, count, timeoutInMillisecond);
+        }
     }
 
     @Override
     public void updateTask(TaskExecResult taskResult) {
         if (apiClient.isUseGRPC()) {
-            grpcTaskClient.updateTask(taskResult);
+            apiClient.getGrpcApi().updateTask(taskResult);
         } else {
             taskResourceApi.updateTask(taskResult);
         }
@@ -140,12 +137,5 @@ public class TaskClient implements ITaskClient, AutoCloseable {
     @Override
     public String requeuePendingTasksByTaskType(String taskType) {
         return taskResourceApi.requeuePendingTask(taskType);
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (this.grpcTaskClient != null) {
-            this.grpcTaskClient.close();
-        }
     }
 }

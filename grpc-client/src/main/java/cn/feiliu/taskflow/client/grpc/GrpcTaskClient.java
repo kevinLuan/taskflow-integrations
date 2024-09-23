@@ -14,33 +14,35 @@
  */
 package cn.feiliu.taskflow.client.grpc;
 
-import java.util.Iterator;
-import java.util.List;
-
-import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.grpc.TaskflowServiceGrpc;
-import cn.feiliu.taskflow.grpc.TaskflowStreamServiceGrpc;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
+import cn.feiliu.taskflow.grpc.TaskflowServiceGrpc;
+import cn.feiliu.taskflow.grpc.TaskflowStreamServiceGrpc;
 import cn.feiliu.taskflow.mapper.MapperFactory;
 import cn.feiliu.taskflow.proto.TaskModelPb;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
-public class GrpcTaskClient implements AutoCloseable {
+import java.util.Iterator;
+import java.util.List;
+
+public class GrpcTaskClient {
     private final TaskflowServiceGrpc.TaskflowServiceBlockingStub             stub;
 
     private final TaskflowStreamServiceGrpc.TaskflowStreamServiceBlockingStub streamStub;
 
-    public GrpcTaskClient(ApiClient apiClient) {
-        this.streamStub = apiClient.channelManager().newTaskflowStreamServiceBlockingStub();
-        this.stub = apiClient.channelManager().newTaskflowServiceBlockingStub();
+    public GrpcTaskClient(ChannelManager channelManager) {
+        this.streamStub = channelManager.newTaskflowStreamServiceBlockingStub();
+        this.stub = channelManager.newTaskflowServiceBlockingStub();
     }
 
     public List<ExecutingTask> batchPoll(String taskType, String workerId, String domain, int count,
                                          int timeoutInMillisecond) {
         TaskModelPb.BatchPollRequest.Builder requestBuilder = TaskModelPb.BatchPollRequest.newBuilder().setCount(count)
-                .setTaskType(taskType).setTimeout(timeoutInMillisecond).setWorkerId(workerId);
+                .setTaskType(taskType).setTimeout(timeoutInMillisecond);
+        if (workerId != null) {
+            requestBuilder.setWorkerId(workerId);
+        }
         if (domain != null) {
             requestBuilder = requestBuilder.setDomain(domain);
         }
@@ -54,9 +56,5 @@ public class GrpcTaskClient implements AutoCloseable {
             .setResult(MapperFactory.getInstance().toProto(taskResult)).build();
         TaskModelPb.UpdateTaskResponse response = stub.updateTask(request);
         response.getTaskId();
-    }
-
-    @Override
-    public void close() throws Exception {
     }
 }

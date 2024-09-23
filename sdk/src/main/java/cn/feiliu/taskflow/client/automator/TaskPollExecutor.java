@@ -22,8 +22,6 @@ import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import cn.feiliu.taskflow.common.utils.TaskflowUtils;
-import cn.feiliu.taskflow.mapper.MapperFactory;
-import cn.feiliu.taskflow.proto.TaskModelPb;
 import cn.feiliu.taskflow.sdk.config.PropertyFactory;
 import cn.feiliu.taskflow.sdk.worker.Worker;
 import com.google.common.base.Stopwatch;
@@ -99,6 +97,7 @@ class TaskPollExecutor {
 
     /**
      * 停止任务执行器
+     *
      * @param timeout
      */
     public void shutdown(int timeout) {
@@ -119,10 +118,10 @@ class TaskPollExecutor {
 
     @SuppressWarnings("FieldCanBeLocal")
     private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler = (thread, error) -> {
-                // JVM may be in unstable state, try to send metrics then exit
-                MetricsContainer.incrementUncaughtExceptionCount();
-                LOGGER.error("Uncaught exception. Thread {} will exit now", thread, error);
-            };
+        // JVM may be in unstable state, try to send metrics then exit
+        MetricsContainer.incrementUncaughtExceptionCount();
+        LOGGER.error("Uncaught exception. Thread {} will exit now", thread, error);
+    };
 
     private void doExecuteTask(Worker worker, ExecutingTask task) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -168,17 +167,11 @@ class TaskPollExecutor {
     private void updateTaskResult(int count, ExecutingTask task, TaskExecResult result, Worker worker) {
         Runnable runnable = () -> {
             if (apiClient.isUseGRPC()) {
-                TaskModelPb.TaskResult taskResult = MapperFactory.getInstance().toProto(result);
-                TaskModelPb.UpdateTaskRequest request = TaskModelPb.UpdateTaskRequest.newBuilder().setResult(taskResult).build();
                 List<Future<?>> futures = new ArrayList<>();
-                futures.add(apiClient.channelManager().newTaskflowServiceFutureStub().updateTask(request));
+                futures.add(apiClient.getGrpcApi().asyncUpdateTask(result));
                 for (TaskLog taskLog : result.getLogs()) {
                     if (StringUtils.isNotBlank(taskLog.getLog())) {
-                        TaskModelPb.AddLogRequest req = TaskModelPb.AddLogRequest.newBuilder()
-                                .setLog(taskLog.getLog())
-                                .setTaskId(taskLog.getTaskId())
-                                .build();
-                        futures.add(apiClient.channelManager().newTaskflowServiceFutureStub().addLog(req));
+                        futures.add(apiClient.getGrpcApi().addLog(taskLog));
                     }
                 }
                 TaskflowUtils.blockedWait(futures, 30_000);
@@ -308,23 +301,8 @@ class TaskPollExecutor {
         String taskName = worker.getTaskDefName();
         Timer timer = MetricsContainer.getBatchPollTimer(worker.getTaskDefName());
         if (apiClient.isUseGRPC()) {
-            TaskModelPb.BatchPollRequest.Builder builder = TaskModelPb.BatchPollRequest.newBuilder()
-                    .setCount(maxAmount)
-                    .setTaskType(taskName)
-                    .setTimeout(timeout);
-            if(StringUtils.isNotBlank(workerId)){
-                builder.setWorkerId(workerId);
-            }
-            if(StringUtils.isNotBlank(domain)){
-                builder.setDomain(domain);
-            }
             return timer.record(() -> {
-                Iterator<TaskModelPb.Task> iterator = apiClient.channelManager().newTaskflowStreamServiceBlockingStub().batchPoll(builder.build());
-                List<ExecutingTask> tasks = new ArrayList<>(maxAmount);
-                while (iterator.hasNext()) {
-                    tasks.add(MapperFactory.getInstance().fromProto(iterator.next()));
-                }
-                return tasks;
+                return apiClient.getGrpcApi().batchPollTask(taskName, workerId, domain, maxAmount, timeout);
             });
         } else {
             return timer.record(() ->

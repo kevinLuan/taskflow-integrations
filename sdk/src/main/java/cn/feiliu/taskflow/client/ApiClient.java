@@ -35,7 +35,8 @@ import cn.feiliu.taskflow.client.api.*;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.core.TokenManager;
 import cn.feiliu.taskflow.client.core.WorkflowEngine;
-import cn.feiliu.taskflow.client.grpc.ChannelManager;
+import cn.feiliu.taskflow.client.spi.TaskflowGrpcSPI;
+import cn.feiliu.taskflow.common.utils.ExternalServiceFactory;
 import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
@@ -73,10 +74,14 @@ public class ApiClient {
     private final Map<Class, Object>              clientInstances     = new ConcurrentHashMap<>();
     /*工作节点执行器*/
     private final AtomicReference<TaskEngine>     taskEngineRef       = new AtomicReference<>();
-    private ChannelManager                        channelManager      = null;
+    private final Optional<TaskflowGrpcSPI>       grpc_api;
     @Getter
     private final TaskHandlerManager              taskHandlerManager  = new TaskHandlerManager();
     private final AtomicReference<WorkflowEngine> workflowEngineRef   = new AtomicReference<>();
+    {
+        ExternalServiceFactory.register(TaskflowGrpcSPI.class);
+        grpc_api = ExternalServiceFactory.getFirstServiceInstance(TaskflowGrpcSPI.class);
+    }
 
     public ApiClient(String basePath, String keyId, String keySecret) {
         this.basePath = normalizePath(basePath);
@@ -84,6 +89,14 @@ public class ApiClient {
         this.httpClient.setRetryOnConnectionFailure(true);
         this.verifyingSsl = true;
         this.tokenManager = new TokenManager(this, keyId, keySecret);
+    }
+
+    public TaskflowGrpcSPI getGrpcApi() {
+        if (isUseGRPC()) {
+            return Objects.requireNonNull(grpc_api.get());
+        } else {
+            throw new ApiException("The grpc api is currently not supported");
+        }
     }
 
     private String normalizePath(String basePath) {
@@ -102,7 +115,9 @@ public class ApiClient {
     public void setUseGRPC(String host, int port) {
         this.grpcHost = host;
         this.grpcPort = port;
-        this.useGRPC = true;
+        if (this.useGRPC = grpc_api.isPresent()) {
+            grpc_api.get().init(this);
+        }
     }
 
     public boolean useSSL() {
@@ -165,9 +180,9 @@ public class ApiClient {
         }
         getTaskEngine().shutdown();
         tokenManager.close();
-        if (this.channelManager != null) {
-            this.channelManager.shutdown();
-        }
+        grpc_api.ifPresent((api)->{
+            api.shutdown();
+        });
     }
 
     public int getGrpcPort() {
@@ -651,16 +666,5 @@ public class ApiClient {
             }
         }
         return workflowEngineRef.get();
-    }
-
-    public ChannelManager channelManager() {
-        if (channelManager == null) {
-            synchronized (this) {
-                if (channelManager == null) {
-                    this.channelManager = new ChannelManager(this);
-                }
-            }
-        }
-        return channelManager;
     }
 }

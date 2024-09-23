@@ -19,13 +19,11 @@ import cn.feiliu.taskflow.common.model.WorkflowRun;
 import cn.feiliu.taskflow.client.api.IWorkflowClient;
 import cn.feiliu.taskflow.open.api.IWorkflowService;
 import cn.feiliu.taskflow.open.dto.CorrelationIdsSearchRequest;
-import cn.feiliu.taskflow.client.grpc.workflow.GrpcWorkflowClient;
 import cn.feiliu.taskflow.client.http.api.WorkflowBulkResourceApi;
 import cn.feiliu.taskflow.client.http.api.WorkflowResourceApi;
 import cn.feiliu.taskflow.open.dto.WorkflowProgressUpdate;
 import cn.feiliu.taskflow.open.exceptions.ApiException;
 import cn.feiliu.taskflow.open.exceptions.ConflictException;
-import cn.feiliu.taskflow.proto.FlowModelPb;
 import com.google.common.base.Preconditions;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowRerunRequest;
 import cn.feiliu.taskflow.common.metadata.workflow.SkipTaskRequest;
@@ -50,19 +48,12 @@ public class WorkflowClient implements IWorkflowClient {
 
     private final WorkflowBulkResourceApi bulkResourceApi;
 
-    private final GrpcWorkflowClient      grpcWorkflowClient;
-
     private ExecutorService               executorService;
 
     public WorkflowClient(ApiClient apiClient) {
         this.apiClient = apiClient;
         this.httpClient = new WorkflowResourceApi(apiClient);
         this.bulkResourceApi = new WorkflowBulkResourceApi(apiClient);
-        if (apiClient.isUseGRPC()) {
-            this.grpcWorkflowClient = new GrpcWorkflowClient(apiClient);
-        } else {
-            this.grpcWorkflowClient = null;
-        }
         if (!apiClient.isUseGRPC()) {
             int threadCount = apiClient.getExecutorThreadCount() > 0 ? apiClient.getExecutorThreadCount() : 64;
             this.executorService = new ThreadPoolExecutor(0, threadCount, 60L, TimeUnit.SECONDS,
@@ -88,19 +79,7 @@ public class WorkflowClient implements IWorkflowClient {
     @Override
     public String startWorkflow(StartWorkflowRequest req) throws ConflictException {
         if (apiClient.isUseGRPC()) {
-            FlowModelPb.StartWorkflowResponse resp = grpcWorkflowClient.start(req);
-            try {
-                if (resp.hasError()) {
-                    String message = resp.getError().getMessage();
-                    int code = resp.getError().getCode();
-                    throw new ApiException(code, message);
-                } else {
-                    return resp.getWorkflow().getWorkflowId();
-                }
-            } catch (Throwable t) {
-                log.error("Error while trying to notify the client {}", t.getMessage(), t);
-                throw t;
-            }
+            return apiClient.getGrpcApi().startWorkflow(req);
         } else {
             return httpClient.startWorkflow(req);
         }

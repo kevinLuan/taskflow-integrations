@@ -21,7 +21,7 @@ import cn.feiliu.taskflow.open.api.ITaskService;
  * @author SHOUSHEN.LUAN
  * @since 2024-06-25
  */
-public interface ITaskClient extends ITaskService, AutoCloseable {
+public interface ITaskClient extends ITaskService {
     /**
      * Update the task status and output based given workflow id and task reference name
      *

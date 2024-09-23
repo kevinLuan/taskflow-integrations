@@ -14,16 +14,15 @@
  */
 package cn.feiliu.taskflow.client.grpc.workflow;
 
-import java.util.UUID;
-
-import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.grpc.TaskflowServiceGrpc;
+import cn.feiliu.taskflow.client.grpc.ChannelManager;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-
+import cn.feiliu.taskflow.grpc.TaskflowServiceGrpc;
 import cn.feiliu.taskflow.mapper.MapperFactory;
 import cn.feiliu.taskflow.proto.FlowModelPb;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.UUID;
 
 @Slf4j
 public class GrpcWorkflowClient {
@@ -31,9 +30,9 @@ public class GrpcWorkflowClient {
     final TaskflowServiceGrpc.TaskflowServiceFutureStub   futureStub;
     final TaskflowServiceGrpc.TaskflowServiceBlockingStub blockingStub;
 
-    public GrpcWorkflowClient(ApiClient apiClient) {
-        futureStub = apiClient.channelManager().newTaskflowServiceFutureStub();
-        blockingStub = apiClient.channelManager().newTaskflowServiceBlockingStub();
+    public GrpcWorkflowClient(ChannelManager channelManager) {
+        futureStub = channelManager.newTaskflowServiceFutureStub();
+        blockingStub = channelManager.newTaskflowServiceBlockingStub();
     }
 
     public ListenableFuture<FlowModelPb.StartWorkflowResponse> executeWorkflow(StartWorkflowRequest request) {

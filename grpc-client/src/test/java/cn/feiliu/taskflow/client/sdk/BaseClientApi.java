@@ -12,9 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.client.api;
+package cn.feiliu.taskflow.client.sdk;
 
 import cn.feiliu.taskflow.client.ApiClient;
+import cn.feiliu.taskflow.client.api.ISchedulerClient;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.core.WorkflowEngine;
 import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
@@ -23,7 +24,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
 
 public final class BaseClientApi {
@@ -41,6 +41,7 @@ public final class BaseClientApi {
         apiClient.setWriteTimeout(30_000);
         apiClient.setReadTimeout(30_000);
         apiClient.setConnectTimeout(30_000);
+        apiClient.setUseGRPC("localhost", 9000);
         return apiClient;
     }
 
@@ -50,10 +51,6 @@ public final class BaseClientApi {
 
     public static TaskEngine getTaskEngine() {
         return apiClient.getTaskEngine();
-    }
-
-    public static ISchedulerClient getSchedulerClient() {
-        return apiClient.getSchedulerClient();
     }
 
     public static IWorkflowService getWorkflowClient() {
