@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>cn.taskflow</groupId>
+    <artifactId>taskflow-integrations</artifactId>
+    <packaging>pom</packaging>
+    <name>${project.artifactId}</name>
+    <modules>
+        <module>sdk</module>
+        <!--<module>grpc-client</module>-->
+    </modules>
+    <version>0.0.1-beta</version>
+    <url>https://github.com/kevinLuan/taskflow-integrations</url>
+    <description>taskflow platform integration</description>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <slf4j.version>1.7.36</slf4j.version>
+        <lombok.version>1.18.24</lombok.version>
+        <junit-jupiter.version>5.9.0</junit-jupiter.version>
+        <main.user.dir>${user.dir}</main.user.dir>
+        <!--suppress UnresolvedMavenProperty -->
+        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+        <!--suppress UnresolvedMavenProperty -->
+        <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+        <gpg.homedir>/Users/kevin/.gnupg</gpg.homedir>
+    </properties>
+    <dependencies>
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <!-- junit test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <issueManagement>
+        <system>Github Issues</system>
+        <url>https://github.com/kevinLuan/taskflow-sdk/issues</url>
+    </issueManagement>
+    <!-- Developer passport -->
+    <developers>
+        <developer>
+            <name>kevin.luan</name>
+            <email>kevin_luan@126.com</email>
+            <organization>taskflow technologies inc.</organization>
+            <organizationUrl>http://www.taskflow.cn/</organizationUrl>
+        </developer>
+    </developers>
+    <scm>
+        <url>https://github.com/kevinLuan/scan-classes</url>
+        <connection>scm:git:https://github.com/kevinLuan/taskflow-sdk.git</connection>
+        <developerConnection>scm:git:https://github.com/kevinLuan/taskflow-sdk.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+</project>
