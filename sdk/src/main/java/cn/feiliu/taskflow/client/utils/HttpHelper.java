@@ -24,9 +24,6 @@ import com.squareup.okhttp.*;
 import com.squareup.okhttp.internal.http.HttpMethod;
 import okio.BufferedSink;
 import okio.Okio;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.OffsetDateTime;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -198,7 +195,7 @@ public class HttpHelper {
     public static String parameterToString(Object param) {
         if (param == null) {
             return "";
-        } else if (param instanceof Date || param instanceof OffsetDateTime || param instanceof LocalDate) {
+        } else if (param instanceof Date /*|| param instanceof OffsetDateTime || param instanceof LocalDate*/) {
             // Serialize to json string and remove the " enclosing characters
             String jsonStr = JsonUtils.serialize(param);
             return jsonStr.substring(1, jsonStr.length() - 1);

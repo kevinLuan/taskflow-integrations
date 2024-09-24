@@ -25,15 +25,14 @@ import cn.feiliu.taskflow.sdk.workflow.def.tasks.Wait;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.WorkTask;
 import com.google.common.util.concurrent.Uninterruptibles;
 import cn.feiliu.taskflow.client.util.TestUtil;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
+import static org.junit.Assert.*;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class WorkflowBaseClientTests {
     @Test

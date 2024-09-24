@@ -17,16 +17,15 @@ package cn.feiliu.taskflow.client.automator;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.automator.scheduling.MultiTaskResult;
 import cn.feiliu.taskflow.client.automator.scheduling.PollExecuteStatus;
+import cn.feiliu.taskflow.client.spi.DiscoveryService;
 import cn.feiliu.taskflow.client.telemetry.MetricsContainer;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import cn.feiliu.taskflow.common.utils.TaskflowUtils;
-import cn.feiliu.taskflow.sdk.config.PropertyFactory;
+import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
 import cn.feiliu.taskflow.sdk.worker.Worker;
 import com.google.common.base.Stopwatch;
-import com.netflix.appinfo.InstanceInfo.InstanceStatus;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.Timer;
@@ -48,26 +47,23 @@ class TaskPollExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskPollExecutor.class);
     private static final Registry REGISTRY = Spectator.globalRegistry();
-    protected final EurekaClient eurekaClient;
+    protected final DiscoveryService discoveryService;
     protected final ApiClient apiClient;
     private final int updateRetryCount;
     protected final ThreadPoolExecutor executorService;
     private final Map<String, PollingSemaphore> pollingSemaphoreMap;
     protected final Map<String /*taskType*/, String /*domain*/> taskToDomain;
-
-    protected static final String DOMAIN = "domain";
-    protected static final String OVERRIDE_DISCOVERY = "pollOutOfDiscovery";
     protected static final String ALL_WORKERS = "all";
 
     TaskPollExecutor(
-            EurekaClient eurekaClient,
+            DiscoveryService discoveryService,
             ApiClient apiClient,
             int threadCount,
             int updateRetryCount,
             Map<String, String> taskToDomain,
             String workerNamePrefix,
             Map<String, Integer> taskThreadCount) {
-        this.eurekaClient = eurekaClient;
+        this.discoveryService = discoveryService;
         this.apiClient = apiClient;
         this.updateRetryCount = updateRetryCount;
         this.taskToDomain = taskToDomain;
@@ -229,8 +225,8 @@ class TaskPollExecutor {
     }
 
     boolean isActive(Worker worker) {
-        Boolean discoveryOverride = PropertyFactory.getBooleanWithFallback(worker.getTaskDefName(), OVERRIDE_DISCOVERY, ALL_WORKERS, false);
-        if (eurekaClient != null && !eurekaClient.getInstanceRemoteStatus().equals(InstanceStatus.UP) && !discoveryOverride) {
+        Boolean discoveryOverride = WorkerPropertyManager.getPollOutOfDiscovery(worker.getTaskDefName(),ALL_WORKERS,false);
+        if (discoveryService != null && !discoveryService.getStatus().isUp() && !discoveryOverride) {
             LOGGER.debug("Instance is NOT UP in discovery - will not poll");
             return false;
         }
@@ -253,7 +249,7 @@ class TaskPollExecutor {
             if (isActive(worker)) {
                 String taskType = worker.getTaskDefName();
                 PollingSemaphore pollingSemaphore = getPollingSemaphore(worker);
-                String domain = PropertyFactory.getStringWithFallback(taskType, DOMAIN, ALL_WORKERS, taskToDomain.get(taskType));
+                String domain = WorkerPropertyManager.getDomainWithFallback(taskType, ALL_WORKERS, taskToDomain.get(taskType));
                 Optional<Integer> availablePermitsOpt = pollingSemaphore.tryAcquireAvailablePermits();
                 if (availablePermitsOpt.isPresent()) {
                     final int maxAmount = availablePermitsOpt.get();

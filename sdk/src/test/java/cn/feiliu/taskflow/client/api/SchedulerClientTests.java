@@ -24,7 +24,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

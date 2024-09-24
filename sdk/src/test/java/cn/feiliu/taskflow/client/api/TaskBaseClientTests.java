@@ -24,8 +24,8 @@ import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Date;
@@ -34,15 +34,15 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
-import static org.junit.jupiter.api.Assertions.*;
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
+import static org.junit.Assert.*;
 
 public class TaskBaseClientTests {
 
     private static ITaskClient      taskClient;
     private static IWorkflowService workflowClient;
 
-    @BeforeAll
+    @BeforeClass
     public static void setup() throws IOException {
         taskClient = getApiClient().getTaskClient();
         workflowClient = getApiClient().getWorkflowClient();

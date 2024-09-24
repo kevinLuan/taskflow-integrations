@@ -17,10 +17,10 @@ package cn.feiliu.taskflow.client.automator;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.automator.scheduling.WorkerScheduling;
 import cn.feiliu.taskflow.client.automator.scheduling.WorkerSchedulingFactory;
+import cn.feiliu.taskflow.client.spi.DiscoveryService;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
 import cn.feiliu.taskflow.sdk.worker.Worker;
 import com.google.common.base.Preconditions;
-import com.netflix.discovery.EurekaClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class TaskRunnerConfigurer {
 
     private final WorkerScheduling                                      workerScheduling          = WorkerSchedulingFactory
                                                                                                       .getWorkerScheduling();
-    protected final EurekaClient                                        eurekaClient;
+    protected final DiscoveryService                                    discoveryService;
     protected final ApiClient                                           apiClient;
     protected final List<Worker>                                        workers                   = new LinkedList<>();
     private final int                                                   sleepWhenRetry;
@@ -77,14 +77,14 @@ public class TaskRunnerConfigurer {
             this.threadCount = (builder.threadCount == -1) ? workers.size() : builder.threadCount;
         }
 
-        this.eurekaClient = builder.eurekaClient;
+        this.discoveryService = builder.discoveryService;
         this.apiClient = builder.apiClient;
         this.sleepWhenRetry = builder.sleepWhenRetry;
         this.updateRetryCount = builder.updateRetryCount;
         this.workerNamePrefix = builder.workerNamePrefix;
         this.taskToDomain = builder.taskToDomain;
         this.shutdownGracePeriodSeconds = builder.shutdownGracePeriodSeconds;
-        this.taskPollExecutor = new TaskPollExecutor(eurekaClient, apiClient, threadCount, updateRetryCount, taskToDomain, workerNamePrefix, taskThreadCount);
+        this.taskPollExecutor = new TaskPollExecutor(discoveryService, apiClient, threadCount, updateRetryCount, taskToDomain, workerNamePrefix, taskThreadCount);
     }
 
     /** Builder used to create the instances of TaskRunnerConfigurer */
@@ -96,7 +96,7 @@ public class TaskRunnerConfigurer {
         private int                                                 threadCount                = -1;
         private int                                                 shutdownGracePeriodSeconds = 10;
         private final Iterable<Worker>                              workers;
-        private EurekaClient                                        eurekaClient;
+        private DiscoveryService                                    discoveryService;
         private final ApiClient                                     apiClient;
         private Map<String /*taskType*/, String /*domain*/>       taskToDomain               = new HashMap<>();
         private Map<String /*taskType*/, Integer /*threadCount*/> taskThreadCount            = new HashMap<>();
@@ -164,13 +164,13 @@ public class TaskRunnerConfigurer {
         }
 
         /**
-         * @param eurekaClient Eureka client - used to identify if the server is in discovery or
+         * @param discoveryService client - used to identify if the server is in discovery or
          *     not. When the server goes out of discovery, the polling is terminated. If passed
          *     null, discovery check is not done.
          * @return Builder instance
          */
-        public Builder withEurekaClient(EurekaClient eurekaClient) {
-            this.eurekaClient = eurekaClient;
+        public Builder withDiscoveryService(DiscoveryService discoveryService) {
+            this.discoveryService = discoveryService;
             return this;
         }
 

@@ -30,7 +30,7 @@ import cn.feiliu.taskflow.common.metadata.workflow.SkipTaskRequest;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.common.model.BulkResponseResult;
 import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

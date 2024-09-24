@@ -25,14 +25,14 @@ import cn.feiliu.taskflow.open.dto.CreateWorkflowRequest;
 import cn.feiliu.taskflow.open.dto.WorkflowProgressUpdate;
 import cn.feiliu.taskflow.open.exceptions.ConflictException;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 import static org.junit.Assert.*;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class WorkflowStateUpdateTests {
@@ -40,12 +40,12 @@ public class WorkflowStateUpdateTests {
     final String             WORKFLOW_NAME = "test_workflow_status_updates";
     final int                VERSION       = 1;
 
-    @BeforeAll
+    @BeforeClass
     public static void init() {
         apiClient = getApiClient();
     }
 
-    @BeforeEach
+    @Before
     public void shouldRegisterWorkflow() {
         CreateWorkflowRequest request = new CreateWorkflowRequest();
         request.setName(WORKFLOW_NAME);

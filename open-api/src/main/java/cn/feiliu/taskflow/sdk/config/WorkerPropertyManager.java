@@ -19,6 +19,9 @@ package cn.feiliu.taskflow.sdk.config;
  * @since 2024-09-23
  */
 public class WorkerPropertyManager {
+    protected static final String DOMAIN             = "domain";
+    protected static final String OVERRIDE_DISCOVERY = "pollOutOfDiscovery";
+
     /**
      * 获取任务是否为暂停状态
      *
@@ -51,5 +54,13 @@ public class WorkerPropertyManager {
      */
     public static int getBatchPollTimeoutInMS(String taskDefName) {
         return PropertyFactory.getInteger(taskDefName, "batchPollTimeoutInMS", 1000);
+    }
+
+    public static String getDomainWithFallback(String taskType, String allWorkers, String defaultValue) {
+        return PropertyFactory.getStringWithFallback(taskType, DOMAIN, allWorkers, defaultValue);
+    }
+
+    public static boolean getPollOutOfDiscovery(String taskDefName, String allWorkers, boolean defaultValue) {
+        return PropertyFactory.getBooleanWithFallback(taskDefName, OVERRIDE_DISCOVERY, allWorkers, defaultValue);
     }
 }
