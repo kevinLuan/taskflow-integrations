@@ -1,0 +1,29 @@
+syntax = "proto3";
+package feiliu.grpc.service;
+import "model/task.proto";
+import "model/workflow.proto";
+option java_package = "cn.feiliu.taskflow.grpc";
+option java_outer_classname = "TaskflowServicePb";
+option go_package = "github.com/netflix/conductor/client/gogrpc/conductor/grpc/tasks";
+
+service TaskflowService {
+
+  rpc StartWorkflow(taskflow.proto.StartWorkflowRequest) returns (taskflow.proto.StartWorkflowResponse) {}
+
+  // GET /poll/{tasktype}
+  rpc Poll(taskflow.proto.PollRequest) returns (taskflow.proto.PollResponse);
+
+  // /poll/batch/{tasktype}
+//  rpc BatchPoll(taskflow.proto.BatchPollRequest) returns (taskflow.proto.Task);
+
+  // POST /
+  rpc UpdateTask(taskflow.proto.UpdateTaskRequest) returns (taskflow.proto.UpdateTaskResponse);
+
+  // POST /{taskId}/log
+  rpc AddLog(taskflow.proto.AddLogRequest) returns (taskflow.proto.AddLogResponse);
+
+  // GET /{taskId}
+  rpc GetTask(taskflow.proto.GetTaskRequest) returns (taskflow.proto.GetTaskResponse);
+}
+
+

@@ -12,6 +12,7 @@
         <module>grpc-client</module>
         <module>open-api</module>
         <module>discovery</module>
+        <module>grpc-proto</module>
     </modules>
     <version>0.0.2-beta</version>
     <url>https://github.com/kevinLuan/taskflow-integrations</url>

@@ -6,3 +6,4 @@
 target/
 .DS_Store
 .vscode/
+/grpc-proto/src/main/java/*

@@ -26,6 +26,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.SynchronousQueue;
@@ -80,8 +81,8 @@ public final class ChannelManager {
     private Map<String, Object> tryLookupServiceConfig() {
         Map<String, Object> serviceConfig;
         try {
-            serviceConfig = SerializerFactory.getSerializer().readMap(
-                ChannelManager.class.getResourceAsStream("/service_config.json"));
+            InputStream is = ChannelManager.class.getResourceAsStream("/service_config.json");
+            serviceConfig = SerializerFactory.getSerializer().readMap(is);
         } catch (Exception e) {
             throw new RuntimeException("Unable to find a service configuration", e);
         }
