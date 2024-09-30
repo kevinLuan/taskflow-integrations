@@ -2,313 +2,89 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cn.taskflow</groupId>
+        <artifactId>taskflow-integrations</artifactId>
+        <version>0.0.3-beta</version>
+    </parent>
     <groupId>cn.taskflow</groupId>
     <artifactId>taskflow-open-api</artifactId>
-    <version>0.0.2-beta</version>
+    <version>0.0.3-beta</version>
     <name>${project.artifactId}</name>
     <description>taskflow platform integration open api</description>
     <url>https://github.com/kevinLuan/taskflow-integrations</url>
-    <properties>
-        <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <protobuf.version>3.19.4</protobuf.version>
-        <jackson.version>2.12.6</jackson.version>
-        <grpc.version>1.49.0</grpc.version>
-        <lombok.version>1.18.24</lombok.version>
-        <main.user.dir>${user.dir}</main.user.dir>
-        <!--suppress UnresolvedMavenProperty -->
-        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
-        <!--suppress UnresolvedMavenProperty -->
-        <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
-        <gpg.homedir>/Users/kevin/.gnupg</gpg.homedir>
-    </properties>
     <dependencies>
         <!-- junit test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
         <!-- spring-boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>2.5.7</version>
             <scope>provided</scope>
         </dependency>
         <!-- Bean Validation API -->
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>4.1.0</version>
         </dependency>
         <!-- slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.30</version>
         </dependency>
         <!-- 集成监控采集 -->
         <dependency>
             <groupId>com.netflix.spectator</groupId>
             <artifactId>spectator-api</artifactId>
-            <version>1.3.7</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.16</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>${protobuf.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
-            <version>${grpc.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hubspot.jackson</groupId>
             <artifactId>jackson-datatype-protobuf</artifactId>
-            <version>0.9.11-jackson2.8</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>cn.taskflow</groupId>
             <artifactId>taskflow-grpc-proto</artifactId>
-            <version>0.0.1-beta</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>cn.taskflow</groupId>
             <artifactId>taskflow-common</artifactId>
-            <version>0.0.1-beta</version>
         </dependency>
     </dependencies>
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-    <issueManagement>
-        <system>Github Issues</system>
-        <url>https://github.com/kevinLuan/taskflow-integrations/issues</url>
-    </issueManagement>
-    <!-- Developer passport -->
-    <developers>
-        <developer>
-            <name>kevin.luan</name>
-            <email>kevin_luan@126.com</email>
-            <organization>taskflow technologies inc.</organization>
-            <organizationUrl>http://www.taskflow.cn/</organizationUrl>
-        </developer>
-    </developers>
-    <scm>
-        <url>https://github.com/kevinLuan/taskflow-integrations</url>
-        <connection>scm:git:https://github.com/kevinLuan/taskflow-integrations.git</connection>
-        <developerConnection>scm:git:https://github.com/kevinLuan/taskflow-integrations.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
-            <!-- Deploy to Central Private Repository -->
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.4.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <tokenAuth>true</tokenAuth>
-                </configuration>
-            </plugin>
-            <!-- Publish documentation and source code -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- Javadoc -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
-                <configuration>
-                    <additionalJOptions>
-                        <additionalJOption>-Xdoclint:none</additionalJOption>
-                    </additionalJOptions>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <configuration>
-                    <gpgArguments>
-                        <arg>--pinentry-mode</arg>
-                        <arg>loopback</arg>
-                    </gpgArguments>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- java compile -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <encoding>UTF-8</encoding>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-            <!-- junit test -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <junitArtifactName>junit:junit</junitArtifactName>
-                    <includes>
-                        <include>**/*Test.java</include>
-                        <include>**/Test*.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>net.ju-n.maven.plugins</groupId>
                 <artifactId>checksum-maven-plugin</artifactId>
-                <version>1.2</version>
-                <executions>
-                    <execution>
-                        <id>checksum-maven-plugin-files</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>files</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <fileSets>
-                        <fileSet>
-                            <directory>${project.build.directory}</directory>
-                            <includes>
-                                <include>*.jar</include>
-                            </includes>
-                        </fileSet>
-                    </fileSets>
-                    <algorithms>
-                        <algorithm>MD5</algorithm>
-                    </algorithms>
-                </configuration>
-            </plugin>
-            <!-- Code License -->
-            <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>3.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>remove</goal>
-                            <goal>format</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <quiet>true</quiet>
-                    <!--suppress UnresolvedMavenProperty -->
-                    <header>${main.user.dir}/tools/codestyle/HEADER</header>
-                    <includes>
-                        <include>**/src/main/java/**</include>
-                        <include>**/src/test/java/**</include>
-                    </includes>
-                    <excludes>
-                        <exclude>**/ignore.java</exclude>
-                    </excludes>
-                    <strictCheck>true</strictCheck>
-                    <mapping>
-                        <java>SLASHSTAR_STYLE</java>
-                    </mapping>
-                </configuration>
-            </plugin>
-
-            <!-- Code Formatter -->
-            <plugin>
-                <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-                <artifactId>maven-java-formatter-plugin</artifactId>
-                <version>0.4</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>format</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!--suppress UnresolvedMavenProperty -->
-                    <configFile>${main.user.dir}/tools/codestyle/formatter.xml</configFile>
-                    <!--suppress UnresolvedMavenProperty -->
-                    <encoding>${project.encoding}</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
             </plugin>
         </plugins>
     </build>
