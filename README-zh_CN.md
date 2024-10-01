@@ -1,7 +1,7 @@
 <div align="left">
-<a href="javascript:void(0);"><img src="https://img.shields.io/badge/构建-通过-brightgreen" /></a>
-<a href="javascript:void(0);" target="_blank"><img src="https://img.shields.io/badge/文档-最新-brightgreen" /></a>
-<a href="javascript:void(0);"><img src="https://img.shields.io/badge/许可证-Apache%202.0-blue.svg" alt="许可证"></a>
+  <a href="javascript:void(0);"><img src="https://img.shields.io/badge/build-passing-brightgreen" /></a>
+  <a href="javascript:void(0);" target="_blank"><img src="https://img.shields.io/badge/docs-latest-brightgreen" /></a>
+  <a href="javascript:void(0);"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
 </div>
 
 [English](./README.md) | 简体中文
