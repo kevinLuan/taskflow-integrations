@@ -10,13 +10,13 @@ English | [简体中文](./README-zh_CN.md)
 
 Taskflow is a powerful and flexible task orchestration-based workflow/task flow management platform designed to streamline your workflow and boost productivity. As a flowchart-based task scheduling and execution system, Taskflow helps businesses and teams achieve automated, visualized business process management. Users can easily design and execute various complex workflows, thereby improving productivity and work efficiency. Taskflow integrates various tasks, processes, data, and systems into a unified workflow platform, enabling users to easily create, manage, and monitor a wide range of complex workflows.
 
-## 📚 Documentation
+## Documentation
 
-For detailed documentation, please refer to our official docs [official docs](https://docs.taskflow.cn).
+For detailed documentation, please refer to our official docs [official docs](http://www.taskflow.cn).
 
-This SDK provides a convenient Java client interface for [Task Cloud](http://api.taskflow.cn/openapi/v1/). Through it, you can easily access our cloud service API, automate the management of resources and services and other features.
+This SDK provides a convenient Java client interface for [Task Cloud](http://www.taskflow.cn/). Through it, you can easily access our cloud service API, automate the management of resources and services and other features.
 
-## 📦 Installation
+## Installation
 
 To integrate TaskFlow into your Java project.
 
@@ -37,11 +37,11 @@ Add the following dependencies to the gradle project:
     }
 ```
 
-## ❓ Questions
+## Questions
 For questions and support, visit [Task Cloud Platform](http://www.taskflow.cn/).
 
-## 🎁 License
+## License
 
-[License Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+[License Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 Copyright (c) 2024 Taskflow
