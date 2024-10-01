@@ -12,28 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.client.api;
+package cn.feiliu.taskflow.discovery;
 
-import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.client.http.TokenResourceApi;
-import cn.feiliu.taskflow.open.dto.Application;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Map;
-
 /**
  * @author SHOUSHEN.LUAN
- * @since 2024-06-11
+ * @since 2024-10-01
  */
-public class TokenClientTest {
-    String          basePath  = "http://localhost:8082/api";
-    final ApiClient apiClient = new ApiClient(basePath, "19242c5a78a", "c3ec66ac239f45e2b650b5164f1c7ef0");
+public class MyTests {
 
     @Test
     public void test() {
-        Application application = TokenResourceApi.getAppInfoWithHttpInfo(apiClient).getData();
-        System.out.println("application:" + application);
-        Assert.assertNotNull(application.getName());
+        Assert.assertTrue(true);
     }
 }

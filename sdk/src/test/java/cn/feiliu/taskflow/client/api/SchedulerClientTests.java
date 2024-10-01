@@ -38,7 +38,7 @@ public class SchedulerClientTests {
     private final String CRON_EXPRESSION = "0 0/15 * * * ?";
 
     @Test
-    void testMethods() {
+    public void testMethods() {
         getSchedulerClient().deleteSchedule(NAME);
         assertTrue(getSchedulerClient().getNextFewSchedules(CRON_EXPRESSION, 0L, 0L, 5).isEmpty());
         Date now = new Date();
@@ -63,7 +63,7 @@ public class SchedulerClientTests {
     }
 
     @Test
-    void testConflictException() {
+    public void testConflictException() {
         try {
             getSchedulerClient().saveSchedule(getSaveScheduleRequest(true));
             getSchedulerClient().saveSchedule(getSaveScheduleRequest(false));
@@ -75,7 +75,7 @@ public class SchedulerClientTests {
     }
 
     @Test
-    void testAllMethods() {
+    public void testAllMethods() {
         getSchedulerClient().saveSchedule(getSaveScheduleRequest(true));
         getSchedulerClient().pauseAllSchedules();
         getSchedulerClient().resumeAllSchedules();

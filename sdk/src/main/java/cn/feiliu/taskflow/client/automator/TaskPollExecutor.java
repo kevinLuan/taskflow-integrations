@@ -291,7 +291,7 @@ class TaskPollExecutor {
      * @throws Exception
      */
     private List<ExecutingTask> getBatchTasks(Worker worker, String domain, int maxAmount) throws Exception {
-        LOGGER.info("Polling tasks of type: {}", worker.getTaskDefName());
+        LOGGER.debug("Polling tasks of type: {}", worker.getTaskDefName());
         String workerId = worker.getIdentity();
         int timeout = TaskflowUtils.getReasonableTimeout(worker);
         String taskName = worker.getTaskDefName();
