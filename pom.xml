@@ -39,6 +39,26 @@
         <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
         <gpg.homedir>/Users/kevin/.gnupg</gpg.homedir>
     </properties>
+    <!-- Dependencies common to all submodules -->
+    <dependencies>
+        <!-- junit test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- slf4j log -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
     <dependencyManagement>
         <dependencies>
             <!-- lombok -->
@@ -87,7 +107,6 @@
                 <artifactId>taskflow-discovery</artifactId>
                 <version>${taskflow.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>javax.annotation</groupId>
                 <artifactId>javax.annotation-api</artifactId>

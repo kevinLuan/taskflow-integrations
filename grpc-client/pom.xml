@@ -14,23 +14,6 @@
     <url>https://github.com/kevinLuan/taskflow-integrations</url>
     <description>taskflow platform integration</description>
     <dependencies>
-        <!-- lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- slf4j -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- junit test -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <!-- 集成 feiliu common包 -->
         <dependency>
             <groupId>cn.taskflow</groupId>
             <artifactId>taskflow-common</artifactId>
