@@ -6,16 +6,12 @@
     <parent>
         <groupId>cn.taskflow</groupId>
         <artifactId>taskflow-integrations</artifactId>
-        <version>0.0.3-beta</version>
+        <version>${revision}</version>
     </parent>
     <name>${project.artifactId}</name>
     <artifactId>taskflow-discovery</artifactId>
-    <version>0.0.3-beta</version>
     <url>https://github.com/kevinLuan/taskflow-integrations</url>
     <description>taskflow platform integration sdk</description>
-    <properties>
-        <taskflow.version>0.0.3-beta</taskflow.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>cn.taskflow</groupId>

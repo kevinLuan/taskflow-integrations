@@ -6,10 +6,9 @@
     <parent>
         <groupId>cn.taskflow</groupId>
         <artifactId>taskflow-integrations</artifactId>
-        <version>0.0.3-beta</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>taskflow-grpc-client</artifactId>
-    <version>0.0.3-beta</version>
     <name>${project.artifactId}</name>
     <url>https://github.com/kevinLuan/taskflow-integrations</url>
     <description>taskflow platform integration</description>

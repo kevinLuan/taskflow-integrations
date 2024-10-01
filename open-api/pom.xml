@@ -5,11 +5,10 @@
     <parent>
         <groupId>cn.taskflow</groupId>
         <artifactId>taskflow-integrations</artifactId>
-        <version>0.0.3-beta</version>
+        <version>${revision}</version>
     </parent>
     <groupId>cn.taskflow</groupId>
     <artifactId>taskflow-open-api</artifactId>
-    <version>0.0.3-beta</version>
     <name>${project.artifactId}</name>
     <description>taskflow platform integration open api</description>
     <url>https://github.com/kevinLuan/taskflow-integrations</url>
