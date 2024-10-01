@@ -12,12 +12,13 @@
         <module>grpc-client</module>
         <module>open-api</module>
         <module>discovery</module>
+        <module>grpc-proto</module>
     </modules>
     <version>${revision}</version>
     <url>https://github.com/kevinLuan/taskflow-integrations</url>
     <description>taskflow platform integration</description>
     <properties>
-        <revision>0.0.4-beta</revision>
+        <revision>0.0.5-beta</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
