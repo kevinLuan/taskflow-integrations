@@ -41,7 +41,7 @@ public class WorkflowBaseClientTests {
         int version = 1;
         WorkflowDefinition workflowDefinition = WorkflowDefinition.newBuilder(name, version)
             .addTask(new SetVariable("x")).build();
-        getApiClient().getWorkflowEngine().registerWorkflow(workflowDefinition, false);
+        getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDefinition, false);
         String workflowId = getWorkflowClient().startWorkflow(StartWorkflowRequest.of(name, version));
         ExecutingWorkflow executingWorkflow = getWorkflowClient().getWorkflow(workflowId, false);
         assertTrue(executingWorkflow.getWorkflowName().equals(name));
@@ -59,7 +59,7 @@ public class WorkflowBaseClientTests {
                 WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder("simple_workflow_" + j, 1)
                         .addTask(new Http("http").url("https://www.baidu.com"))
                         .build();
-                getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, false);
+                getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, false);
                 StartWorkflowRequest request = new StartWorkflowRequest();
                 workflowNames.add(workflowDef.getName());
                 request.setName(workflowDef.getName());
@@ -93,7 +93,7 @@ public class WorkflowBaseClientTests {
         int version = 1;
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder(name, version)
             .addTask(new Wait("manual_approval_task_ref")).build();
-        getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, false);
+        getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, false);
         String workflowId = getWorkflowClient().startWorkflow(StartWorkflowRequest.of(name, version));
         System.out.println("testWorkflowTerminate 工作流ID: " + workflowId);
         getWorkflowClient().terminateWorkflow(workflowId, "testing out some stuff");
@@ -123,7 +123,7 @@ public class WorkflowBaseClientTests {
                 .addTask(new WorkTask(taskName1, taskName1))
                 .addTask(new WorkTask(taskName2, taskName2))
                 .build();
-        getApiClient().getWorkflowEngine().registerWorkflow(workflowDef,true);
+        getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef,true);
         StartWorkflowRequest startWorkflowRequest = new StartWorkflowRequest();
         startWorkflowRequest.setName(workflowName);
         startWorkflowRequest.setVersion(1);
@@ -143,7 +143,7 @@ public class WorkflowBaseClientTests {
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder("update_variable_test", 1)
             .addTask(new WorkTask("simple_task", "simple_task_ref"))
             .timeoutPolicy(WorkflowDefinition.TimeoutPolicy.TIME_OUT_WF).timeoutSeconds(60).build();
-        getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, false);
+        getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, false);
         StartWorkflowRequest request = new StartWorkflowRequest();
         request.setName(workflowDef.getName());
         request.setVersion(workflowDef.getVersion());

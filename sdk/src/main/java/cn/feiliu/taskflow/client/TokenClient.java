@@ -47,9 +47,4 @@ public class TokenClient implements ITokenClient {
         ApiResponse<Application> response = TokenResourceApi.getAppInfoWithHttpInfo(apiClient);
         return response.getData();
     }
-
-    @Override
-    public void close() throws Exception {
-
-    }
 }

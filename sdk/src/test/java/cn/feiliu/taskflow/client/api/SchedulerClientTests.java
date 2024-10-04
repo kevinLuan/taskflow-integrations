@@ -14,6 +14,7 @@
  */
 package cn.feiliu.taskflow.client.api;
 
+import cn.feiliu.taskflow.common.DateTimeOps;
 import cn.feiliu.taskflow.common.enums.TriggerType;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.open.dto.SaveScheduleRequest;
@@ -30,7 +31,7 @@ import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -46,12 +47,12 @@ public class SchedulerClientTests {
     public void testMethods() {
         getSchedulerClient().deleteSchedule(NAME);
         assertTrue(getSchedulerClient().getNextFewSchedules(CRON_EXPRESSION, 0L, 0L, 5).isEmpty());
-        Date now = new Date();
-        Date endTime = DateUtils.addHours(now, 1);
-        List<Date> dates = getSchedulerClient().getNextFewSchedules(CRON_EXPRESSION, now, endTime, 5);
+        Long start = System.currentTimeMillis();
+        Long endTime = start + TimeUnit.HOURS.toMillis(1);
+        List<Long> dates = getSchedulerClient().getNextFewSchedules(CRON_EXPRESSION, start, endTime, 5);
         assertEquals(4, dates.size());
-        for (Date date : dates) {
-            System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date));
+        for (Long date : dates) {
+            System.out.println(DateTimeOps.ofSys(date).toString());
         }
         SaveScheduleRequest request = getSaveScheduleRequest(false);
         getSchedulerClient().saveSchedule(request);
@@ -83,31 +84,52 @@ public class SchedulerClientTests {
 
     @Test
     public void testAllMethods() {
-        getSchedulerClient().saveSchedule(getSaveScheduleRequest(true));
+        SaveScheduleRequest req = getSaveScheduleRequest(true);
+        getSchedulerClient().saveSchedule(req);
         getSchedulerClient().pauseAllSchedules();
         getSchedulerClient().resumeAllSchedules();
         List<WorkflowScheduleExecution> records = getSchedulerClient().getAllExecutionRecords(0L, 100);
-        System.out.println(records.size());
         getSchedulerClient().deleteSchedule(NAME);
 
     }
 
+    @Test
+    public void testNextFewSchedules() {
+        //使用纽约时间：10:30 ~ 12:30
+        SaveScheduleRequest req = getSaveScheduleRequest(true);
+        String cron = req.getCronTrigger().getCronExpr();
+        long start = req.getStartTime();
+        long end = req.getEndTime();
+        List<Long> exeTimes = getSchedulerClient().getNextFewSchedules(cron, start, end, 10);
+        System.out.println("cronExpr: " + cron);
+        System.out.println("开始时间: " + DateTimeOps.of(req.getTimeZone(), start));
+        System.out.println("结束时间: " + DateTimeOps.of(req.getTimeZone(), end));
+        System.out.println("===============");
+        for (Long exeTime : exeTimes) {
+            System.out.println("执行时间: " + DateTimeOps.of(req.getTimeZone(), exeTime).format(DateTimeOps.ZONE_FMT));
+        }
+        Assert.assertEquals(8, exeTimes.size());
+    }
+
     SaveScheduleRequest getSaveScheduleRequest(boolean overwrite) {
+        ZoneId zoneId = ZoneId.of("America/New_York");
         SaveScheduleRequest request = new SaveScheduleRequest();
         request.setName(NAME);
-        request.setTimeZone("America/New_York");
+        request.setTimeZone(zoneId.getId());
         request.setTriggerType(TriggerType.CRON);
         request.setCronTrigger(new CronTrigger(CRON_EXPRESSION));
         request.setStartWorkflowRequest(StartWorkflowRequest.of(WORKFLOW_NAME, 1));
-        request.setStartTime(getStartTime().getTime());
-        request.setEndTime(getStartTime().getTime() + TimeUnit.HOURS.toMillis(2));
+        DateTimeOps dateTimeOps = getStartTime(zoneId);
+        request.setStartTime(dateTimeOps.getMillis());
+        request.setEndTime(dateTimeOps.addHours(2).getMillis());
         request.setOverwrite(overwrite);
         return request;
     }
 
     @SneakyThrows
-    private Date getStartTime() {
-        return DateUtils.parseDate(DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 10:30:00",
-            "yyyy-MM-dd HH:mm:ss");
+    private DateTimeOps getStartTime(ZoneId zoneId) {
+        //使用本地日期的10点30分作为开始时间
+        String originalTime = DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 10:30:00";
+        return DateTimeOps.parse(zoneId, DateTimeOps.SIMPLE_FMT, originalTime);
     }
 }

@@ -129,8 +129,4 @@ public class SchedulerClient implements ISchedulerClient {
     public List<WorkflowScheduleExecution> getAllExecutionRecords(Long start, Integer size) {
         return schedulerResourceApi.getAllExecutionRecords(start, size);
     }
-
-    @Override
-    public void close() throws Exception {
-    }
 }

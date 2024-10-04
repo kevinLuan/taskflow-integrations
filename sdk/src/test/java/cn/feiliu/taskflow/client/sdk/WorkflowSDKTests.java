@@ -18,9 +18,7 @@ import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 import static org.junit.Assert.assertTrue;
 
 import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.common.model.WorkflowRun;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 import cn.feiliu.taskflow.sdk.worker.Worker;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.*;
 import cn.feiliu.taskflow.sdk.workflow.task.InputParam;
@@ -30,7 +28,6 @@ import lombok.SneakyThrows;
 import org.junit.*;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 public class WorkflowSDKTests {
     final static String SIMPLE_TASK = "simple_task", RANDOM_ITEMS = "random_items";
@@ -72,7 +69,7 @@ public class WorkflowSDKTests {
             .addTask(new ForkFor("forkFor2Ref", "${workflow.input.elements}")//
                 .childTask(new WorkTask(SIMPLE_TASK, "forkForLoopSimpleRef")//
                     .input("name", "${forkFor2Ref.output.element}"))).build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("name", "欢迎访问任务云平台 http://www.taskflow.cn");
         dataMap.put("elements", Lists.newArrayList("欢迎访问", "任务云平台"));
@@ -96,7 +93,7 @@ public class WorkflowSDKTests {
                             .childTask(new WorkTask(SIMPLE_TASK, "simple2Ref")//
                                 .input("name", "${forkFor2Ref.output.element}"))))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("items1", Lists.newArrayList("A"));
         dataMap.put("items2", Lists.newArrayList("欢迎访问任务云平台"));
@@ -126,7 +123,7 @@ public class WorkflowSDKTests {
                                     .childTask(new WorkTask(SIMPLE_TASK, "simple2Ref").input("name",
                                         "${forkFor2Ref.output.element}")))))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         doExecute(workflowDef, Map.of("items", new Integer[] { 123 }), 30);
         deleteWorkflowDef(workflowDef);
     }
@@ -144,7 +141,7 @@ public class WorkflowSDKTests {
                     .childTask(new WorkTask(SIMPLE_TASK, "forSimple2Ref")//
                         .input("name", "${for2Ref.output.element}"))))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("name", "欢迎访问任务云平台 http://www.taskflow.cn");
         dataMap.put("items1", Lists.newArrayList("飞流", "数据"));
@@ -167,7 +164,7 @@ public class WorkflowSDKTests {
                             "forSimple2Ref")//
                             .input("name", "${for2Ref.output.element}"))))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         doExecute(workflowDef, new HashMap<>(), 15);
         deleteWorkflowDef(workflowDef);
     }
@@ -186,7 +183,7 @@ public class WorkflowSDKTests {
                     .input("name", "do-while 循环，应该执行一次")))//
             .addTask(new WorkTask(SIMPLE_TASK, "simple4Ref").input("name", "任务四"))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> inputData = new HashMap<>();
         inputData.put("loopCount", 1);
         doExecute(workflowDef, inputData, 15);
@@ -206,8 +203,8 @@ public class WorkflowSDKTests {
                 .childTask(new WorkTask(SIMPLE_TASK, "simple3Ref")//
                     .input("name", "测试")))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
-        String workflowId = getApiClient().getWorkflowEngine().start(workflowDef, Map.of("items", "xxx"));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        String workflowId = getApiClient().getApis().getWorkflowEngine().start(workflowDef, Map.of("items", "xxx"));
         ExecutingWorkflow workflow = waitForTerminal(workflowId, 60);
         System.out.println("workflowId:" + workflow.getWorkflowId());
         Assert.assertEquals(ExecutingWorkflow.WorkflowStatus.FAILED, workflow.getStatus());
@@ -223,7 +220,7 @@ public class WorkflowSDKTests {
                 .childTask(new WorkTask(SIMPLE_TASK, "loopSimpleTaskRef")//
                     .input("name", "${eachRef.output.element}")))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("name", "欢迎访问任务云平台 http://www.taskflow.cn");
         dataMap.put("elements", Lists.newArrayList("欢迎访问", "任务云平台"));
@@ -233,7 +230,7 @@ public class WorkflowSDKTests {
 
     @SneakyThrows
     private void doExecute(WorkflowDefinition workflowDef, Map<String, Object> dataMap, int timeout) {
-        String workflowId = getApiClient().getWorkflowEngine().start(workflowDef, dataMap);
+        String workflowId = getApiClient().getApis().getWorkflowEngine().start(workflowDef, dataMap);
         ExecutingWorkflow executedWorkflow = waitForTerminal(workflowId, timeout);
         System.out.println("workflowId:" + executedWorkflow.getWorkflowId());
         Assert.assertNotNull(executedWorkflow);

@@ -15,6 +15,7 @@
 package cn.feiliu.taskflow.client.automator;
 
 import cn.feiliu.taskflow.client.ApiClient;
+import cn.feiliu.taskflow.client.api.ITaskClient;
 import cn.feiliu.taskflow.client.automator.scheduling.MultiTaskResult;
 import cn.feiliu.taskflow.client.automator.scheduling.PollExecuteStatus;
 import cn.feiliu.taskflow.client.spi.DiscoveryService;
@@ -164,15 +165,16 @@ class TaskPollExecutor {
         Runnable runnable = () -> {
             if (apiClient.isUseGRPC()) {
                 List<Future<?>> futures = new ArrayList<>();
-                futures.add(apiClient.getGrpcApi().asyncUpdateTask(result));
+                futures.add(apiClient.getApis().getGrpcApi().asyncUpdateTask(result));
                 for (TaskLog taskLog : result.getLogs()) {
                     if (StringUtils.isNotBlank(taskLog.getLog())) {
-                        futures.add(apiClient.getGrpcApi().addLog(taskLog));
+                        futures.add(apiClient.getApis().getGrpcApi().addLog(taskLog));
                     }
                 }
                 TaskflowUtils.blockedWait(futures, 30_000);
             } else {
-                apiClient.getTaskClient().updateTask(result);
+                ITaskClient taskClient = apiClient.getApis().getTaskClient();
+                taskClient.updateTask(result);
             }
         };
         try {
@@ -298,11 +300,11 @@ class TaskPollExecutor {
         Timer timer = MetricsContainer.getBatchPollTimer(worker.getTaskDefName());
         if (apiClient.isUseGRPC()) {
             return timer.record(() -> {
-                return apiClient.getGrpcApi().batchPollTask(taskName, workerId, domain, maxAmount, timeout);
+                return apiClient.getApis().getGrpcApi().batchPollTask(taskName, workerId, domain, maxAmount, timeout);
             });
         } else {
-            return timer.record(() ->
-                    apiClient.getTaskClient().batchPollTasksInDomain(taskName, domain, workerId, maxAmount, timeout));
+            ITaskClient taskClient = apiClient.getApis().getTaskClient();
+            return timer.record(() -> taskClient.batchPollTasksInDomain(taskName, domain, workerId, maxAmount, timeout));
         }
     }
 

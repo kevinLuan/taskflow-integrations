@@ -44,8 +44,8 @@ public class TaskBaseClientTests {
 
     @BeforeClass
     public static void setup() throws IOException {
-        taskClient = getApiClient().getTaskClient();
-        workflowClient = getApiClient().getWorkflowClient();
+        taskClient = getApiClient().getApis().getTaskClient();
+        workflowClient = getApiClient().getApis().getWorkflowClient();
 
     }
 
@@ -53,10 +53,10 @@ public class TaskBaseClientTests {
     public void testTaskLog() throws Exception {
         String workflowName = "sdk-workflow";
         String taskName = "noWorkTask2";
-        getApiClient().getTaskEngine().createIfAbsent(new TaskDefinition(taskName));
+        getApiClient().getApis().getTaskEngine().createIfAbsent(new TaskDefinition(taskName));
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder(workflowName, 1)
             .addTask(new WorkTask(taskName, taskName + "Ref")).build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
 
         String workflowId = workflowClient.startWorkflow(StartWorkflowRequest.of(workflowName, 1));
         System.out.println("Started workflow with id: " + workflowId);
@@ -70,8 +70,8 @@ public class TaskBaseClientTests {
         System.out.println(taskClient.requeuePendingTasksByTaskType(taskName));
         updateWorkflowTask(workflowId);
         pullTaskAndUpdateTask(taskName);
-        getApiClient().getTaskEngine().deleteTaskDef(taskName);
-        getApiClient().getWorkflowEngine().deleteWorkflowDef(workflowName, 1);
+        getApiClient().getApis().getTaskEngine().deleteTaskDef(taskName);
+        getApiClient().getApis().getWorkflowEngine().deleteWorkflowDef(workflowName, 1);
     }
 
     private static void pullTaskAndUpdateTask(String taskName) {

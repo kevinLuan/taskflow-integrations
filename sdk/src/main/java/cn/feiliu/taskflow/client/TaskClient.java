@@ -79,7 +79,8 @@ public class TaskClient implements ITaskClient {
     public List<ExecutingTask> batchPollTasksInDomain(String taskType, String domain, String workerId, int count,
                                                       int timeoutInMillisecond) {
         if (apiClient.isUseGRPC()) {
-            return apiClient.getGrpcApi().batchPollTask(taskType, workerId, domain, count, timeoutInMillisecond);
+            return apiClient.getApis().getGrpcApi()
+                .batchPollTask(taskType, workerId, domain, count, timeoutInMillisecond);
         } else {
             return taskResourceApi.batchPoll(taskType, workerId, domain, count, timeoutInMillisecond);
         }
@@ -88,7 +89,7 @@ public class TaskClient implements ITaskClient {
     @Override
     public void updateTask(TaskExecResult taskResult) {
         if (apiClient.isUseGRPC()) {
-            apiClient.getGrpcApi().updateTask(taskResult);
+            apiClient.getApis().getGrpcApi().updateTask(taskResult);
         } else {
             taskResourceApi.updateTask(taskResult);
         }

@@ -17,6 +17,7 @@ package cn.feiliu.taskflow.client.automator;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.automator.scheduling.WorkerScheduling;
 import cn.feiliu.taskflow.client.automator.scheduling.WorkerSchedulingFactory;
+import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.spi.DiscoveryService;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
 import cn.feiliu.taskflow.sdk.worker.Worker;
@@ -269,7 +270,8 @@ public class TaskRunnerConfigurer {
      * 自动创建任务
      */
     private void createTaskIfAbsent() {
-        List<TaskDefinition> tds = apiClient.getTaskEngine().getTaskDefs();
+        TaskEngine taskEngine = apiClient.getApis().getTaskEngine();
+        List<TaskDefinition> tds = taskEngine.getTaskDefs();
         List<TaskDefinition> reqs = workers.stream().filter(worker -> {
                     return tds.stream()
                             .filter((td) -> td.getName().equals(worker.getTaskDefName()))
@@ -278,7 +280,7 @@ public class TaskRunnerConfigurer {
                 }).map(worker -> new TaskDefinition(worker.getTaskDefName()))
                 .collect(Collectors.toList());
         if (reqs.size() > 0) {
-            apiClient.getTaskEngine().registerTaskDefs(reqs);
+            apiClient.getApis().getTaskEngine().registerTaskDefs(reqs);
             for (TaskDefinition td : reqs) {
                 LOGGER.info("The '{}' task was registered successfully", td.getName());
             }

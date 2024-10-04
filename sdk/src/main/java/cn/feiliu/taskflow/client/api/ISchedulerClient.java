@@ -25,21 +25,6 @@ import java.util.stream.Collectors;
  * @author SHOUSHEN.LUAN
  * @since 2024-06-30
  */
-public interface ISchedulerClient extends ISchedulerService,AutoCloseable {
+public interface ISchedulerClient extends ISchedulerService {
 
-    /**
-     * 获取调度程序的下一个x次(默认3次，最多5次)执行时间的列表
-     *
-     * @param cronExpression
-     * @param scheduleStartTime
-     * @param scheduleEndTime
-     * @param limit
-     * @return
-     * @throws ApiException
-     */
-    default List<Date> getNextFewSchedules(String cronExpression, Date scheduleStartTime, Date scheduleEndTime,
-                                           Integer limit) throws ApiException {
-        List<Long> list = getNextFewSchedules(cronExpression, scheduleStartTime.getTime(), scheduleEndTime.getTime(), limit);
-        return list.stream().map(Date::new).collect(Collectors.toList());
-    }
 }

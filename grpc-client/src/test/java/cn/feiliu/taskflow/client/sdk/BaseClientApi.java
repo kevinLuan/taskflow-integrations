@@ -15,11 +15,10 @@
 package cn.feiliu.taskflow.client.sdk;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.client.api.ISchedulerClient;
+import cn.feiliu.taskflow.client.api.IWorkflowClient;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.core.WorkflowEngine;
 import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
@@ -50,22 +49,19 @@ public final class BaseClientApi {
     }
 
     public static TaskEngine getTaskEngine() {
-        return apiClient.getTaskEngine();
-    }
-
-    public static IWorkflowService getWorkflowClient() {
-        return apiClient.getWorkflowClient();
+        return apiClient.getApis().getTaskEngine();
     }
 
     public static WorkflowEngine getWorkflowEngine() {
-        return apiClient.getWorkflowEngine();
+        return apiClient.getApis().getWorkflowEngine();
     }
 
     @SneakyThrows
     public static ExecutingWorkflow waitForTerminal(String workflowId, int waitForSeconds) {
         long startTime = System.currentTimeMillis();
+        IWorkflowClient workflowClient = apiClient.getApis().getWorkflowClient();
         for (;;) {
-            ExecutingWorkflow workflow = apiClient.getWorkflowClient().getWorkflow(workflowId, true);
+            ExecutingWorkflow workflow = workflowClient.getWorkflow(workflowId, true);
             if (workflow.getStatus().isTerminal()) {
                 return workflow;
             } else {

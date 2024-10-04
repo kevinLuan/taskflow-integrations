@@ -24,5 +24,6 @@ import java.util.concurrent.CompletableFuture;
  * @author SHOUSHEN.LUAN
  * @since 2024-06-25
  */
-public interface IWorkflowClient extends IWorkflowService, AutoCloseable {
+public interface IWorkflowClient extends IWorkflowService {
+    void shutdown();
 }

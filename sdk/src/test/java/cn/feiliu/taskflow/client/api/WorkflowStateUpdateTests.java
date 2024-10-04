@@ -58,12 +58,12 @@ public class WorkflowStateUpdateTests {
         workflowTask.setTaskReferenceName("wait_task_ref");
         request.setTasks(List.of(workflowTask));
         request.setRegisterTask(true);
-        apiClient.getWorkflowEngine().registerWorkflow(request, true);
+        apiClient.getApis().getWorkflowEngine().registerWorkflow(request, true);
     }
 
     @SneakyThrows
     private String startWorkflow() {
-        return apiClient.getWorkflowEngine().start(StartWorkflowRequest.of(WORKFLOW_NAME, VERSION));
+        return apiClient.getApis().getWorkflowEngine().start(StartWorkflowRequest.of(WORKFLOW_NAME, VERSION));
     }
 
     @Test
@@ -77,11 +77,11 @@ public class WorkflowStateUpdateTests {
         request.setTaskRefUpdate(taskRefUpdate);
         request.setVariables(Map.of("hello", "world"));
         //更新任务一完成状态
-        apiClient.getWorkflowClient().updateWorkflow(request);
+        apiClient.getApis().getWorkflowClient().updateWorkflow(request);
         //增加等待任务
         request.setWaitUntilTaskRefNames(List.of("wait_task_ref_1", "wait_task_ref_2"));
         request.setWaitForSeconds(6);
-        WorkflowRun workflowRun = apiClient.getWorkflowClient().updateWorkflow(request);
+        WorkflowRun workflowRun = apiClient.getApis().getWorkflowClient().updateWorkflow(request);
         System.out.println(workflowRun.getTasks()
                 .stream()
                 .map(task -> task.getReferenceTaskName() + ":" + task.getStatus())
@@ -89,7 +89,7 @@ public class WorkflowStateUpdateTests {
         //更新任务二完成状态
         taskRefUpdate.setTaskReferenceName("wait_task_ref_2");
         request.setTaskRefUpdate(taskRefUpdate);
-        workflowRun = apiClient.getWorkflowClient().updateWorkflow(request);
+        workflowRun = apiClient.getApis().getWorkflowClient().updateWorkflow(request);
 
         assertEquals(ExecutingWorkflow.WorkflowStatus.COMPLETED, workflowRun.getStatus());
         Set<ExecutingTask.Status> allTaskStatus = workflowRun.getTasks()
@@ -112,15 +112,15 @@ public class WorkflowStateUpdateTests {
         StartWorkflowRequest request = StartWorkflowRequest.newBuilder().name(WORKFLOW_NAME).version(VERSION)
             .idempotencyKey(UUID.randomUUID().toString())
             .idempotencyStrategy(StartWorkflowRequest.IdempotencyStrategy.FAIL).build();
-        String workflowId = apiClient.getWorkflowClient().startWorkflow(request);
+        String workflowId = apiClient.getApis().getWorkflowClient().startWorkflow(request);
         //返回已存在的工作流ID
         request.setIdempotencyStrategy(StartWorkflowRequest.IdempotencyStrategy.RETURN_EXISTING);
-        String workflowId2 = apiClient.getWorkflowClient().startWorkflow(request);
+        String workflowId2 = apiClient.getApis().getWorkflowClient().startWorkflow(request);
         assertEquals(workflowId, workflowId2);
         //重复提交工作流抛出异常
         request.setIdempotencyStrategy(StartWorkflowRequest.IdempotencyStrategy.FAIL);
         try {
-            apiClient.getWorkflowClient().startWorkflow(request);
+            apiClient.getApis().getWorkflowClient().startWorkflow(request);
             fail("未出现逾期结果");
         } catch (ConflictException ce) {
             assertTrue(true);

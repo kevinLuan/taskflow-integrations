@@ -74,7 +74,7 @@ public class WorkflowSDKTests {
             .addTask(new ForkFor("forkFor2Ref", "${workflow.input.elements}")//
                 .childTask(new WorkTask(SIMPLE_TASK, "forkForLoopSimpleRef")//
                     .input("name", "${forkFor2Ref.output.element}"))).build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("name", "欢迎访问任务云平台 http://www.taskflow.cn");
         dataMap.put("elements", Lists.newArrayList("欢迎访问", "任务云平台"));
@@ -100,7 +100,7 @@ public class WorkflowSDKTests {
                     .input("name", "do-while 循环，应该执行一次")))//
             .addTask(new WorkTask(SIMPLE_TASK, "simple4Ref").input("name", "任务四"))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> inputData = new HashMap<>();
         inputData.put("loopCount", 1);
         doExecute(workflowDef, inputData, 15);
@@ -120,8 +120,8 @@ public class WorkflowSDKTests {
                 .childTask(new WorkTask(SIMPLE_TASK, "simple3Ref")//
                     .input("name", "测试")))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
-        String workflowId = getApiClient().getWorkflowEngine().start(workflowDef, Map.of("items", "xxx"));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        String workflowId = getApiClient().getApis().getWorkflowEngine().start(workflowDef, Map.of("items", "xxx"));
         ExecutingWorkflow workflow = waitForTerminal(workflowId, 60);
         System.out.println("workflowId:" + workflow.getWorkflowId());
         Assert.assertEquals(ExecutingWorkflow.WorkflowStatus.FAILED, workflow.getStatus());
@@ -137,7 +137,7 @@ public class WorkflowSDKTests {
                 .childTask(new WorkTask(SIMPLE_TASK, "loopSimpleTaskRef")//
                     .input("name", "${eachRef.output.element}")))//
             .build();
-        assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("name", "欢迎访问任务云平台 http://www.taskflow.cn");
         dataMap.put("elements", Lists.newArrayList("欢迎访问", "任务云平台"));
@@ -147,7 +147,7 @@ public class WorkflowSDKTests {
 
     @SneakyThrows
     private void doExecute(WorkflowDefinition workflowDef, Map<String, Object> dataMap, int timeout) {
-        String workflowId = getApiClient().getWorkflowEngine().start(workflowDef, dataMap);
+        String workflowId = getApiClient().getApis().getWorkflowEngine().start(workflowDef, dataMap);
         ExecutingWorkflow executedWorkflow = waitForTerminal(workflowId, timeout);
         System.out.println("workflowId:" + executedWorkflow.getWorkflowId());
         Assert.assertNotNull(executedWorkflow);
