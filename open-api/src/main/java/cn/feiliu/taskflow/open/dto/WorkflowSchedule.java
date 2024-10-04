@@ -14,12 +14,14 @@
  */
 package cn.feiliu.taskflow.open.dto;
 
+import cn.feiliu.taskflow.common.enums.TriggerType;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.open.dto.trigger.CronTrigger;
+import cn.feiliu.taskflow.open.dto.trigger.TimerTaskTrigger;
+import cn.feiliu.taskflow.open.dto.trigger.WebhookTrigger;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.Objects;
 
 /**
  * WorkflowSchedule
@@ -30,8 +32,6 @@ import java.util.Objects;
 public class WorkflowSchedule {
     /*调度名称*/
     private String               name;
-    /*cron表达式*/
-    private String               cronExpression;
     /*是否暂停*/
     private boolean              paused                      = false;
     /*是否运行补偿调度执行实例*/
@@ -42,124 +42,76 @@ public class WorkflowSchedule {
     private Long                 scheduleStartTime;
     /*运行工作流参数*/
     private StartWorkflowRequest startWorkflowRequest;
-    /*创建时间*/
-    private Long                 createTime;
-    /*创建人*/
-    private String               createdBy;
-    /*修改人*/
-    private String               updatedBy;
-    /*修改时间*/
-    private Long                 updatedTime;
+    /*时区*/
+    private String               timeZone;
+    private TriggerType          triggerType;
+    private CronTrigger          cronTrigger;
+    private TimerTaskTrigger     timerTaskTrigger;
+    private WebhookTrigger       webhookTrigger;
 
     public static Builder newBuilder() {
         return new Builder();
     }
 
     public static class Builder {
-        private String               name;
-        private String               cronExpression;
-        private boolean              paused                      = false;
-        private boolean              runCatchupScheduleInstances = false;
-        private Long                 scheduleEndTime;
-        private Long                 scheduleStartTime;
-        private StartWorkflowRequest startWorkflowRequest;
-        private Long                 createTime;
-        private String               createdBy;
-        private String               updatedBy;
-        private Long                 updatedTime;
+        private WorkflowSchedule value;
 
-        public Builder name(String name) {
-            this.name = name;
-            return this;
+        public Builder() {
+            value = new WorkflowSchedule();
         }
 
-        public Builder cronExpression(String cronExpression) {
-            this.cronExpression = cronExpression;
+        public Builder name(String name) {
+            value.name = name;
             return this;
         }
 
         public Builder paused(Boolean paused) {
-            this.paused = paused;
+            value.paused = paused;
             return this;
         }
 
         public Builder runCatchupScheduleInstances(Boolean runCatchupScheduleInstances) {
-            this.runCatchupScheduleInstances = runCatchupScheduleInstances;
+            value.runCatchupScheduleInstances = runCatchupScheduleInstances;
             return this;
         }
 
         public Builder scheduleEndTime(Long scheduleEndTime) {
-            this.scheduleEndTime = scheduleEndTime;
+            value.scheduleEndTime = scheduleEndTime;
             return this;
         }
 
         public Builder scheduleStartTime(Long scheduleStartTime) {
-            this.scheduleStartTime = scheduleStartTime;
+            value.scheduleStartTime = scheduleStartTime;
             return this;
         }
 
         public Builder startWorkflowRequest(StartWorkflowRequest startWorkflowRequest) {
-            this.startWorkflowRequest = startWorkflowRequest;
+            value.startWorkflowRequest = startWorkflowRequest;
             return this;
         }
 
-        public Builder createTime(Long createTime) {
-            this.createTime = createTime;
+        public Builder triggerType(TriggerType triggerType) {
+            value.triggerType = triggerType;
             return this;
         }
 
-        public Builder createdBy(String createdBy) {
-            this.createdBy = createdBy;
+        public Builder cronTrigger(CronTrigger cronTrigger) {
+            value.cronTrigger = cronTrigger;
             return this;
         }
 
-        public Builder updatedBy(String updatedBy) {
-            this.updatedBy = updatedBy;
+        public Builder timerTaskTrigger(TimerTaskTrigger timerTaskTrigger) {
+            value.timerTaskTrigger = timerTaskTrigger;
             return this;
         }
 
-        public Builder updatedTime(Long updatedTime) {
-            this.updatedTime = updatedTime;
+        public Builder webhookTrigger(WebhookTrigger webhookTrigger) {
+            value.webhookTrigger = webhookTrigger;
             return this;
         }
 
         public WorkflowSchedule build() {
-            WorkflowSchedule workflowSchedule = new WorkflowSchedule();
-            workflowSchedule.name = this.name;
-            workflowSchedule.cronExpression = this.cronExpression;
-            workflowSchedule.paused = this.paused;
-            workflowSchedule.runCatchupScheduleInstances = this.runCatchupScheduleInstances;
-            workflowSchedule.scheduleEndTime = this.scheduleEndTime;
-            workflowSchedule.scheduleStartTime = this.scheduleStartTime;
-            workflowSchedule.startWorkflowRequest = this.startWorkflowRequest;
-            workflowSchedule.createTime = this.createTime;
-            workflowSchedule.createdBy = this.createdBy;
-            workflowSchedule.updatedBy = this.updatedBy;
-            workflowSchedule.updatedTime = this.updatedTime;
-            return workflowSchedule;
+            return value;
         }
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object)
-            return true;
-        if (object == null || getClass() != object.getClass())
-            return false;
-        WorkflowSchedule that = (WorkflowSchedule) object;
-        return Objects.equals(name, that.name) && Objects.equals(cronExpression, that.cronExpression)
-               && Objects.equals(paused, that.paused)
-               && Objects.equals(runCatchupScheduleInstances, that.runCatchupScheduleInstances)
-               && Objects.equals(scheduleEndTime, that.scheduleEndTime)
-               && Objects.equals(scheduleStartTime, that.scheduleStartTime)
-               && Objects.equals(startWorkflowRequest, that.startWorkflowRequest)
-               && Objects.equals(createTime, that.createTime) && Objects.equals(createdBy, that.createdBy)
-               && Objects.equals(updatedBy, that.updatedBy) && Objects.equals(updatedTime, that.updatedTime);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, cronExpression, paused, runCatchupScheduleInstances, scheduleEndTime,
-            scheduleStartTime, startWorkflowRequest, createTime, createdBy, updatedBy, updatedTime);
     }
 }

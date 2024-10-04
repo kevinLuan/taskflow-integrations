@@ -48,6 +48,8 @@ public class JacksonSerializerTests {
         myBean.setDate(date);
         System.out.println(myBean.getDate());
         assertEquals(dateStr, new Timestamp(myBean.getDate().getTime()).toString());
+        JacksonSerializer jacksonSerializer = new JacksonSerializer();
+        System.out.println(jacksonSerializer.writeAsString(myBean));
     }
 
     @Test

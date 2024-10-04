@@ -12,18 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.client.api;
+package cn.feiliu.taskflow.open.api;
 
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.model.WorkflowRun;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
-
-import java.util.concurrent.CompletableFuture;
+import cn.feiliu.taskflow.open.dto.WorkflowScheduleExecution;
 
 /**
+ * 触发服务API
  * @author SHOUSHEN.LUAN
- * @since 2024-06-25
+ * @since 2024-10-04
  */
-public interface IWorkflowClient extends IWorkflowService {
-    void shutdown();
+public interface ITriggerService {
+    /**
+     * 触发webhook业务处理
+     *
+     * @param token
+     * @return
+     */
+    WorkflowScheduleExecution triggerWebhook(String token);
 }

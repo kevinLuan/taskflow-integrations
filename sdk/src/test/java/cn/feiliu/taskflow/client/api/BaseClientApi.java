@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
 
 public final class BaseClientApi {
@@ -49,26 +48,26 @@ public final class BaseClientApi {
     }
 
     public static TaskEngine getTaskEngine() {
-        return apiClient.getTaskEngine();
+        return apiClient.getApis().getTaskEngine();
     }
 
     public static ISchedulerClient getSchedulerClient() {
-        return apiClient.getSchedulerClient();
+        return apiClient.getApis().getSchedulerClient();
     }
 
     public static IWorkflowService getWorkflowClient() {
-        return apiClient.getWorkflowClient();
+        return apiClient.getApis().getWorkflowClient();
     }
 
     public static WorkflowEngine getWorkflowEngine() {
-        return apiClient.getWorkflowEngine();
+        return apiClient.getApis().getWorkflowEngine();
     }
 
     @SneakyThrows
     public static ExecutingWorkflow waitForTerminal(String workflowId, int waitForSeconds) {
         long startTime = System.currentTimeMillis();
         for (;;) {
-            ExecutingWorkflow workflow = apiClient.getWorkflowClient().getWorkflow(workflowId, true);
+            ExecutingWorkflow workflow = apiClient.getApis().getWorkflowClient().getWorkflow(workflowId, true);
             if (workflow.getStatus().isTerminal()) {
                 return workflow;
             } else {

@@ -14,6 +14,7 @@
  */
 package cn.feiliu.taskflow.open.utils;
 
+import cn.feiliu.taskflow.serialization.JacksonSerializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,12 +24,15 @@ import com.hubspot.jackson.datatype.protobuf.ProtobufModule;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
+import java.util.Date;
 import java.util.List;
 
 /**
  * @author SHOUSHEN.LUAN
  * @since 2024-05-20
  */
+//TODO 应该要被废弃了
+@Deprecated
 public class JsonUtils {
     private static ObjectMapper mapper = new ObjectMapper();
 
@@ -95,5 +99,14 @@ public class JsonUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void main(String[] args) {
+        JacksonSerializer jacksonSerializer = new JacksonSerializer();
+        System.out.println(jacksonSerializer.writeAsString(new MyUser()));
+    }
+
+    public static class MyUser {
+        Date date = new Date();
     }
 }

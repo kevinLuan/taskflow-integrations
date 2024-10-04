@@ -20,7 +20,6 @@ import cn.feiliu.taskflow.client.api.BaseClientApi;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.common.model.WorkflowRun;
 import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 import cn.feiliu.taskflow.sdk.worker.Worker;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.DoWhile;
@@ -38,7 +37,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author SHOUSHEN.LUAN
@@ -50,7 +48,7 @@ public class AnalysisTest {
     private static MyWorkers myWorkers       = new MyWorkers();
 
     private static void addWorkerAndPollingTasks() {
-        TaskEngine workerExecutor = getApiClient().getTaskEngine().addWorkers(myWorkers).initWorkerTasks()
+        TaskEngine workerExecutor = getApiClient().getApis().getTaskEngine().addWorkers(myWorkers).initWorkerTasks()
             .startRunningTasks();
         for (Worker worker : workerExecutor.getWorkers()) {
             System.out.println("worker:" + worker.getTaskDefName());
@@ -100,7 +98,7 @@ public class AnalysisTest {
                                             .childTask(new WorkTask(testEchoAny, "simple3Ref").input("msg",
                                                 "${workflow.input.taskflow}")))))//
             ).build();
-        Assert.assertTrue(getApiClient().getWorkflowEngine().registerWorkflow(workflowDef, true));
+        Assert.assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> reqData = new MapBuilder().put("items", new Integer[] { 1, 2 }).put("loopCount", 2)
             .put("taskflow", "任务云平台 --> http://www.taskflow.cn").build();
         doExecute(workflowDef, reqData, 120);
@@ -117,7 +115,7 @@ public class AnalysisTest {
 
     @SneakyThrows
     private void doExecute(WorkflowDefinition workflowDef, Map<String, Object> dataMap, int timeout) {
-        String workflowId = getApiClient().getWorkflowEngine().start(workflowDef, dataMap);
+        String workflowId = getApiClient().getApis().getWorkflowEngine().start(workflowDef, dataMap);
         ExecutingWorkflow executingWorkflow = BaseClientApi.waitForTerminal(workflowId, timeout);
         System.out.println("workflowId: " + executingWorkflow.getWorkflowId());
         Assert.assertEquals(ExecutingWorkflow.WorkflowStatus.COMPLETED, executingWorkflow.getStatus());

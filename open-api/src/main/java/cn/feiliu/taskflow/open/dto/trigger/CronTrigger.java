@@ -12,18 +12,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.client.api;
+package cn.feiliu.taskflow.open.dto.trigger;
 
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.model.WorkflowRun;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.concurrent.CompletableFuture;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author SHOUSHEN.LUAN
- * @since 2024-06-25
+ * @since 2024-10-04
  */
-public interface IWorkflowClient extends IWorkflowService {
-    void shutdown();
+@Getter
+@Setter
+public class CronTrigger implements ITrigger {
+    /*cron表达式*/
+    /*cron表达式*/
+    @NotNull(message = "cronExpr cannot be empty")
+    private String cronExpr;
+
+    public CronTrigger() {
+    }
+
+    public CronTrigger(String cronExpr) {
+        this.cronExpr = cronExpr;
+    }
 }

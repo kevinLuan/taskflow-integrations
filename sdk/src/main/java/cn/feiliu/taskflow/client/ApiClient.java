@@ -26,17 +26,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.*;
 
-import cn.feiliu.taskflow.client.api.*;
-import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.core.TokenManager;
-import cn.feiliu.taskflow.client.core.WorkflowEngine;
-import cn.feiliu.taskflow.client.spi.TaskflowGrpcSPI;
-import cn.feiliu.taskflow.common.utils.ExternalServiceFactory;
 import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
@@ -50,38 +43,29 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 public class ApiClient {
-    private final String                          basePath;
-    private final Map<String, String>             defaultHeaderMap    = new HashMap();
+    private final String              basePath;
+    private final Map<String, String> defaultHeaderMap    = new HashMap();
 
-    private String                                tempFolderPath;
+    private String                    tempFolderPath;
 
-    private InputStream                           sslCaCert;
-    private boolean                               verifyingSsl;
-    private KeyManager[]                          keyManagers;
+    private InputStream               sslCaCert;
+    private boolean                   verifyingSsl;
+    private KeyManager[]              keyManagers;
 
-    private OkHttpClient                          httpClient;
-    private String                                grpcHost            = "localhost";
-    private int                                   grpcPort            = 9000;
+    private OkHttpClient              httpClient;
+    private String                    grpcHost            = "localhost";
+    private int                       grpcPort            = 9000;
 
-    private boolean                               useSSL;
+    private boolean                   useSSL;
 
-    private boolean                               useGRPC;
+    private boolean                   useGRPC;
 
-    private int                                   executorThreadCount = 0;
+    private int                       executorThreadCount = 0;
 
-    private final TokenManager                    tokenManager;
-    /*客户端实例*/
-    private final Map<Class, Object>              clientInstances     = new ConcurrentHashMap<>();
-    /*工作节点执行器*/
-    private final AtomicReference<TaskEngine>     taskEngineRef       = new AtomicReference<>();
-    private final Optional<TaskflowGrpcSPI>       grpc_api;
+    private final TokenManager        tokenManager;
+    private final TaskflowApis        apis;
     @Getter
-    private final TaskHandlerManager              taskHandlerManager  = new TaskHandlerManager();
-    private final AtomicReference<WorkflowEngine> workflowEngineRef   = new AtomicReference<>();
-    {
-        ExternalServiceFactory.register(TaskflowGrpcSPI.class);
-        grpc_api = ExternalServiceFactory.getFirstServiceInstance(TaskflowGrpcSPI.class);
-    }
+    private final TaskHandlerManager  taskHandlerManager  = new TaskHandlerManager();
 
     public ApiClient(String basePath, String keyId, String keySecret) {
         this.basePath = normalizePath(basePath);
@@ -89,14 +73,7 @@ public class ApiClient {
         this.httpClient.setRetryOnConnectionFailure(true);
         this.verifyingSsl = true;
         this.tokenManager = new TokenManager(this, keyId, keySecret);
-    }
-
-    public TaskflowGrpcSPI getGrpcApi() {
-        if (isUseGRPC()) {
-            return Objects.requireNonNull(grpc_api.get());
-        } else {
-            throw new ApiException("The grpc api is currently not supported");
-        }
+        this.apis = new TaskflowApis(this);
     }
 
     private String normalizePath(String basePath) {
@@ -115,8 +92,8 @@ public class ApiClient {
     public void setUseGRPC(String host, int port) {
         this.grpcHost = host;
         this.grpcPort = port;
-        if (this.useGRPC = grpc_api.isPresent()) {
-            grpc_api.get().init(this);
+        if (this.useGRPC = getApis().isGrpcSpiAvailable()) {
+            getApis().getGrpcApi().init(this);
         }
     }
 
@@ -173,16 +150,8 @@ public class ApiClient {
     @SneakyThrows
     public void shutdown() {
         this.httpClient.getDispatcher().getExecutorService().shutdown();
-        for (Map.Entry<Class, Object> entry : clientInstances.entrySet()) {
-            if (entry.getValue() instanceof AutoCloseable) {
-                ((AutoCloseable) entry.getValue()).close();
-            }
-        }
-        getTaskEngine().shutdown();
         tokenManager.close();
-        grpc_api.ifPresent((api)->{
-            api.shutdown();
-        });
+        apis.shutdown();
     }
 
     public int getGrpcPort() {
@@ -594,77 +563,11 @@ public class ApiClient {
     }
 
     /**
-     * 获取 token 客户端
+     * 获取平台多客户端
      *
      * @return
      */
-    public ITokenClient getTokenClient() {
-        return (ITokenClient) this.clientInstances.computeIfAbsent(ITokenClient.class, (t) -> {
-            return new TokenClient(this);
-        });
-    }
-
-    /**
-     * 获取工作流运行客户端
-     *
-     * @return
-     */
-    public IWorkflowClient getWorkflowClient() {
-        return (IWorkflowClient) this.clientInstances.computeIfAbsent(IWorkflowClient.class, (t) -> {
-            return new WorkflowClient(this);
-        });
-    }
-
-    /**
-     * 获取运行任务客户端
-     *
-     * @return
-     */
-    public ITaskClient getTaskClient() {
-        return (ITaskClient) this.clientInstances.computeIfAbsent(ITaskClient.class, (t) -> {
-            return new TaskClient(this);
-        });
-    }
-
-    /**
-     * 获取调度客户端
-     *
-     * @return
-     */
-    public ISchedulerClient getSchedulerClient() {
-        return (ISchedulerClient) this.clientInstances.computeIfAbsent(ISchedulerClient.class, (t) -> {
-            return new SchedulerClient(this);
-        });
-    }
-
-    /**
-     * 创建工作任务引擎
-     *
-     * @return
-     */
-    public TaskEngine getTaskEngine() {
-        if (taskEngineRef.get() == null) {
-            synchronized (this) {
-                if (taskEngineRef.get() == null) {
-                    taskEngineRef.compareAndSet(null, new TaskEngine(this));
-                }
-            }
-        }
-        return taskEngineRef.get();
-    }
-
-    /**
-     * 获取工作流引擎
-     * @return
-     */
-    public WorkflowEngine getWorkflowEngine() {
-        if (workflowEngineRef.get() == null) {
-            synchronized (this) {
-                if (workflowEngineRef.get() == null) {
-                    workflowEngineRef.compareAndSet(null, new WorkflowEngine(this));
-                }
-            }
-        }
-        return workflowEngineRef.get();
+    public TaskflowApis getApis() {
+        return Objects.requireNonNull(apis);
     }
 }

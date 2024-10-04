@@ -79,7 +79,7 @@ public class WorkflowClient implements IWorkflowClient {
     @Override
     public String startWorkflow(StartWorkflowRequest req) throws ConflictException {
         if (apiClient.isUseGRPC()) {
-            return apiClient.getGrpcApi().startWorkflow(req);
+            return apiClient.getApis().getGrpcApi().startWorkflow(req);
         } else {
             return httpClient.startWorkflow(req);
         }
@@ -185,7 +185,7 @@ public class WorkflowClient implements IWorkflowClient {
     }
 
     @Override
-    public void close() {
+    public void shutdown() {
         if (executorService != null) {
             executorService.shutdown();
         }

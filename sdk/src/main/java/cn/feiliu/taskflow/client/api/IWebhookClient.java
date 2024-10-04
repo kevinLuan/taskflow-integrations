@@ -14,23 +14,11 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.open.api.ITokenService;
-import cn.feiliu.taskflow.open.dto.GenerateTokenRequest;
-import cn.feiliu.taskflow.open.dto.TokenResponse;
+import cn.feiliu.taskflow.open.api.ITriggerService;
 
 /**
  * @author SHOUSHEN.LUAN
- * @since 2024-06-30
+ * @since 2024-10-04
  */
-public interface ITokenClient extends ITokenService {
-
-    default TokenResponse getToken(String keyId, String keySecret) {
-        if (keyId == null || keySecret == null) {
-            throw new RuntimeException("KeyId and KeySecret must be set in order to get an authentication token");
-        }
-        GenerateTokenRequest request = new GenerateTokenRequest();
-        request.setKeyId(keyId);
-        request.setKeySecret(keySecret);
-        return getToken(request);
-    }
+public interface IWebhookClient extends ITriggerService {
 }

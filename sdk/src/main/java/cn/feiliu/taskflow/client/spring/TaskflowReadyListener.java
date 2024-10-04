@@ -36,7 +36,7 @@ class TaskflowReadyListener implements ApplicationListener<ContextRefreshedEvent
                                                          .expireAfterWrite(1, TimeUnit.MINUTES).build();
 
     public TaskflowReadyListener(ApiClient apiClient) {
-        this.taskEngine = apiClient.getTaskEngine();
+        this.taskEngine = apiClient.getApis().getTaskEngine();
     }
 
     @Override
