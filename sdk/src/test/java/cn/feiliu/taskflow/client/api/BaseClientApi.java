@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
 
 public final class BaseClientApi {

@@ -31,7 +31,7 @@
         <junit-jupiter.version>5.9.0</junit-jupiter.version>
         <spring.verison>5.3.24</spring.verison>
         <spring-boot.version>2.5.7</spring-boot.version>
-        <taskflow.version>0.0.3-beta</taskflow.version>
+        <taskflow.version>0.0.5-beta</taskflow.version>
         <grpc.version>1.49.0</grpc.version>
         <protobuf.version>3.19.4</protobuf.version>
         <main.user.dir>${user.dir}</main.user.dir>

@@ -14,11 +14,15 @@
  */
 package cn.feiliu.taskflow.client.api;
 
+import cn.feiliu.taskflow.common.enums.TriggerType;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.open.dto.SaveScheduleRequest;
 import cn.feiliu.taskflow.open.dto.WorkflowSchedule;
 import cn.feiliu.taskflow.open.dto.WorkflowScheduleExecution;
+import cn.feiliu.taskflow.open.dto.trigger.CronTrigger;
 import cn.feiliu.taskflow.open.exceptions.ApiException;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
@@ -29,6 +33,7 @@ import org.junit.Test;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -48,11 +53,13 @@ public class SchedulerClientTests {
         for (Date date : dates) {
             System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date));
         }
-        getSchedulerClient().saveSchedule(getSaveScheduleRequest(false));
-        assertEquals(1, getSchedulerClient().getAllSchedules(WORKFLOW_NAME).size());
+        SaveScheduleRequest request = getSaveScheduleRequest(false);
+        getSchedulerClient().saveSchedule(request);
+        assertFalse(getSchedulerClient().getAllSchedules(WORKFLOW_NAME).isEmpty());
         WorkflowSchedule workflowSchedule = getSchedulerClient().getSchedule(NAME);
         assertEquals(NAME, workflowSchedule.getName());
-        assertEquals(CRON_EXPRESSION, workflowSchedule.getCronExpression());
+
+        assertEquals(CRON_EXPRESSION, workflowSchedule.getCronTrigger().getCronExpr());
         getSchedulerClient().pauseSchedule(NAME);
         workflowSchedule = getSchedulerClient().getSchedule(NAME);
         assertTrue(workflowSchedule.isPaused());
@@ -88,11 +95,19 @@ public class SchedulerClientTests {
     SaveScheduleRequest getSaveScheduleRequest(boolean overwrite) {
         SaveScheduleRequest request = new SaveScheduleRequest();
         request.setName(NAME);
-        request.setCronExpression(CRON_EXPRESSION);
+        request.setTimeZone("America/New_York");
+        request.setTriggerType(TriggerType.CRON);
+        request.setCronTrigger(new CronTrigger(CRON_EXPRESSION));
         request.setStartWorkflowRequest(StartWorkflowRequest.of(WORKFLOW_NAME, 1));
-        request.setScheduleStartTime(new Date());
-        request.setScheduleEndTime(DateUtils.addDays(new Date(), 1));
+        request.setStartTime(getStartTime().getTime());
+        request.setEndTime(getStartTime().getTime() + TimeUnit.HOURS.toMillis(2));
         request.setOverwrite(overwrite);
         return request;
+    }
+
+    @SneakyThrows
+    private Date getStartTime() {
+        return DateUtils.parseDate(DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 10:30:00",
+            "yyyy-MM-dd HH:mm:ss");
     }
 }

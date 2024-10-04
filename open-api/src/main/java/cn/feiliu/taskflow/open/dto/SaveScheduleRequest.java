@@ -14,21 +14,24 @@
  */
 package cn.feiliu.taskflow.open.dto;
 
+import cn.feiliu.taskflow.common.enums.TriggerType;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.open.dto.trigger.CronTrigger;
+import cn.feiliu.taskflow.open.dto.trigger.TimerTaskTrigger;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
-import java.util.Objects;
 
 /**
  * SaveScheduleRequest
  */
 @Setter
 @Getter
+@EqualsAndHashCode
 @ToString
 public class SaveScheduleRequest {
     /*调度名称*/
@@ -36,9 +39,6 @@ public class SaveScheduleRequest {
     private String               name;
     /*调度计划描述*/
     private String               description;
-    /*cron表达式*/
-    @NotNull(message = "cronExpression cannot be empty")
-    private String               cronExpression;
     /*是否暂停*/
     @NotNull(message = "paused cannot be empty")
     private Boolean              paused                      = false;
@@ -54,14 +54,21 @@ public class SaveScheduleRequest {
     @NotNull(message = "runCatchupScheduleInstances cannot be empty")
     private Boolean              runCatchupScheduleInstances = false;
     /*调度开始时间*/
-    @NotNull(message = "scheduleStartTime cannot be empty")
-    private Date                 scheduleStartTime;
+    @NotNull(message = "startTime cannot be empty")
+    private Long                 startTime;
     /**
      * 调度结束时间
      */
-    @NotNull(message = "scheduleEndTime cannot be empty")
-    private Date                 scheduleEndTime;
-
+    @NotNull(message = "endTime cannot be empty")
+    private Long                 endTime;
+    /*时区*/
+    private String               timeZone                    = "Asia/Shanghai";
+    /*调度类型*/
+    private TriggerType          triggerType;
+    /*定时任务类型：触发配置*/
+    private TimerTaskTrigger     timerTaskTrigger;
+    /*cron表达式：触发配置*/
+    private CronTrigger          cronTrigger;
     /**
      * 调度执行时用于启动工作流请求
      */
@@ -73,36 +80,14 @@ public class SaveScheduleRequest {
     /*最后更新人*/
     private String               updatedBy                   = null;
     /**
-     *  当开启覆盖更新时，若存在相同名称的调度，则更新调度，否则创建调度。
-     *  <p>注意：</p>
-     *  <ul>
-     *      <li>当覆盖更新时，需要确保调度计划处于暂停或未开始状态(系统尚未生成调度实例)，否则系统会拒绝执行覆盖更新操作，并抛出异常。</li>
-     *      <li>若需要执行你应该先调用：pauseSchedule() 将调度计task_kevin_flow_2024_04_30
-     *      划暂停后再执行</li>
-     *  </ul>
+     * 当开启覆盖更新时，若存在相同名称的调度，则更新调度，否则创建调度。
+     * <p>注意：</p>
+     * <ul>
+     *     <li>当覆盖更新时，需要确保调度计划处于暂停或未开始状态(系统尚未生成调度实例)，否则系统会拒绝执行覆盖更新操作，并抛出异常。</li>
+     *     <li>若需要执行你应该先调用：pauseSchedule() 将调度计task_kevin_flow_2024_04_30
+     *     划暂停后再执行</li>
+     * </ul>
      */
     private boolean              overwrite                   = false;
 
-    @Override
-    public boolean equals(Object object) {
-        if (this == object)
-            return true;
-        if (object == null || getClass() != object.getClass())
-            return false;
-        SaveScheduleRequest request = (SaveScheduleRequest) object;
-        return Objects.equals(name, request.name) && Objects.equals(description, request.description)
-               && Objects.equals(cronExpression, request.cronExpression) && Objects.equals(paused, request.paused)
-               && Objects.equals(runCatchupScheduleInstances, request.runCatchupScheduleInstances)
-               && Objects.equals(scheduleStartTime, request.scheduleStartTime)
-               && Objects.equals(scheduleEndTime, request.scheduleEndTime)
-               && Objects.equals(startWorkflowRequest, request.startWorkflowRequest)
-               && Objects.equals(createdBy, request.createdBy) && Objects.equals(updatedBy, request.updatedBy)
-               && Objects.equals(overwrite, request.overwrite);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, description, cronExpression, paused, runCatchupScheduleInstances, scheduleStartTime,
-            scheduleEndTime, startWorkflowRequest, createdBy, updatedBy, overwrite);
-    }
 }

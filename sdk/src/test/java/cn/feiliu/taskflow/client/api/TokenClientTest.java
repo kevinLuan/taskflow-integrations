@@ -20,8 +20,6 @@ import cn.feiliu.taskflow.open.dto.Application;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Map;
-
 /**
  * @author SHOUSHEN.LUAN
  * @since 2024-06-11
