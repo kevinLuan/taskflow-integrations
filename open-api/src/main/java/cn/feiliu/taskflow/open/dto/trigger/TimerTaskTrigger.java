@@ -24,6 +24,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.DayOfWeek;
+import java.util.Objects;
 
 /**
  * @author SHOUSHEN.LUAN
@@ -55,52 +56,74 @@ public class TimerTaskTrigger implements ITrigger {
     private DayOfWeek        dayOfWeek;
 
     public TimerTaskTrigger() {
+
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    private TimerTaskTrigger(RepeatFrequency repeatFrequency) {
+        this.repeatFrequency = repeatFrequency;
     }
 
-    public static class Builder {
-        private final TimerTaskTrigger conf = new TimerTaskTrigger();
+    /**
+     * 创建一个不重复的定时任务
+     *
+     * @return
+     */
+    public static TimerTaskTrigger newNoRepeat() {
+        TimerTaskTrigger timerTaskTrigger = new TimerTaskTrigger();
+        timerTaskTrigger.setRepeatFrequency(RepeatFrequency.NO_REPEAT);
+        return timerTaskTrigger;
+    }
 
-        public Builder repeatFrequency(RepeatFrequency repeatFrequency) {
-            conf.repeatFrequency = repeatFrequency;
-            return this;
+    /**
+     * 创建一个简单触发类型
+     *
+     * @param repeatFrequency
+     * @return
+     */
+    public static TimerTaskTrigger newSimpleType(RepeatFrequency repeatFrequency) {
+        if (repeatFrequency.isSimple()) {
+            return new TimerTaskTrigger(repeatFrequency);
         }
+        throw new IllegalArgumentException("repeatFrequency only for simple types");
+    }
 
-        public Builder customRepeatInterval(Integer customRepeatInterval) {
-            conf.customRepeatInterval = customRepeatInterval;
-            return this;
+    /**
+     * 每月的第几周的星期几
+     *
+     * @param weekOfMonth
+     * @param dayOfWeek
+     * @return
+     */
+    public static TimerTaskTrigger newMonthlyRelativeRepeat(Integer weekOfMonth, DayOfWeek dayOfWeek) {
+        Objects.requireNonNull(dayOfWeek);
+        if (weekOfMonth != null && weekOfMonth >= 1 && weekOfMonth <= 4) {
+            TimerTaskTrigger timerTaskTrigger = new TimerTaskTrigger();
+            timerTaskTrigger.setRepeatFrequency(RepeatFrequency.MONTHLY_RELATIVE);
+            timerTaskTrigger.setWeekOfMonth(weekOfMonth);
+            timerTaskTrigger.setDayOfWeek(dayOfWeek);
+            return timerTaskTrigger;
+        } else {
+            throw new IllegalArgumentException("The weekOfMonth parameter ranges from 1 to 4");
         }
+    }
 
-        public Builder customRepeatUnit(CustomRepeatUnit customRepeatUnit) {
-            conf.customRepeatUnit = customRepeatUnit;
-            return this;
-        }
-
-        public Builder skipWeekends(boolean skipWeekends) {
-            conf.skipWeekends = skipWeekends;
-            return this;
-        }
-
-        public Builder skipHolidays(boolean skipHolidays) {
-            conf.skipHolidays = skipHolidays;
-            return this;
-        }
-
-        public Builder weekOfMonth(Integer weekOfMonth) {
-            conf.weekOfMonth = weekOfMonth;
-            return this;
-        }
-
-        public Builder dayOfWeek(DayOfWeek dayOfWeek) {
-            conf.dayOfWeek = dayOfWeek;
-            return this;
-        }
-
-        public TimerTaskTrigger build() {
-            return conf;
+    /**
+     * 自定义间隔时间
+     *
+     * @param customRepeatInterval 取值范围：1 ~ 30
+     * @param customRepeatUnit     间隔单位
+     * @return
+     */
+    public static TimerTaskTrigger newCustomRepeat(Integer customRepeatInterval, CustomRepeatUnit customRepeatUnit) {
+        Objects.requireNonNull(customRepeatUnit);
+        if (customRepeatInterval != null && customRepeatInterval >= 1 && customRepeatInterval <= 30) {
+            TimerTaskTrigger timerTaskTrigger = new TimerTaskTrigger();
+            timerTaskTrigger.setRepeatFrequency(RepeatFrequency.CUSTOM);
+            timerTaskTrigger.setCustomRepeatInterval(customRepeatInterval);
+            timerTaskTrigger.setCustomRepeatUnit(customRepeatUnit);
+            return timerTaskTrigger;
+        } else {
+            throw new IllegalArgumentException("The customRepeatInterval parameter ranges from 1 to 30");
         }
     }
 }
