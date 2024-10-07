@@ -444,7 +444,7 @@ public class ApiClient {
      */
     public void updateParamsForAuth(Map<String, String> headerParams) {
         if (tokenManager.useSecurity()) {
-            headerParams.put("X-Authorization", getToken());
+            headerParams.put("Authorization", getToken());
         }
     }
 

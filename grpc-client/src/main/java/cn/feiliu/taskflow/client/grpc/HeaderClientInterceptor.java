@@ -26,7 +26,7 @@ import java.net.UnknownHostException;
 @Slf4j
 public class HeaderClientInterceptor implements ClientInterceptor {
 
-    private static final Metadata.Key<String> AUTH_HEADER      = Metadata.Key.of("X-AUTHORIZATION",
+    private static final Metadata.Key<String> AUTH_HEADER      = Metadata.Key.of("Authorization",
                                                                    Metadata.ASCII_STRING_MARSHALLER);
 
     private static final Metadata.Key<String> CLIENT_ID_HEADER = Metadata.Key.of("X-Client-Id",
