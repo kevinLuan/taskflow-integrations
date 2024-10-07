@@ -33,7 +33,7 @@ public class TokenResourceApi {
      * 构建生成token调用请求
      */
     public static Call generateTokenCall(ApiClient apiClient, GenerateTokenRequest request) throws ApiException {
-        return apiClient.buildPostCall("/token", request);
+        return apiClient.buildPostCall("/auth/token", request);
     }
 
     /**

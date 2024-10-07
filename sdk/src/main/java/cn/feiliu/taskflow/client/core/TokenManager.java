@@ -15,7 +15,7 @@
 package cn.feiliu.taskflow.client.core;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.client.TokenClient;
+import cn.feiliu.taskflow.client.AuthClient;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 public class TokenManager implements AutoCloseable {
     private static final Logger            log                 = LoggerFactory.getLogger(TokenManager.class);
     private long                           tokenRefreshInSeconds;
-    private TokenClient                    tokenClient;
+    private AuthClient                     authClient;
     private final Cache<String, String>    tokenCache;
     private final ScheduledExecutorService tokenRefreshService = Executors.newSingleThreadScheduledExecutor();
     private String                         keyId;
@@ -51,7 +51,7 @@ public class TokenManager implements AutoCloseable {
     private final RateLimiter              rateLimiter         = RateLimiter.create(1);
 
     public TokenManager(ApiClient apiClient, String keyId, String keySecret) {
-        this.tokenClient = new TokenClient(apiClient);
+        this.authClient = new AuthClient(apiClient);
         this.keyId = Objects.requireNonNull(keyId);
         this.keySecret = Objects.requireNonNull(keySecret);
         this.tokenRefreshInSeconds = getRefreshIntervalTimes();
@@ -120,7 +120,7 @@ public class TokenManager implements AutoCloseable {
      */
     private String doGetToken() {
         log.info("Refreshing Token {}", new Timestamp(System.currentTimeMillis()));
-        String token = tokenClient.getToken(keyId, keySecret).getAccessToken();
+        String token = authClient.getToken(keyId, keySecret).getAccessToken();
         return token;
     }
 

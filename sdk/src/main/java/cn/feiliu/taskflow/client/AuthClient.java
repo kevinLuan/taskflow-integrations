@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client;
 
-import cn.feiliu.taskflow.client.api.ITokenClient;
+import cn.feiliu.taskflow.client.api.IAuthClient;
 import cn.feiliu.taskflow.client.http.TokenResourceApi;
 import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.open.dto.Application;
@@ -27,10 +27,10 @@ import java.util.Map;
  * @author SHOUSHEN.LUAN
  * @since 2024-06-30
  */
-public class TokenClient implements ITokenClient {
-    private ApiClient apiClient;
+public class AuthClient implements IAuthClient {
+    private final ApiClient apiClient;
 
-    public TokenClient(ApiClient apiClient) {
+    public AuthClient(ApiClient apiClient) {
         this.apiClient = apiClient;
     }
 

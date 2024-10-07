@@ -12,25 +12,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.client.api;
+package cn.feiliu.taskflow.open.api;
 
-import cn.feiliu.taskflow.open.api.ITokenService;
+import cn.feiliu.taskflow.open.dto.Application;
 import cn.feiliu.taskflow.open.dto.GenerateTokenRequest;
 import cn.feiliu.taskflow.open.dto.TokenResponse;
 
 /**
  * @author SHOUSHEN.LUAN
- * @since 2024-06-30
+ * @since 2024-06-20
  */
-public interface ITokenClient extends ITokenService {
+public interface IAuthService {
+    /**
+     * Generate Taskflow platform requests token
+     *
+     * @param request
+     * @return
+     */
+    TokenResponse getToken(GenerateTokenRequest request);
 
-    default TokenResponse getToken(String keyId, String keySecret) {
-        if (keyId == null || keySecret == null) {
-            throw new RuntimeException("KeyId and KeySecret must be set in order to get an authentication token");
-        }
-        GenerateTokenRequest request = new GenerateTokenRequest();
-        request.setKeyId(keyId);
-        request.setKeySecret(keySecret);
-        return getToken(request);
-    }
+    /**
+     * Get application information
+     *
+     * @return
+     */
+    Application getApplication();
 }
