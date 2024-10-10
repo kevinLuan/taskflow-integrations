@@ -540,7 +540,7 @@ public class HttpHelper {
                                        Map<String, Object> formParams,
                                        ProgressRequestBody.ProgressRequestListener progressRequestListener)
                                                                                                            throws ApiException {
-        if (!"/token".equalsIgnoreCase(path)) {
+        if (!"/auth/token".equalsIgnoreCase(path)) {
             client.updateParamsForAuth(headerParams);
         }
         final String url = HttpHelper.buildUrl(client, path, queryParams, collectionQueryParams);

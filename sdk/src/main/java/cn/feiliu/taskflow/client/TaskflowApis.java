@@ -32,7 +32,7 @@ import java.util.Optional;
  */
 public final class TaskflowApis {
     final ApiClient                         client;
-    private ITokenClient                    tokenClient;
+    private IAuthClient                     authClient;
     private TaskEngine                      taskEngine;
     private WorkflowEngine                  workflowEngine;
     private final IWebhookClient            triggerClient;
@@ -49,7 +49,7 @@ public final class TaskflowApis {
 
     TaskflowApis(ApiClient client) {
         this.client = client;
-        this.tokenClient = new TokenClient(client);
+        this.authClient = new AuthClient(client);
         this.taskEngine = new TaskEngine(client);
         this.workflowDefClient = new WorkflowDefClient(client);
         this.workflowEngine = new WorkflowEngine(this);
@@ -64,8 +64,8 @@ public final class TaskflowApis {
      *
      * @return
      */
-    public ITokenClient getTokenClient() {
-        return this.tokenClient;
+    public IAuthClient getAuthClient() {
+        return this.authClient;
     }
 
     /**
