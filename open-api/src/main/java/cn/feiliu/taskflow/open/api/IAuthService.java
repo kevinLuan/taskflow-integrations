@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.open.api;
 
+import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.open.dto.Application;
-import cn.feiliu.taskflow.open.dto.GenerateTokenRequest;
 import cn.feiliu.taskflow.open.dto.TokenResponse;
 
 /**
@@ -26,10 +26,9 @@ public interface IAuthService {
     /**
      * Generate Taskflow platform requests token
      *
-     * @param request
      * @return
      */
-    TokenResponse getToken(GenerateTokenRequest request);
+    ApiResponse<TokenResponse> getToken(String authHeader);
 
     /**
      * Get application information

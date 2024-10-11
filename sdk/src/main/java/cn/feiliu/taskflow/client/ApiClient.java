@@ -442,9 +442,13 @@ public class ApiClient {
      *
      * @param headerParams Header参数映射
      */
-    public void updateParamsForAuth(Map<String, String> headerParams) {
+    public void updateParamsForAuth(String path, Map<String, String> headerParams) {
         if (tokenManager.useSecurity()) {
-            headerParams.put("Authorization", getToken());
+            if ("/auth/token".equalsIgnoreCase(path)) {
+                headerParams.put("Authorization", tokenManager.constructCredentials());
+            } else {
+                headerParams.put("Authorization", getToken());
+            }
         }
     }
 
@@ -520,7 +524,7 @@ public class ApiClient {
     }
 
     public String getToken() {
-        return tokenManager.getToken();
+        return tokenManager.getBearerToken();
     }
 
     public void shouldRefreshToken() {

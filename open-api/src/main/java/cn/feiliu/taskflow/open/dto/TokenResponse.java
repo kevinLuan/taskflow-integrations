@@ -26,7 +26,40 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TokenResponse {
-    String  accessToken;
-    /*过期时间*/
-    Integer expire;
+    private String  accessToken;
+    private String  type;
+    /*过期时间 单位:秒*/
+    private Integer expire;     // Expiration time
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String  accessToken;
+        private String  type;
+        private Integer expire;
+
+        public Builder() {
+        }
+
+        public Builder accessToken(String accessToken) {
+            this.accessToken = accessToken;
+            return this;
+        }
+
+        public Builder type(String type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder expire(Integer expire) {
+            this.expire = expire;
+            return this;
+        }
+
+        public TokenResponse build() {
+            return new TokenResponse(accessToken, type, expire);
+        }
+    }
 }

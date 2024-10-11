@@ -16,6 +16,8 @@ package cn.feiliu.taskflow.client.core;
 
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.AuthClient;
+import cn.feiliu.taskflow.common.AuthTokenUtil;
+import cn.feiliu.taskflow.open.dto.TokenResponse;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
@@ -42,7 +44,7 @@ public class TokenManager implements AutoCloseable {
     private static final Logger            log                 = LoggerFactory.getLogger(TokenManager.class);
     private long                           tokenRefreshInSeconds;
     private AuthClient                     authClient;
-    private final Cache<String, String>    tokenCache;
+    private final Cache<String, String>    CACHE;
     private final ScheduledExecutorService tokenRefreshService = Executors.newSingleThreadScheduledExecutor();
     private String                         keyId;
     private String                         keySecret;
@@ -56,8 +58,7 @@ public class TokenManager implements AutoCloseable {
         this.keySecret = Objects.requireNonNull(keySecret);
         this.tokenRefreshInSeconds = getRefreshIntervalTimes();
         log.info("Setting token refresh interval to {} seconds", this.tokenRefreshInSeconds);
-        this.tokenCache = CacheBuilder.newBuilder().expireAfterWrite(tokenRefreshInSeconds + 2, TimeUnit.SECONDS)
-            .build();
+        this.CACHE = CacheBuilder.newBuilder().expireAfterWrite(tokenRefreshInSeconds, TimeUnit.SECONDS).build();
         shouldStartSchedulerAndInitializeToken();
     }
 
@@ -77,7 +78,7 @@ public class TokenManager implements AutoCloseable {
             } catch (Exception ignored) {
             }
         }
-        return 2700; //45分钟
+        return (int) TimeUnit.HOURS.toSeconds(2);
     }
 
     /**
@@ -87,7 +88,7 @@ public class TokenManager implements AutoCloseable {
         if (useSecurity()) {
             scheduleTokenRefresh();
             try {
-                getToken();
+                getBearerToken();
             } catch (Throwable t) {
                 log.error(t.getMessage(), t);
             }
@@ -101,8 +102,8 @@ public class TokenManager implements AutoCloseable {
         log.info("Starting token refresh thread to run at every {} seconds", tokenRefreshInSeconds);
         this.tokenRefreshService.scheduleAtFixedRate(() -> {
             try {
-                String token = doGetToken();
-                tokenCache.put(TOKEN, token);
+                String token = refreshAndGetBearerToken();
+                CACHE.put(TOKEN, token);
             } catch (Exception e) {
                 log.error("Token refresh failed", e);
             }
@@ -114,28 +115,32 @@ public class TokenManager implements AutoCloseable {
     }
 
     /**
-     * 强制刷新token
+     * 强制刷新token并返回Bearer格式的token
      *
-     * @return
+     * @return Bearer格式的token字符串
      */
-    private String doGetToken() {
+    private String refreshAndGetBearerToken() {
         log.info("Refreshing Token {}", new Timestamp(System.currentTimeMillis()));
-        String token = authClient.getToken(keyId, keySecret).getAccessToken();
-        return token;
+        TokenResponse response = authClient.refreshToken();
+        return AuthTokenUtil.constructBearerToken(response.getAccessToken());
     }
 
     @SneakyThrows
-    public String getToken() {
+    public String getBearerToken() {
         try {
-            if (!useSecurity()) {
-                return null;
+            if (!useSecurity()) {//暂不支持该场景
+                throw new RuntimeException("KeyId and KeySecret must be set in order to get an authentication token");
             }
-            return tokenCache.get(TOKEN, () -> doGetToken());
+            return CACHE.get(TOKEN, () -> refreshAndGetBearerToken());
         } catch (UncheckedExecutionException e) {
             throw e.getCause();
         } catch (ExecutionException e) {
             throw e.getCause();
         }
+    }
+
+    public String constructCredentials() {
+        return AuthTokenUtil.constructCredentials(keyId, keySecret);
     }
 
     @Override
@@ -149,7 +154,7 @@ public class TokenManager implements AutoCloseable {
     public void tryFlushToken() {
         if (rateLimiter.tryAcquire()) {
             log.info("flush token");
-            tokenCache.invalidateAll();
+            CACHE.invalidateAll();
         }
     }
 }
