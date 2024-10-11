@@ -25,12 +25,9 @@ import org.junit.Test;
  * @since 2024-06-11
  */
 public class TokenClientTest {
-    String          basePath  = "http://localhost:8082/api";
-    final ApiClient apiClient = new ApiClient(basePath, "19242c5a78a", "c3ec66ac239f45e2b650b5164f1c7ef0");
-
     @Test
     public void test() {
-        Application application = TokenResourceApi.getAppInfoWithHttpInfo(apiClient).getData();
+        Application application = BaseClientApi.getApiClient().getApis().getAuthClient().getApplication();
         System.out.println("application:" + application);
         Assert.assertNotNull(application.getName());
     }

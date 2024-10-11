@@ -17,7 +17,7 @@ package cn.feiliu.taskflow.client.http;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.open.dto.Application;
-import cn.feiliu.taskflow.open.dto.GenerateTokenRequest;
+import cn.feiliu.taskflow.open.dto.TokenResponse;
 import cn.feiliu.taskflow.open.exceptions.ApiException;
 import com.squareup.okhttp.Call;
 
@@ -30,25 +30,15 @@ import java.util.*;
 public class TokenResourceApi {
 
     /**
-     * 构建生成token调用请求
-     */
-    public static Call generateTokenCall(ApiClient apiClient, GenerateTokenRequest request) throws ApiException {
-        return apiClient.buildPostCall("/auth/token", request);
-    }
-
-    /**
      * Generate JWT with the given access key
      *
      * @param apiClient ApiClient
-     * @param request   请求Body
      * @return ApiResponse&lt;Response&gt;
      * @throws ApiException 如果调用API失败，例如服务器错误或无法反序列化响应体
      */
-    public static ApiResponse<Map<String, Object>> generateTokenWithHttpInfo(ApiClient apiClient,
-                                                                             GenerateTokenRequest request)
-                                                                                                          throws ApiException {
-        Call call = generateTokenCall(apiClient, request);
-        return apiClient.execute(call, Object.class);
+    public static ApiResponse<TokenResponse> refreshTokenWithHttpInfo(ApiClient apiClient) throws ApiException {
+        Call call = apiClient.buildPostCall("/auth/token", null);
+        return apiClient.execute(call, TokenResponse.class);
     }
 
     /**

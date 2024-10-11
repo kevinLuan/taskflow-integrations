@@ -18,10 +18,7 @@ import cn.feiliu.taskflow.client.api.IAuthClient;
 import cn.feiliu.taskflow.client.http.TokenResourceApi;
 import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.open.dto.Application;
-import cn.feiliu.taskflow.open.dto.GenerateTokenRequest;
 import cn.feiliu.taskflow.open.dto.TokenResponse;
-
-import java.util.Map;
 
 /**
  * @author SHOUSHEN.LUAN
@@ -34,12 +31,9 @@ public class AuthClient implements IAuthClient {
         this.apiClient = apiClient;
     }
 
-    @Override
-    public TokenResponse getToken(GenerateTokenRequest request) {
-        ApiResponse<Map<String, Object>> response = TokenResourceApi.generateTokenWithHttpInfo(apiClient, request);
-        String token = (String) response.getData().get("accessToken");
-        int expire = ((Number) response.getData().get("expire")).intValue();
-        return new TokenResponse(token, expire);
+    public TokenResponse refreshToken() {
+        ApiResponse<TokenResponse> response = TokenResourceApi.refreshTokenWithHttpInfo(apiClient);
+        return response.getData();
     }
 
     @Override
