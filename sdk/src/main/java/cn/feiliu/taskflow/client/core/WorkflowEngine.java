@@ -14,7 +14,8 @@
  */
 package cn.feiliu.taskflow.client.core;
 
-import cn.feiliu.taskflow.client.*;
+import cn.feiliu.taskflow.client.api.IWorkflowClient;
+import cn.feiliu.taskflow.client.api.IWorkflowDefClient;
 import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
 import cn.feiliu.taskflow.common.utils.Validator;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
@@ -23,10 +24,7 @@ import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.*;
 import com.google.common.collect.Lists;
-import lombok.Getter;
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -37,10 +35,10 @@ import java.util.*;
  * @since 2024-06-15
  */
 public class WorkflowEngine {
-    private static final Logger log = LoggerFactory.getLogger(WorkflowEngine.class);
+    private final IWorkflowClient    workflowClient;
+    private final IWorkflowDefClient workflowDefClient;
+    private final TaskEngine         taskEngine;
 
-    @Getter
-    private TaskflowApis        apis;
     static {
         initTaskImplementations();
     }
@@ -65,8 +63,10 @@ public class WorkflowEngine {
         TaskRegistry.register(TaskType.FORK_FOR_EACH.name(), ForkFor.class);
     }
 
-    public WorkflowEngine(TaskflowApis apis) {
-        this.apis = apis;
+    public WorkflowEngine(IWorkflowDefClient workflowDefClient, IWorkflowClient workflowClient, TaskEngine taskEngine) {
+        this.workflowDefClient = Objects.requireNonNull(workflowDefClient);
+        this.workflowClient = Objects.requireNonNull(workflowClient);
+        this.taskEngine = Objects.requireNonNull(taskEngine);
     }
 
     /**
@@ -98,7 +98,7 @@ public class WorkflowEngine {
             throw new IllegalArgumentException("Invalid workflow version");
         }
         Objects.requireNonNull(req.getInput(), "Input cannot be null");
-        return apis.getWorkflowClient().startWorkflow(req);
+        return workflowClient.startWorkflow(req);
     }
 
     public String start(WorkflowDefinition workflowDef, Map<String, Object> input) {
@@ -124,11 +124,11 @@ public class WorkflowEngine {
                 missing.stream().forEach(taskName -> registerTaskDef(taskName, workflowDef.getOwnerEmail()));
             }
         }
-        return apis.getWorkflowDefClient().registerWorkflow(workflowDef, overwrite);
+        return workflowDefClient.registerWorkflow(workflowDef, overwrite);
     }
 
     public boolean registerWorkflow(WorkflowDefinition workflowDef, boolean overwrite) {
-        return apis.getWorkflowDefClient().registerWorkflow(workflowDef, overwrite);
+        return workflowDefClient.registerWorkflow(workflowDef, overwrite);
     }
 
     /**
@@ -146,7 +146,7 @@ public class WorkflowEngine {
                 .parallel()
                 .forEach(
                         taskName -> {
-                            Optional<TaskDefinition> optional = apis.getTaskEngine().getTaskDef(taskName);
+                            Optional<TaskDefinition> optional = taskEngine.getTaskDef(taskName);
                             if (optional.isEmpty()) {
                                 missing.add(taskName);
                             }
@@ -156,7 +156,7 @@ public class WorkflowEngine {
 
     private void registerTaskDef(String taskName, String ownerEmail) {
         TaskDefinition taskDef = TaskDefinition.newBuilder().name(taskName).ownerEmail(ownerEmail).build();
-        apis.getTaskEngine().registerTaskDefs(Lists.newArrayList(taskDef));
+        taskEngine.registerTaskDefs(Lists.newArrayList(taskDef));
     }
 
     /**
@@ -167,7 +167,7 @@ public class WorkflowEngine {
      * @param version Version of the workflow definition to be unregistered.
      */
     public boolean deleteWorkflowDef(String name, int version) {
-        return apis.getWorkflowDefClient().deleteWorkflowDef(name, version);
+        return workflowDefClient.deleteWorkflowDef(name, version);
     }
 
     /**
@@ -176,7 +176,7 @@ public class WorkflowEngine {
      * @param workflowDef the workflow definition
      */
     public boolean createIfAbsent(WorkflowDefinition workflowDef) {
-        return apis.getWorkflowDefClient().createIfAbsent(workflowDef);
+        return workflowDefClient.createIfAbsent(workflowDef);
     }
 
     /**
@@ -185,7 +185,7 @@ public class WorkflowEngine {
      * @param workflowDef workflow definitions to be updated
      */
     public boolean updateWorkflowDef(WorkflowDefinition workflowDef) {
-        return apis.getWorkflowDefClient().updateWorkflowDef(workflowDef);
+        return workflowDefClient.updateWorkflowDef(workflowDef);
     }
 
     /**
@@ -197,10 +197,10 @@ public class WorkflowEngine {
      * @return
      */
     public boolean publishWorkflowDef(String name, Integer version, Boolean overwrite) {
-        return apis.getWorkflowDefClient().publishWorkflowDef(name, version, overwrite);
+        return workflowDefClient.publishWorkflowDef(name, version, overwrite);
     }
 
     public WorkflowDefinition getWorkflowDef(String name, int version) {
-        return apis.getWorkflowDefClient().getWorkflowDef(name, version);
+        return workflowDefClient.getWorkflowDef(name, version);
     }
 }

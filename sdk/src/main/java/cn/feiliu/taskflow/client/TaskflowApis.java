@@ -39,7 +39,7 @@ public final class TaskflowApis {
     private final IWorkflowClient           workflowClient;
     private final ITaskClient               taskClient;
     private final ISchedulerClient          schedulerClient;
-    private final WorkflowDefClient         workflowDefClient;
+    private final IWorkflowDefClient        workflowDefClient;
     private final Optional<TaskflowGrpcSPI> grpc_api;
 
     {
@@ -52,11 +52,11 @@ public final class TaskflowApis {
         this.authClient = new AuthClient(client);
         this.taskEngine = new TaskEngine(client);
         this.workflowDefClient = new WorkflowDefClient(client);
-        this.workflowEngine = new WorkflowEngine(this);
         this.triggerClient = new WebhookClient(client);
         this.workflowClient = new WorkflowClient(client);
         this.taskClient = new TaskClient(client);
         this.schedulerClient = new SchedulerClient(client);
+        this.workflowEngine = new WorkflowEngine(workflowDefClient, workflowClient, taskEngine);
     }
 
     /**
@@ -86,7 +86,7 @@ public final class TaskflowApis {
         return workflowEngine;
     }
 
-    public WorkflowDefClient getWorkflowDefClient() {
+    public IWorkflowDefClient getWorkflowDefClient() {
         return workflowDefClient;
     }
 

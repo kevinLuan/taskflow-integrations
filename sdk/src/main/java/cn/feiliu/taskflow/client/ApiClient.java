@@ -42,7 +42,7 @@ import com.squareup.okhttp.*;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
-public class ApiClient {
+public final class ApiClient {
     private final String              basePath;
     private final Map<String, String> defaultHeaderMap    = new HashMap();
 
@@ -72,8 +72,10 @@ public class ApiClient {
         this.httpClient = new OkHttpClient();
         this.httpClient.setRetryOnConnectionFailure(true);
         this.verifyingSsl = true;
-        this.tokenManager = new TokenManager(this, keyId, keySecret);
         this.apis = new TaskflowApis(this);
+        this.tokenManager = new TokenManager(this.apis.getAuthClient(), keyId, keySecret);
+        //所有的对象初始化完成后，最后执行初始调度执行
+        this.tokenManager.shouldStartSchedulerAndInitializeToken();
     }
 
     private String normalizePath(String basePath) {

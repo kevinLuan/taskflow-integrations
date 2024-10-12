@@ -14,8 +14,7 @@
  */
 package cn.feiliu.taskflow.client.core;
 
-import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.client.AuthClient;
+import cn.feiliu.taskflow.client.api.IAuthClient;
 import cn.feiliu.taskflow.common.AuthTokenUtil;
 import cn.feiliu.taskflow.open.dto.TokenResponse;
 import com.google.common.cache.Cache;
@@ -43,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 public class TokenManager implements AutoCloseable {
     private static final Logger            log                 = LoggerFactory.getLogger(TokenManager.class);
     private long                           tokenRefreshInSeconds;
-    private AuthClient                     authClient;
+    private IAuthClient                    authClient;
     private final Cache<String, String>    CACHE;
     private final ScheduledExecutorService tokenRefreshService = Executors.newSingleThreadScheduledExecutor();
     private String                         keyId;
@@ -52,14 +51,13 @@ public class TokenManager implements AutoCloseable {
     private final String                   REFRESH_INTERVAL    = "FEILIU_SECURITY_TOKEN_REFRESH_INTERVAL";
     private final RateLimiter              rateLimiter         = RateLimiter.create(1);
 
-    public TokenManager(ApiClient apiClient, String keyId, String keySecret) {
-        this.authClient = new AuthClient(apiClient);
+    public TokenManager(IAuthClient authClient, String keyId, String keySecret) {
+        this.authClient = Objects.requireNonNull(authClient, "authClient Cannot be null");
         this.keyId = Objects.requireNonNull(keyId);
         this.keySecret = Objects.requireNonNull(keySecret);
         this.tokenRefreshInSeconds = getRefreshIntervalTimes();
         log.info("Setting token refresh interval to {} seconds", this.tokenRefreshInSeconds);
         this.CACHE = CacheBuilder.newBuilder().expireAfterWrite(tokenRefreshInSeconds, TimeUnit.SECONDS).build();
-        shouldStartSchedulerAndInitializeToken();
     }
 
     /**
@@ -84,7 +82,7 @@ public class TokenManager implements AutoCloseable {
     /**
      * 应该启动调度程序并初始化令牌
      */
-    private void shouldStartSchedulerAndInitializeToken() {
+    public void shouldStartSchedulerAndInitializeToken() {
         if (useSecurity()) {
             scheduleTokenRefresh();
             try {
