@@ -17,7 +17,7 @@ package cn.feiliu.taskflow.open.dto;
 import cn.feiliu.taskflow.common.enums.TriggerType;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.open.dto.trigger.CronTrigger;
-import cn.feiliu.taskflow.open.dto.trigger.TimerTaskTrigger;
+import cn.feiliu.taskflow.open.dto.trigger.FixedIntervalTrigger;
 import cn.feiliu.taskflow.open.dto.trigger.WebhookTrigger;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,7 +46,7 @@ public class WorkflowSchedule {
     private String               timeZone;
     private TriggerType          triggerType;
     private CronTrigger          cronTrigger;
-    private TimerTaskTrigger     timerTaskTrigger;
+    private FixedIntervalTrigger fixedIntervalTrigger;
     private WebhookTrigger       webhookTrigger;
 
     public static Builder newBuilder() {
@@ -100,8 +100,8 @@ public class WorkflowSchedule {
             return this;
         }
 
-        public Builder timerTaskTrigger(TimerTaskTrigger timerTaskTrigger) {
-            value.timerTaskTrigger = timerTaskTrigger;
+        public Builder fixedIntervalTrigger(FixedIntervalTrigger timerTaskTrigger) {
+            value.fixedIntervalTrigger = timerTaskTrigger;
             return this;
         }
 

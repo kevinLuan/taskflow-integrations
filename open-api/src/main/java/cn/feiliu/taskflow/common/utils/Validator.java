@@ -164,4 +164,36 @@ public class Validator {
         }
         return errors;
     }
+
+    /**
+     * 验证给定的数值是否在 1 到 31 的范围内（包括 1 和 31）。
+     *
+     * @param value 要验证的整数值
+     * @return 如果值在 1 到 31 的范围内，则返回 true；否则返回 false
+     */
+    public static boolean isValidDayOfMonth(int value) {
+        return value >= 1 && value <= 31;
+    }
+
+    /**
+     * 验证给定的数值是否在 1 到 30 的范围内（包括 1 和 30）。
+     *
+     * @param value 要验证的整数值
+     * @return 如果值在 1 到 30 的范围内，则返回 true；否则返回 false
+     */
+    public static boolean isValidDayOfMonth30(int value) {
+        return value >= 1 && value <= 30;
+    }
+
+    /**
+     * 验证给定的数值是否在指定的范围内（包括最小值和最大值）。
+     *
+     * @param value 要验证的整数值
+     * @param min 范围的最小值
+     * @param max 范围的最大值
+     * @return 如果值在指定范围内，则返回 true；否则返回 false
+     */
+    public static boolean isInRange(int value, int min, int max) {
+        return value >= min && value <= max;
+    }
 }

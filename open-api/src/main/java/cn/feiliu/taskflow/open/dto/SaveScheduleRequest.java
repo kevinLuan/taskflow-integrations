@@ -17,7 +17,7 @@ package cn.feiliu.taskflow.open.dto;
 import cn.feiliu.taskflow.common.enums.TriggerType;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.open.dto.trigger.CronTrigger;
-import cn.feiliu.taskflow.open.dto.trigger.TimerTaskTrigger;
+import cn.feiliu.taskflow.open.dto.trigger.FixedIntervalTrigger;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -66,7 +66,7 @@ public class SaveScheduleRequest {
     /*调度类型*/
     private TriggerType          triggerType;
     /*定时任务类型：触发配置*/
-    private TimerTaskTrigger     timerTaskTrigger;
+    private FixedIntervalTrigger fixedIntervalTrigger;
     /*cron表达式：触发配置*/
     private CronTrigger          cronTrigger;
     /**
@@ -75,10 +75,6 @@ public class SaveScheduleRequest {
     @NotNull(message = "startWorkflowRequest cannot be empty")
     @Valid
     private StartWorkflowRequest startWorkflowRequest;
-    /*创建人*/
-    private String               createdBy                   = null;
-    /*最后更新人*/
-    private String               updatedBy                   = null;
     /**
      * 当开启覆盖更新时，若存在相同名称的调度，则更新调度，否则创建调度。
      * <p>注意：</p>

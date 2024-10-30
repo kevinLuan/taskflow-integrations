@@ -63,6 +63,6 @@ public class ApiException extends TaskflowClientException {
 
     @Override
     public String getMessage() {
-        return statusCode + ":" + super.getMessage();
+        return super.getMessage();
     }
 }
