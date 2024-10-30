@@ -34,8 +34,8 @@ public final class BaseClientApi {
 
     public static ApiClient createApiClient() {
         String basePath = getEnv(BASE_URL, "http://localhost:8082/api");
-        String keyId = getEnv(KEY_ID, "1927c0f804e");
-        String keySecret = getEnv(KEY_SECRET, "2317c4ed3fe64f38bccc64fc403d3959");
+        String keyId = getEnv(KEY_ID, "192dce2b057");
+        String keySecret = getEnv(KEY_SECRET, "57cc296d31e94b82a014327f8d8d03ae");
         apiClient = new ApiClient(basePath, keyId, keySecret);
         apiClient.setWriteTimeout(30_000);
         apiClient.setReadTimeout(30_000);
