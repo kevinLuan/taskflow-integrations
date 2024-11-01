@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.common.utils;
 
-import java.time.DayOfWeek;
+import cn.feiliu.taskflow.common.enums.DayOfWeek;
 
 /**
  * @author SHOUSHEN.LUAN

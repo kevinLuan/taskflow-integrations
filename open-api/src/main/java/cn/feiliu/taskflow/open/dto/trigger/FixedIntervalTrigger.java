@@ -15,6 +15,7 @@
 package cn.feiliu.taskflow.open.dto.trigger;
 
 import cn.feiliu.taskflow.common.enums.CustomRepeatUnit;
+import cn.feiliu.taskflow.common.enums.DayOfWeek;
 import cn.feiliu.taskflow.common.enums.RepeatFrequency;
 import cn.feiliu.taskflow.common.utils.Assertions;
 import lombok.Getter;
@@ -24,7 +25,6 @@ import lombok.ToString;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.time.DayOfWeek;
 import java.util.*;
 
 /**
