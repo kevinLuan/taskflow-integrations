@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.common.utils;
 
-import cn.feiliu.taskflow.common.enums.DayOfWeek;
+import cn.feiliu.taskflow.common.enums.FeiliuDayOfWeek;
 
 /**
  * @author SHOUSHEN.LUAN
@@ -45,7 +45,7 @@ public class Assertions {
 
     }
 
-    public static void assertDayOfWeeks(DayOfWeek... dayOfWeeks) {
+    public static void assertDayOfWeeks(FeiliuDayOfWeek... dayOfWeeks) {
         if (dayOfWeeks == null || dayOfWeeks.length < 0 || dayOfWeeks.length > 7) {
             throw new IllegalArgumentException("dayOfWeeks Invalid parameter");
         }

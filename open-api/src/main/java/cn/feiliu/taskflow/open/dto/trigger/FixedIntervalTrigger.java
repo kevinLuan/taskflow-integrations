@@ -15,7 +15,7 @@
 package cn.feiliu.taskflow.open.dto.trigger;
 
 import cn.feiliu.taskflow.common.enums.CustomRepeatUnit;
-import cn.feiliu.taskflow.common.enums.DayOfWeek;
+import cn.feiliu.taskflow.common.enums.FeiliuDayOfWeek;
 import cn.feiliu.taskflow.common.enums.RepeatFrequency;
 import cn.feiliu.taskflow.common.utils.Assertions;
 import lombok.Getter;
@@ -53,32 +53,32 @@ public class FixedIntervalTrigger implements ITrigger {
      * 除了自定义重复频率场景外无需关注一下字段
      */
     @NotNull(message = "Repeat frequency is required")
-    private RepeatFrequency  repeatFrequency;
+    private RepeatFrequency      repeatFrequency;
     /**
      * 仅在自定义重复频率场景下是，这个各取值范围[1~30] 需要结合自定义单位来确定时间
      */
     @Min(value = 1, message = "Custom repeat interval must be at least 1")
     @Max(value = 30, message = "Custom repeat interval must be at most 30")
-    private Integer          customRepeatInterval;
+    private Integer              customRepeatInterval;
     /***
      * 当重复频率设置为自定义频率时，对于自定义重复单位：[小时、天、年] 仅结合customRepeatInterval(自定义间隔时间)来确定执行频率
      */
-    private CustomRepeatUnit customRepeatUnit;
+    private CustomRepeatUnit     customRepeatUnit;
     /**
      * 当自定义重复单位为周的时候，需要补充具体执行日期为星期几,取值范围:[周一 ~ 周五]可选多天
      * 当 customRepeatUnit 为周的时候，这里不能为空
      */
-    private Set<DayOfWeek>   dayOfWeeks  = new HashSet<>();
+    private Set<FeiliuDayOfWeek> dayOfWeeks  = new HashSet<>();
     /**
      * 当自定义重复单位为月的时候，需要补充具体为该月份的几号
      * 例如：规则：每 x 个月的 1 日 3 日 5 日, 12:00 触发
      */
-    private Set<Integer>     dayOfMonths = new HashSet<>();
+    private Set<Integer>         dayOfMonths = new HashSet<>();
 
     /*跳过周六日*/
-    private boolean          skipWeekends;
+    private boolean              skipWeekends;
     /*跳过节假日*/
-    private boolean          skipHolidays;
+    private boolean              skipHolidays;
 
     /**
      * 每月的第几周
@@ -139,7 +139,7 @@ public class FixedIntervalTrigger implements ITrigger {
      * @param dayOfWeeks           [周一 ~ 周五]
      * @return
      */
-    public static FixedIntervalTrigger newWeekRepeat(Integer customRepeatInterval, DayOfWeek... dayOfWeeks) {
+    public static FixedIntervalTrigger newWeekRepeat(Integer customRepeatInterval, FeiliuDayOfWeek... dayOfWeeks) {
         Assertions.assertCustomRepeatInterval(customRepeatInterval);
         Assertions.assertDayOfWeeks(dayOfWeeks);
         Objects.requireNonNull(dayOfWeeks);
