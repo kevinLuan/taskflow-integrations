@@ -15,6 +15,7 @@
 package cn.feiliu.taskflow.client.api;
 
 import cn.feiliu.taskflow.client.ApiClient;
+import cn.feiliu.taskflow.common.enums.IdempotencyStrategy;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
@@ -110,15 +111,14 @@ public class WorkflowStateUpdateTests {
     @Test
     public void testIdempotency() {
         StartWorkflowRequest request = StartWorkflowRequest.newBuilder().name(WORKFLOW_NAME).version(VERSION)
-            .idempotencyKey(UUID.randomUUID().toString())
-            .idempotencyStrategy(StartWorkflowRequest.IdempotencyStrategy.FAIL).build();
+            .idempotencyKey(UUID.randomUUID().toString()).idempotencyStrategy(IdempotencyStrategy.FAIL).build();
         String workflowId = apiClient.getApis().getWorkflowClient().startWorkflow(request);
         //返回已存在的工作流ID
-        request.setIdempotencyStrategy(StartWorkflowRequest.IdempotencyStrategy.RETURN_EXISTING);
+        request.setIdempotencyStrategy(IdempotencyStrategy.RETURN_EXISTING);
         String workflowId2 = apiClient.getApis().getWorkflowClient().startWorkflow(request);
         assertEquals(workflowId, workflowId2);
         //重复提交工作流抛出异常
-        request.setIdempotencyStrategy(StartWorkflowRequest.IdempotencyStrategy.FAIL);
+        request.setIdempotencyStrategy(IdempotencyStrategy.FAIL);
         try {
             apiClient.getApis().getWorkflowClient().startWorkflow(request);
             fail("未出现逾期结果");

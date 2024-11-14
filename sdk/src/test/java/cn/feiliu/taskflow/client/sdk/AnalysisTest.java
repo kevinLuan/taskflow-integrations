@@ -25,7 +25,7 @@ import cn.feiliu.taskflow.sdk.worker.Worker;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.DoWhile;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.For;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.ForkFor;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.WorkTask;
+import cn.feiliu.taskflow.sdk.workflow.def.tasks.SimpleTask;
 import cn.feiliu.taskflow.sdk.workflow.task.InputParam;
 import cn.feiliu.taskflow.sdk.workflow.task.WorkerTask;
 import cn.feiliu.taskflow.sdk.workflow.utils.MapBuilder;
@@ -79,23 +79,23 @@ public class AnalysisTest {
             //
             .addTask(
                 new ForkFor("forkForRef", "${workflow.input.items}")//
-                    .childTask(new WorkTask(testEchoAny, "simpleTask0Ref")//
+                    .childTask(new SimpleTask(testEchoAny, "simpleTask0Ref")//
                         .input("msg", "${forkForRef.output.element}"))//
-                    .childTask(new WorkTask(testRandomItems, "randomItems1Ref")//
+                    .childTask(new SimpleTask(testRandomItems, "randomItems1Ref")//
                         .input("status", true))//
                     .childTask(
                         new For("for1Ref", "${randomItems1Ref.output.result}")//
-                            .childTask(new WorkTask(testEchoAny, "simple1Ref")//
+                            .childTask(new SimpleTask(testEchoAny, "simple1Ref")//
                                 .input("msg", "${for1Ref.output.element}"))//
-                            .childTask(new WorkTask(testRandomItems, "randomItems2Ref")//
+                            .childTask(new SimpleTask(testRandomItems, "randomItems2Ref")//
                                 .input("status", false))//
                             .childTask(
                                 new For("for2Ref", "${randomItems2Ref.output.result}")//
-                                    .childTask(new WorkTask(testEchoAny, "simple2Ref")//
+                                    .childTask(new SimpleTask(testEchoAny, "simple2Ref")//
                                         .input("msg", "${for2Ref.output.element}"))//
                                     .childTask(
                                         new DoWhile("doWhileRef", "${workflow.input.loopCount}")//
-                                            .childTask(new WorkTask(testEchoAny, "simple3Ref").input("msg",
+                                            .childTask(new SimpleTask(testEchoAny, "simple3Ref").input("msg",
                                                 "${workflow.input.taskflow}")))))//
             ).build();
         Assert.assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));

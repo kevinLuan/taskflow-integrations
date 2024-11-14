@@ -19,7 +19,7 @@ import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.ResponseTypeHandler;
 import cn.feiliu.taskflow.open.exceptions.ApiException;
-import cn.feiliu.taskflow.open.utils.JsonUtils;
+import cn.feiliu.taskflow.serialization.SerializerFactory;
 import com.squareup.okhttp.*;
 import com.squareup.okhttp.internal.http.HttpMethod;
 import okio.BufferedSink;
@@ -197,7 +197,7 @@ public class HttpHelper {
             return "";
         } else if (param instanceof Date /*|| param instanceof OffsetDateTime || param instanceof LocalDate*/) {
             // Serialize to json string and remove the " enclosing characters
-            String jsonStr = JsonUtils.serialize(param);
+            String jsonStr = SerializerFactory.getSerializer().writeAsString(param);
             return jsonStr.substring(1, jsonStr.length() - 1);
         } else if (param instanceof Collection) {//TODO 这里没看太懂，为啥不使用JSON[]形式？
             StringBuilder b = new StringBuilder();
@@ -259,7 +259,7 @@ public class HttpHelper {
                 if (obj instanceof String) {
                     content = (String) obj;
                 } else {
-                    content = JsonUtils.serialize(obj);
+                    content = SerializerFactory.getSerializer().writeAsString(obj);
                 }
             }
             return RequestBody.create(MediaType.parse(contentType), content);
@@ -388,7 +388,7 @@ public class HttpHelper {
             contentType = "application/json";
         }
         if (HttpHelper.isJsonMime(contentType)) {
-            return JsonUtils.deserialize(respBody, returnType);
+            return SerializerFactory.getSerializer().decode(respBody, returnType);
         } else if (returnType.equals(String.class)) {
             // Expecting string, return the raw response body.
             return (T) respBody;
@@ -433,7 +433,7 @@ public class HttpHelper {
             contentType = "application/json";
         }
         if (HttpHelper.isJsonMime(contentType)) {
-            return JsonUtils.deserialize(respBody, responseType.getType());
+            return SerializerFactory.getSerializer().decode(respBody, responseType.getType());
         } else if (returnType.equals(String.class)) {
             // Expecting string, return the raw response body.
             return (ApiResponse<T>) ApiResponse.ok(respBody);

@@ -133,7 +133,7 @@ public class Switch extends Task<Switch> {
 
     public Switch defaultCase(String... workerTasks) {
         for (String workerTask : workerTasks) {
-            this.defaultTasks.add(new WorkTask(workerTask, workerTask));
+            this.defaultTasks.add(new SimpleTask(workerTask, workerTask));
         }
         return this;
     }
@@ -147,7 +147,7 @@ public class Switch extends Task<Switch> {
         List<Task<?>> tasks = new ArrayList<>(workerTasks.length);
         int i = 0;
         for (String workerTask : workerTasks) {
-            tasks.add(new WorkTask(workerTask, workerTask));
+            tasks.add(new SimpleTask(workerTask, workerTask));
         }
         branches.put(caseValue, tasks);
         return this;

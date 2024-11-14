@@ -58,7 +58,7 @@ public class Validator {
      * @return
      */
     public static boolean isValidWorkflowDefName(String name) {
-        return name != null && name.matches("^[a-zA-Z0-9_-]{1,64}$");
+        return name != null && name.matches("^[a-zA-Z0-9_-]{1,512}$");
     }
 
     public static boolean isValidWorkflowVersion(Integer version) {
@@ -85,7 +85,7 @@ public class Validator {
      * @return
      */
     public static boolean isValidTaskRefName(String taskRefName) {
-        String regex = "^[a-zA-Z0-9_]{1,64}$";
+        String regex = "^[a-zA-Z0-9_\\$]{1,512}$";
         return taskRefName != null && taskRefName.matches(regex);
     }
 

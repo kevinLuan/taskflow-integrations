@@ -16,7 +16,7 @@ package cn.feiliu.taskflow.expression;
 
 import cn.feiliu.taskflow.common.metadata.tasks.TaskType;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.DoWhile;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.WorkTask;
+import cn.feiliu.taskflow.sdk.workflow.def.tasks.SimpleTask;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.Task;
 
 import static org.junit.Assert.*;
@@ -46,7 +46,7 @@ public class PairTest {
 
     @Test
     public void testWorkflow() {
-        Task<?> task = new WorkTask("add", "addRef")//
+        Task<?> task = new SimpleTask("add", "addRef")//
             .input(Pair.of("a").fromWorkflow())//
             .input(Pair.of("b").fromWorkflow("b"));
         assertEquals("${workflow.input}", task.getInput().get("a"));
@@ -55,7 +55,7 @@ public class PairTest {
 
     @Test
     public void testInputAndOut() {
-        Task<?> task = new WorkTask("subtract", "subtract1Ref")//
+        Task<?> task = new SimpleTask("subtract", "subtract1Ref")//
             .input(Pair.of("a").fromTaskOutput("addRef", "sum"))//
             .input(Pair.of("b").fromTaskInput("x", "B"))//
             .input(Pair.of("c").fromTaskInput("x"))//
@@ -70,25 +70,25 @@ public class PairTest {
     @Test
     public void test() {
         List<Task<?>> tasks = new ArrayList<>();
-        tasks.add(new WorkTask("add", "addRef")//
+        tasks.add(new SimpleTask("add", "addRef")//
             .input(Pair.of("a").fromWorkflow("a"))//
             .input(Pair.of("b").fromWorkflow("b")));
         tasks.add(new DoWhile("doWhile1Ref", 1)//
-            .childTask(new WorkTask("subtract", "subtract1Ref")//
+            .childTask(new SimpleTask("subtract", "subtract1Ref")//
                 .input(Pair.of("a").fromTaskOutput("addRef", "sum"))//
                 .input(Pair.of("b").fromTaskInput("x", "B"))//
                 .input("b", 1))//
-            .childTask(new WorkTask("multiply", "multiply1Ref")//
+            .childTask(new SimpleTask("multiply", "multiply1Ref")//
                 .input(Pair.of("a").fromTaskOutput("subtract1Ref", "result"))//
                 .input("b", 2)));
         tasks.add(new DoWhile("doWhile2Ref", "${workflow.input.loopCount}")//
-            .childTask(new WorkTask("subtract", "subtract2Ref")//
+            .childTask(new SimpleTask("subtract", "subtract2Ref")//
                 .input(Pair.of("a").fromTaskOutput("addRef", "sum"))//
                 .input(Pair.of("b").fromWorkflow("b")))//
-            .childTask(new WorkTask("multiply", "multiply2Ref")//
+            .childTask(new SimpleTask("multiply", "multiply2Ref")//
                 .input(Pair.of("a").fromTaskOutput("subtract2Ref", "result"))//
                 .input("b", 2)));
-        tasks.add(new WorkTask("divide", "divideRef")//
+        tasks.add(new SimpleTask("divide", "divideRef")//
             .input(Pair.of("a").fromTaskOutput("addRef", "sum"))//
             .input("b", 2));
 

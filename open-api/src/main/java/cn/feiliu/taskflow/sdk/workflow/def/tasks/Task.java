@@ -23,10 +23,7 @@ import cn.feiliu.taskflow.common.metadata.tasks.TaskType;
 import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
 
 import javax.validation.constraints.NotEmpty;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Workflow Task
@@ -49,13 +46,24 @@ public abstract class Task<T> {
     private Map<String, Object> input = new HashMap<>();
 
     public Task(String taskReferenceName, TaskType type) {
-        Validator.assertTaskRefName(taskReferenceName);
-        if (type == null) {
-            throw new IllegalArgumentException("type cannot be null");
+        this(type.name().toLowerCase(), taskReferenceName, type);
+        if (type.isSimple()) {
+            throw new IllegalArgumentException(
+                "Please call using constructor: `(taskDefName, taskReferenceName, type)`");
         }
-        this.name = taskReferenceName;
-        this.taskReferenceName = taskReferenceName;
-        this.type = type;
+    }
+
+    /**
+     * SimpleType类型初始化
+     *
+     * @param taskDefName       任务定义名称
+     * @param taskReferenceName 任务引用名称
+     */
+    public Task(String taskDefName, String taskReferenceName, TaskType type) {
+        Validator.assertTaskRefName(taskReferenceName);
+        this.name = Objects.requireNonNull(taskDefName);
+        this.taskReferenceName = Objects.requireNonNull(taskReferenceName);
+        this.type = Objects.requireNonNull(type);
     }
 
     Task(FlowTask workflowTask) {

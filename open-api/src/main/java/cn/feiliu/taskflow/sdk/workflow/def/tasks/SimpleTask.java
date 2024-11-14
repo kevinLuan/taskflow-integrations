@@ -22,16 +22,15 @@ import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
  * Workflow task executed by a worker
  * 自定义工作节点
  */
-public class WorkTask extends Task<WorkTask> {
+public class SimpleTask extends Task<SimpleTask> {
 
     private TaskDefinition taskDef;
 
-    public WorkTask(String taskDefName, String taskReferenceName) {
-        super(taskReferenceName, TaskType.SIMPLE);
-        super.name(taskDefName);
+    public SimpleTask(String taskDefName, String taskReferenceName) {
+        super(taskDefName, taskReferenceName, TaskType.SIMPLE);
     }
 
-    WorkTask(FlowTask workflowTask) {
+    SimpleTask(FlowTask workflowTask) {
         super(workflowTask);
         this.taskDef = workflowTask.getTaskDefinition();
     }
@@ -40,7 +39,7 @@ public class WorkTask extends Task<WorkTask> {
         return taskDef;
     }
 
-    public WorkTask setTaskDef(TaskDefinition taskDef) {
+    public SimpleTask setTaskDef(TaskDefinition taskDef) {
         this.taskDef = taskDef;
         return this;
     }

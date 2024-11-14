@@ -18,7 +18,6 @@ import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
 import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.open.utils.JsonUtils;
 
 import static org.junit.Assert.*;
 import com.google.common.collect.Lists;
@@ -57,7 +56,6 @@ public class WorkflowDefClientTests {
         WorkflowDefinition workflowDefinition = getWorkflowEngine().getWorkflowDef(workflowDef.getName(),
             workflowDef.getVersion());
         assertNotNull(workflowDefinition);
-        System.out.println(JsonUtils.serialize(workflowDefinition));
         unregisterTaskDef(workflowDef);
         Assert.assertTrue(getWorkflowEngine().deleteWorkflowDef(workflowDef.getName(), workflowDef.getVersion()));
     }

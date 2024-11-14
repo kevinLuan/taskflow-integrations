@@ -46,4 +46,6 @@ public interface Serializer {
     <T> T read(InputStream resource, Class<T> targetType);
 
     Map<String, Object> readMap(InputStream resourceAsStream);
+
+    <T> T decode(String json, Type type);
 }

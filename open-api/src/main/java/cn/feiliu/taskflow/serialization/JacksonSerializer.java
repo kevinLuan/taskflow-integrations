@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.inject.util.Types;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.Date;
@@ -148,6 +149,20 @@ public class JacksonSerializer implements Serializer {
             return objectMapper.readValue(resourceAsStream, Map.class);
         } catch (Exception e) {
             throw new ClassCastException("Error reading data and converting Map");
+        }
+    }
+
+    @Override
+    public <T> T decode(String json, Type type) {
+        try {
+            return objectMapper.readerFor(new TypeReference<Object>() {
+                @Override
+                public Type getType() {
+                    return type;
+                }
+            }).readValue(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

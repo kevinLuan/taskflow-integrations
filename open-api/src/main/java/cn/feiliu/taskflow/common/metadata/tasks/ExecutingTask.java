@@ -128,9 +128,9 @@ public class ExecutingTask {
     /*任务定义*/
     private FlowTask            workflowTask;
     private String              domain;
-    private Any                 inputMessage;
-
-    private Any                 outputMessage;
+    //    private Any                 inputMessage;
+    //
+    //    private Any                 outputMessage;
 
     // id 31 is reserved
     private int                 rateLimitPerFrequency;
@@ -235,8 +235,8 @@ public class ExecutingTask {
         copy.setTaskId(taskId);
         copy.setWorkflowTask(workflowTask);
         copy.setDomain(domain);
-        copy.setInputMessage(inputMessage);
-        copy.setOutputMessage(outputMessage);
+        //        copy.setInputMessage(inputMessage);
+        //        copy.setOutputMessage(outputMessage);
         copy.setRateLimitPerFrequency(rateLimitPerFrequency);
         copy.setRateLimitFrequencyInSeconds(rateLimitFrequencyInSeconds);
         copy.setExternalInputPayloadStoragePath(externalInputPayloadStoragePath);

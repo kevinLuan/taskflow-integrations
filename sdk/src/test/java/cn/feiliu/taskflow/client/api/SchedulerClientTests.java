@@ -106,7 +106,8 @@ public class SchedulerClientTests {
         System.out.println("结束时间: " + DateTimeOps.of(req.getTimeZone(), end));
         System.out.println("===============");
         for (Long exeTime : exeTimes) {
-            System.out.println("执行时间: " + DateTimeOps.of(req.getTimeZone(), exeTime).format(DateTimeOps.ZONE_FMT));
+            System.out.println("执行时间: "
+                               + DateTimeOps.of(req.getTimeZone(), exeTime).format(DateTimeOps.WITHOUT_ZONE_FMT));
         }
         Assert.assertEquals(8, exeTimes.size());
     }
@@ -130,6 +131,6 @@ public class SchedulerClientTests {
     private DateTimeOps getStartTime(ZoneId zoneId) {
         //使用本地日期的10点30分作为开始时间
         String originalTime = DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 10:30:00";
-        return DateTimeOps.parse(zoneId, DateTimeOps.SIMPLE_FMT, originalTime);
+        return DateTimeOps.parse(zoneId, DateTimeOps.WITHOUT_ZONE_FMT, originalTime);
     }
 }

@@ -15,7 +15,7 @@
 package cn.feiliu.taskflow.client.api;
 
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.WorkTask;
+import cn.feiliu.taskflow.sdk.workflow.def.tasks.SimpleTask;
 import cn.feiliu.taskflow.open.api.IWorkflowService;
 import com.google.common.util.concurrent.Uninterruptibles;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
@@ -55,7 +55,7 @@ public class TaskBaseClientTests {
         String taskName = "noWorkTask2";
         getApiClient().getApis().getTaskEngine().createIfAbsent(new TaskDefinition(taskName));
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder(workflowName, 1)
-            .addTask(new WorkTask(taskName, taskName + "Ref")).build();
+            .addTask(new SimpleTask(taskName, taskName + "Ref")).build();
         assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
 
         String workflowId = workflowClient.startWorkflow(StartWorkflowRequest.of(workflowName, 1));

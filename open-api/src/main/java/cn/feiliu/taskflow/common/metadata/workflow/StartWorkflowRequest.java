@@ -15,6 +15,7 @@
 package cn.feiliu.taskflow.common.metadata.workflow;
 
 import cn.feiliu.taskflow.common.constraints.WorkflowNameConstraint;
+import cn.feiliu.taskflow.common.enums.IdempotencyStrategy;
 import lombok.Data;
 
 import javax.validation.constraints.Max;
@@ -26,52 +27,31 @@ import java.util.Objects;
 @Data
 public class StartWorkflowRequest {
     @WorkflowNameConstraint(message = "Invalid workflow name")
-    private String                                   name;
+    private String              name;
 
-    private Integer                                  version             = 1;
+    private Integer             version             = 1;
 
-    private String                                   correlationId;
+    private String              correlationId;
 
-    private Map<String, Object>                      input               = new HashMap<>();
+    private Map<String, Object> input               = new HashMap<>();
 
-    private Map<String, String>                      taskToDomain        = new HashMap<>();
+    private Map<String, String> taskToDomain        = new HashMap<>();
 
-    private String                                   externalInputPayloadStoragePath;
+    private String              externalInputPayloadStoragePath;
 
     @Min(value = 0, message = "priority: ${validatedValue} should be minimum {value}")
     @Max(value = 99, message = "priority: ${validatedValue} should be maximum {value}")
-    private Integer                                  priority            = 0;
+    private Integer             priority            = 0;
 
     /**
      * Idempotency Key is a user generated key to avoid conflicts with other workflows.
      * Idempotency data is retained for the life of the workflow executions.
      */
-    private String                                   idempotencyKey;
+    private String              idempotencyKey;
     /**
      * 幂等控制策略
      */
-    private StartWorkflowRequest.IdempotencyStrategy idempotencyStrategy = IdempotencyStrategy.FAIL;
-
-    public enum IdempotencyStrategy {
-        NONE(0),
-        /*Request will fail if the workflow has been triggered with the same idempotencyKey in the past.*/
-        FAIL(1),
-        /*Request will not fail rather it will return the workflowId of the workflow which was triggered with the same idempotencyKey.*/
-        RETURN_EXISTING(2);
-        private int code;
-
-        IdempotencyStrategy(int code) {
-            this.code = code;
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public boolean isNone() {
-            return this == NONE;
-        }
-    }
+    private IdempotencyStrategy idempotencyStrategy = IdempotencyStrategy.FAIL;
 
     public static StartWorkflowRequest of(String name, Integer version) {
         Objects.requireNonNull(name, "workflow name cannot be null");
@@ -89,15 +69,15 @@ public class StartWorkflowRequest {
     }
 
     public static class Builder {
-        private String                                   name;
-        private Integer                                  version             = 1;
-        private String                                   correlationId;
-        private Map<String, Object>                      input               = new HashMap<>();
-        private Map<String, String>                      taskToDomain        = new HashMap<>();
-        private String                                   externalInputPayloadStoragePath;
-        private Integer                                  priority            = 0;
-        private String                                   idempotencyKey;
-        private StartWorkflowRequest.IdempotencyStrategy idempotencyStrategy = IdempotencyStrategy.FAIL;
+        private String              name;
+        private Integer             version             = 1;
+        private String              correlationId;
+        private Map<String, Object> input               = new HashMap<>();
+        private Map<String, String> taskToDomain        = new HashMap<>();
+        private String              externalInputPayloadStoragePath;
+        private Integer             priority            = 0;
+        private String              idempotencyKey;
+        private IdempotencyStrategy idempotencyStrategy = IdempotencyStrategy.FAIL;
 
         public Builder name(String name) {
             this.name = name;
@@ -139,7 +119,7 @@ public class StartWorkflowRequest {
             return this;
         }
 
-        public Builder idempotencyStrategy(StartWorkflowRequest.IdempotencyStrategy idempotencyStrategy) {
+        public Builder idempotencyStrategy(IdempotencyStrategy idempotencyStrategy) {
             this.idempotencyStrategy = idempotencyStrategy;
             return this;
         }

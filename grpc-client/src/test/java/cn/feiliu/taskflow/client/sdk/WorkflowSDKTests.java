@@ -64,15 +64,15 @@ public class WorkflowSDKTests {
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder("sdk_fork_for_workflow", 1)
             .addTask(new SetVariable("setVar").input("items", Lists.newArrayList("AB", "CD")))
             //
-            .addTask(new WorkTask(SIMPLE_TASK, "simpleTaskRef").input("name", "第一个任务"))
+            .addTask(new SimpleTask(SIMPLE_TASK, "simpleTaskRef").input("name", "第一个任务"))
             //
             .addTask(new ForkFor("forkFor1Ref", "${setVar.input.items}")//
-                .childTask(new WorkTask(SIMPLE_TASK, "loopSimpleTaskRef")//
+                .childTask(new SimpleTask(SIMPLE_TASK, "loopSimpleTaskRef")//
                     .input("name", "${forkFor1Ref.output.element}")))
             //
-            .addTask(new WorkTask(SIMPLE_TASK, "simpleTaskRef3").input("name", "我三个任务"))
+            .addTask(new SimpleTask(SIMPLE_TASK, "simpleTaskRef3").input("name", "我三个任务"))
             .addTask(new ForkFor("forkFor2Ref", "${workflow.input.elements}")//
-                .childTask(new WorkTask(SIMPLE_TASK, "forkForLoopSimpleRef")//
+                .childTask(new SimpleTask(SIMPLE_TASK, "forkForLoopSimpleRef")//
                     .input("name", "${forkFor2Ref.output.element}"))).build();
         assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> dataMap = new HashMap<>();
@@ -89,16 +89,16 @@ public class WorkflowSDKTests {
     @Test
     public void testSimpleFor() {
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder("sdk_simple_for_workflow", 1)//
-            .addTask(new WorkTask(SIMPLE_TASK, "simple1Ref").input("name", "任务一"))//
+            .addTask(new SimpleTask(SIMPLE_TASK, "simple1Ref").input("name", "任务一"))//
             .addTask(new DoWhile("do_while_ref", 3)//
-                .childTask(new WorkTask(SIMPLE_TASK, "simple2Ref")//
+                .childTask(new SimpleTask(SIMPLE_TASK, "simple2Ref")//
                     .input("name", "doWhile-任务")))//
             .addTask(new For("forRef", "${workflow.input.x}")//
-                .childTask(new WorkTask(SIMPLE_TASK, "simple3Ref")//
+                .childTask(new SimpleTask(SIMPLE_TASK, "simple3Ref")//
                     .input("name", "for-任务"))).addTask(new DoWhile("dowhileRef", "${workflow.input.loopCount}")//
-                .childTask(new WorkTask(SIMPLE_TASK, "dowhileRef_simpleTask")//
+                .childTask(new SimpleTask(SIMPLE_TASK, "dowhileRef_simpleTask")//
                     .input("name", "do-while 循环，应该执行一次")))//
-            .addTask(new WorkTask(SIMPLE_TASK, "simple4Ref").input("name", "任务四"))//
+            .addTask(new SimpleTask(SIMPLE_TASK, "simple4Ref").input("name", "任务四"))//
             .build();
         assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
         Map<String, Object> inputData = new HashMap<>();
@@ -115,9 +115,9 @@ public class WorkflowSDKTests {
     @Test
     public void testForFail() throws Exception {
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder("sdk_for_fail_workflow", 1)//
-            .addTask(new WorkTask(SIMPLE_TASK, "simpleRef").input("name", "hello kitty"))//
+            .addTask(new SimpleTask(SIMPLE_TASK, "simpleRef").input("name", "hello kitty"))//
             .addTask(new For("forRef", "${workflow.input.items}")//
-                .childTask(new WorkTask(SIMPLE_TASK, "simple3Ref")//
+                .childTask(new SimpleTask(SIMPLE_TASK, "simple3Ref")//
                     .input("name", "测试")))//
             .build();
         assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
@@ -132,9 +132,9 @@ public class WorkflowSDKTests {
     @Test
     public void testCreateWorkflow() {
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder("sdk_workflow", 1)
-            .addTask(new WorkTask(SIMPLE_TASK, "simpleTaskRef").input("name", "${workflow.input.name}"))
+            .addTask(new SimpleTask(SIMPLE_TASK, "simpleTaskRef").input("name", "${workflow.input.name}"))
             .addTask(new For("eachRef", "${workflow.input.elements}")//
-                .childTask(new WorkTask(SIMPLE_TASK, "loopSimpleTaskRef")//
+                .childTask(new SimpleTask(SIMPLE_TASK, "loopSimpleTaskRef")//
                     .input("name", "${eachRef.output.element}")))//
             .build();
         assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));

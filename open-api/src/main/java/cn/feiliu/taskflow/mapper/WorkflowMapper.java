@@ -14,6 +14,7 @@
  */
 package cn.feiliu.taskflow.mapper;
 
+import cn.feiliu.taskflow.common.enums.IdempotencyStrategy;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.common.model.WorkflowRun;
@@ -62,7 +63,7 @@ class WorkflowMapper extends BaseMapper {
         return to.build();
     }
 
-    public FlowModelPb.StartWorkflowRequest.IdempotencyStrategy toProto(StartWorkflowRequest.IdempotencyStrategy from) {
+    public FlowModelPb.StartWorkflowRequest.IdempotencyStrategy toProto(IdempotencyStrategy from) {
         switch (from) {
             case NONE:
                 return FlowModelPb.StartWorkflowRequest.IdempotencyStrategy.NONE;

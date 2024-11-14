@@ -15,7 +15,7 @@
 package cn.feiliu.taskflow.open.exceptions;
 
 import cn.feiliu.taskflow.open.TaskflowErrorInformation;
-import cn.feiliu.taskflow.open.utils.JsonUtils;
+import cn.feiliu.taskflow.serialization.SerializerFactory;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,7 +46,7 @@ public abstract class TaskflowClientException extends RuntimeException {
 
     public String getMessage() {
         if (taskflowErrorInformation != null) {
-            return JsonUtils.serialize(taskflowErrorInformation);
+            return SerializerFactory.getSerializer().writeAsString(taskflowErrorInformation);
         }
         return super.getMessage();
     }
