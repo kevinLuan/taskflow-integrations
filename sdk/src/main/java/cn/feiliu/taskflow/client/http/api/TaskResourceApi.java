@@ -20,7 +20,6 @@ import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
 import cn.feiliu.taskflow.client.utils.Assertion;
 import cn.feiliu.taskflow.client.utils.HttpHelper;
-import cn.feiliu.taskflow.client.utils.SdkHelper;
 import cn.feiliu.taskflow.open.exceptions.ApiException;
 import com.google.common.collect.Lists;
 import cn.feiliu.taskflow.common.metadata.tasks.PollData;

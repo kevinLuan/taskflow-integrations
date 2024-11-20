@@ -14,11 +14,10 @@
  */
 package cn.feiliu.taskflow.sdk.workflow.def.tasks;
 
-import cn.feiliu.taskflow.common.utils.Validator;
+import cn.feiliu.taskflow.common.utils.Assertions;
 import cn.feiliu.taskflow.expression.PathExpression;
 import cn.feiliu.taskflow.serialization.SerializerFactory;
 import cn.feiliu.taskflow.sdk.workflow.utils.MapBuilder;
-import com.google.common.base.Strings;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskType;
 import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
 
@@ -60,7 +59,7 @@ public abstract class Task<T> {
      * @param taskReferenceName 任务引用名称
      */
     public Task(String taskDefName, String taskReferenceName, TaskType type) {
-        Validator.assertTaskRefName(taskReferenceName);
+        Assertions.assertTaskRefName(taskReferenceName);
         this.name = Objects.requireNonNull(taskDefName);
         this.taskReferenceName = Objects.requireNonNull(taskReferenceName);
         this.type = Objects.requireNonNull(type);

@@ -17,6 +17,7 @@ package cn.feiliu.taskflow.common.metadata.workflow;
 import cn.feiliu.taskflow.common.constraints.EmailConstraint;
 import cn.feiliu.taskflow.common.constraints.TaskReferenceNameUniqueConstraint;
 import cn.feiliu.taskflow.common.constraints.WorkflowNameConstraint;
+import cn.feiliu.taskflow.common.enums.WorkflowTimeoutPolicy;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskType;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.Task;
 import lombok.Getter;
@@ -32,11 +33,6 @@ import java.util.*;
 @ToString
 @TaskReferenceNameUniqueConstraint
 public class WorkflowDefinition {
-    public enum TimeoutPolicy {
-        TIME_OUT_WF,
-        ALERT_ONLY
-    }
-
     /**
      * 工作流名称。(租户级唯一)
      */
@@ -74,7 +70,7 @@ public class WorkflowDefinition {
     @Email(message = "ownerEmail should be valid email address")
     private String ownerEmail;
 
-    private TimeoutPolicy timeoutPolicy = TimeoutPolicy.ALERT_ONLY;
+    private WorkflowTimeoutPolicy timeoutPolicy = WorkflowTimeoutPolicy.ALERT_ONLY;
     /**
      * 工作流程被认为超时的时间
      * the time after which a workflow is deemed to have timed out
@@ -107,7 +103,7 @@ public class WorkflowDefinition {
         private boolean restartable = true;
         private boolean workflowStatusListenerEnabled = false;
         private String ownerEmail;
-        private TimeoutPolicy timeoutPolicy = TimeoutPolicy.ALERT_ONLY;
+        private WorkflowTimeoutPolicy timeoutPolicy = WorkflowTimeoutPolicy.ALERT_ONLY;
         private long timeoutSeconds;
         private Map<String, Object> variables = new HashMap<>();
         private Map<String, Object> inputTemplate = new HashMap<>();
@@ -167,7 +163,7 @@ public class WorkflowDefinition {
             return this;
         }
 
-        public Builder timeoutPolicy(TimeoutPolicy timeoutPolicy) {
+        public Builder timeoutPolicy(WorkflowTimeoutPolicy timeoutPolicy) {
             this.timeoutPolicy = timeoutPolicy;
             return this;
         }

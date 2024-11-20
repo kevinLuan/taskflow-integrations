@@ -23,6 +23,7 @@ import cn.feiliu.taskflow.client.telemetry.MetricsContainer;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
+import cn.feiliu.taskflow.common.utils.SdkUtils;
 import cn.feiliu.taskflow.common.utils.TaskflowUtils;
 import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
 import cn.feiliu.taskflow.sdk.worker.Worker;
@@ -295,7 +296,7 @@ class TaskPollExecutor {
     private List<ExecutingTask> getBatchTasks(Worker worker, String domain, int maxAmount) throws Exception {
         LOGGER.debug("Polling tasks of type: {}", worker.getTaskDefName());
         String workerId = worker.getIdentity();
-        int timeout = TaskflowUtils.getReasonableTimeout(worker);
+        int timeout = SdkUtils.getReasonableTimeout(worker);
         String taskName = worker.getTaskDefName();
         Timer timer = MetricsContainer.getBatchPollTimer(worker.getTaskDefName());
         if (apiClient.isUseGRPC()) {

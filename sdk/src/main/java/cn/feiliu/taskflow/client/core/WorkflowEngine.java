@@ -79,9 +79,6 @@ public class WorkflowEngine {
      */
     @SneakyThrows
     public String start(String name, Integer version, Map<String, Object> input) {
-        if (!Validator.isValidWorkflowDefName(name)) {
-            throw new IllegalArgumentException("Invalid workflowDef name");
-        }
         if (version < 1) {
             throw new IllegalArgumentException("Invalid workflow version");
         }
@@ -91,9 +88,6 @@ public class WorkflowEngine {
 
     @SneakyThrows
     public String start(StartWorkflowRequest req) {
-        if (!Validator.isValidWorkflowDefName(req.getName())) {
-            throw new IllegalArgumentException("Invalid workflowDef name");
-        }
         if (req.getVersion() < 1) {
             throw new IllegalArgumentException("Invalid workflow version");
         }

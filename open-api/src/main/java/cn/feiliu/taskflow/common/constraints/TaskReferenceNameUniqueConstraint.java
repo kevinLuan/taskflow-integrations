@@ -15,7 +15,7 @@
 package cn.feiliu.taskflow.common.constraints;
 
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.common.utils.Validator;
+import cn.feiliu.taskflow.common.utils.SdkValidator;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
@@ -61,7 +61,7 @@ public @interface TaskReferenceNameUniqueConstraint {
         @Override
         public boolean isValid(WorkflowDefinition workflowDef, ConstraintValidatorContext context) {
             context.disableDefaultConstraintViolation();
-            List<String> errors = Validator.verifyWorkflowDef(workflowDef);
+            List<String> errors = SdkValidator.verifyWorkflowDef(workflowDef);
             errors.forEach((message) -> {
                 context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
             });

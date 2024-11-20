@@ -16,9 +16,9 @@ package cn.feiliu.taskflow.client.api;
 
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.common.enums.IdempotencyStrategy;
+import cn.feiliu.taskflow.common.enums.WorkflowTimeoutPolicy;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
 import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
 import cn.feiliu.taskflow.common.model.WorkflowRun;
 import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
@@ -53,7 +53,7 @@ public class WorkflowStateUpdateTests {
         request.setVersion(VERSION);
         request.setOwnerEmail("your_email@abc.com");
         request.setTimeoutSeconds(600);
-        request.setTimeoutPolicy(WorkflowDefinition.TimeoutPolicy.TIME_OUT_WF);
+        request.setTimeoutPolicy(WorkflowTimeoutPolicy.TIME_OUT_WF);
         FlowTask workflowTask = new FlowTask();
         workflowTask.setName("wait_task");
         workflowTask.setTaskReferenceName("wait_task_ref");

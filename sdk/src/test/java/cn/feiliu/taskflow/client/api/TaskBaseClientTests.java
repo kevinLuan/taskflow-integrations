@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
+import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
 import static org.junit.Assert.*;
 
 public class TaskBaseClientTests {

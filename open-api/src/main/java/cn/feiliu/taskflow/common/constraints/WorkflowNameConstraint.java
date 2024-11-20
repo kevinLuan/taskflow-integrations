@@ -51,7 +51,7 @@ public @interface WorkflowNameConstraint {
 
         @Override
         public boolean isValid(String value, ConstraintValidatorContext context) {
-            return Validator.isValidWorkflowDefName(value);
+            return Validator.isValidWorkflowName(value);
         }
     }
 }

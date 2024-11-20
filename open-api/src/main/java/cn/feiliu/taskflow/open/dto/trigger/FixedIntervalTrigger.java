@@ -55,13 +55,13 @@ public class FixedIntervalTrigger implements ITrigger {
     @NotNull(message = "Repeat frequency is required")
     private RepeatFrequency      repeatFrequency;
     /**
-     * 仅在自定义重复频率场景下是，这个各取值范围[1~30] 需要结合自定义单位来确定时间
+     * 自定义间隔值：仅在自定义重复频率场景时才需要设置，取值范围[1~30]
      */
     @Min(value = 1, message = "Custom repeat interval must be at least 1")
     @Max(value = 30, message = "Custom repeat interval must be at most 30")
     private Integer              customRepeatInterval;
     /***
-     * 当重复频率设置为自定义频率时，对于自定义重复单位：[小时、天、年] 仅结合customRepeatInterval(自定义间隔时间)来确定执行频率
+     * 自定义间隔值单位，对于自定义重复单位：[小时、天、年] 仅结合customRepeatInterval(自定义间隔时间)来确定执行频率
      */
     private CustomRepeatUnit     customRepeatUnit;
     /**

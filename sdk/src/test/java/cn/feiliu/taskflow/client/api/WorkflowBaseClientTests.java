@@ -14,6 +14,7 @@
  */
 package cn.feiliu.taskflow.client.api;
 
+import cn.feiliu.taskflow.common.enums.WorkflowTimeoutPolicy;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
@@ -141,8 +142,8 @@ public class WorkflowBaseClientTests {
     @Test
     public void testUpdateVariables() {
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder("update_variable_test", 1)
-            .addTask(new SimpleTask("simple_task", "simple_task_ref"))
-            .timeoutPolicy(WorkflowDefinition.TimeoutPolicy.TIME_OUT_WF).timeoutSeconds(60).build();
+            .addTask(new SimpleTask("simple_task", "simple_task_ref")).timeoutPolicy(WorkflowTimeoutPolicy.TIME_OUT_WF)
+            .timeoutSeconds(60).build();
         getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, false);
         StartWorkflowRequest request = new StartWorkflowRequest();
         request.setName(workflowDef.getName());

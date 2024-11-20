@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.sdk.workflow.executor.extension;
 
-import cn.feiliu.taskflow.common.utils.Validator;
+import cn.feiliu.taskflow.common.utils.Assertions;
 import cn.feiliu.taskflow.sdk.workflow.task.WorkerTask;
 
 import java.lang.reflect.Method;
@@ -44,7 +44,7 @@ public class TaskHandlerManager {
         if (worker == null || bean == null || method == null) {
             throw new IllegalArgumentException("worker, bean, method must not be null");
         }
-        Validator.assertTaskName(worker.value());
+        Assertions.assertTaskName(worker.value());
         if (taskMap.containsKey(worker.value())) {
             throw new IllegalArgumentException("taskName:`" + worker.value() + "` already exists");
         }

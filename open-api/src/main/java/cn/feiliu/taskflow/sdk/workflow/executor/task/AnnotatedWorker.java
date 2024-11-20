@@ -85,7 +85,7 @@ public class AnnotatedWorker implements Worker {
                 result.setStatus(TaskExecResult.Status.FAILED);
             }
             result.setReasonForIncompletion(e.getMessage());
-            result.log(TaskflowUtils.dumpStackTrace(e));
+            result.log(TaskflowUtils.dumpFullStackTrace(e));
         } catch (Throwable e) {
             throw e;
         }
