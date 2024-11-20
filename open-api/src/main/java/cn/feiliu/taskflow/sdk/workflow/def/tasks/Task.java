@@ -59,7 +59,6 @@ public abstract class Task<T> {
      * @param taskReferenceName 任务引用名称
      */
     public Task(String taskDefName, String taskReferenceName, TaskType type) {
-        Assertions.assertTaskRefName(taskReferenceName);
         this.name = Objects.requireNonNull(taskDefName);
         this.taskReferenceName = Objects.requireNonNull(taskReferenceName);
         this.type = Objects.requireNonNull(type);
