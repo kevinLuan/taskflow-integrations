@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.sdk.workflow.executor.task;
 
-import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.serialization.SerializerFactory;
 import cn.feiliu.taskflow.sdk.worker.Worker;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
@@ -53,7 +53,7 @@ public class DynamicForkWorker implements Worker {
         DynamicForkInput output = this.workerMethod.apply(parameter);
         result.getOutputData().put(DynamicFork.FORK_TASK_PARAM, output.getTasks());
         result.getOutputData().put(DynamicFork.FORK_TASK_INPUT_PARAM, output.getInputs());
-        result.setStatus(TaskStatus.COMPLETED);
+        result.setStatus(TaskUpdateStatus.COMPLETED);
         return result;
     }
 

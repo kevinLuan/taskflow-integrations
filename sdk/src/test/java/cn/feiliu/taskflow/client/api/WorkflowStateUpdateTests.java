@@ -16,6 +16,7 @@ package cn.feiliu.taskflow.client.api;
 
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.common.enums.IdempotencyStrategy;
+import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.enums.WorkflowTimeoutPolicy;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
@@ -93,12 +94,12 @@ public class WorkflowStateUpdateTests {
         workflowRun = apiClient.getApis().getWorkflowClient().updateWorkflow(request);
 
         assertEquals(ExecutingWorkflow.WorkflowStatus.COMPLETED, workflowRun.getStatus());
-        Set<ExecutingTask.Status> allTaskStatus = workflowRun.getTasks()
+        Set<TaskStatus> allTaskStatus = workflowRun.getTasks()
                 .stream()
                 .map(t -> t.getStatus())
                 .collect(Collectors.toSet());
         assertEquals(1, allTaskStatus.size());
-        assertEquals(ExecutingTask.Status.COMPLETED, allTaskStatus.iterator().next());
+        assertEquals(TaskStatus.COMPLETED, allTaskStatus.iterator().next());
 
         System.out.println(workflowRun.getStatus());
         System.out.println(workflowRun.getTasks()

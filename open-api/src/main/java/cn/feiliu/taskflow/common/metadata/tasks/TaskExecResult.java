@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.common.metadata.tasks;
 
-import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import com.google.protobuf.Any;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +56,7 @@ public class TaskExecResult {
      * 例如，当作业由另一个进程执行时，worker在DB中检查作业的状态。<p>
      * <b>FAILED, FAILED_WITH_TERMINAL_ERROR, COMPLETED<b>:任务的终端状态。当您不希望重试任务时，使用FAILED_WITH_TERMINAL_ERROR。
      */
-    private TaskStatus          status;
+    private TaskUpdateStatus    status;
     /*任务执行输出数据*/
     private Map<String, Object> outputData = new HashMap<>();
 
@@ -77,20 +77,7 @@ public class TaskExecResult {
         this.outputData = task.getOutputData();
         this.externalOutputPayloadStoragePath = task.getExternalOutputPayloadStoragePath();
         this.subWorkflowId = task.getSubWorkflowId();
-        switch (task.getStatus()) {
-            case CANCELED:
-            case COMPLETED_WITH_ERRORS:
-            case TIMED_OUT:
-            case SKIPPED:
-                this.status = TaskStatus.FAILED;
-                break;
-            case SCHEDULED:
-                this.status = TaskStatus.IN_PROGRESS;
-                break;
-            default:
-                this.status = TaskStatus.valueOf(task.getStatus().name());
-                break;
-        }
+        this.status = task.getStatus().toTaskUpdateStatus();
     }
 
     public TaskExecResult() {
@@ -121,26 +108,22 @@ public class TaskExecResult {
     }
 
     public static TaskExecResult complete() {
-        return newTaskResult(TaskStatus.COMPLETED);
+        return newTaskResult(TaskUpdateStatus.COMPLETED);
     }
 
     public static TaskExecResult failed() {
-        return newTaskResult(TaskStatus.FAILED);
+        return newTaskResult(TaskUpdateStatus.FAILED);
     }
 
     public static TaskExecResult failed(String failureReason) {
-        TaskExecResult result = newTaskResult(TaskStatus.FAILED);
+        TaskExecResult result = newTaskResult(TaskUpdateStatus.FAILED);
         result.setReasonForIncompletion(failureReason);
         return result;
     }
 
-    public static TaskExecResult inProgress() {
-        return newTaskResult(TaskStatus.IN_PROGRESS);
-    }
-
-    public static TaskExecResult newTaskResult(TaskStatus status) {
+    public static TaskExecResult newTaskResult(TaskUpdateStatus status) {
         TaskExecResult result = new TaskExecResult();
-        result.setStatus(status);
+        result.setStatus(TaskUpdateStatus.valueOf(status.name()));
         return result;
     }
 

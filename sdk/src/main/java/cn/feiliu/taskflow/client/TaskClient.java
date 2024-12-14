@@ -16,7 +16,7 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.client.http.api.TaskResourceApi;
 import cn.feiliu.taskflow.client.api.ITaskClient;
-import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
 import cn.feiliu.taskflow.serialization.SerializerFactory;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
@@ -105,19 +105,20 @@ public class TaskClient implements ITaskClient {
      * @param output            任务输出
      */
     @Override
-    public void updateTask(String workflowId, String taskReferenceName, TaskStatus status, Map<String, Object> output) {
-        taskResourceApi.updateTaskByRefName(output, workflowId, taskReferenceName, status.toString());
+    public void updateTask(String workflowId, String taskReferenceName, TaskUpdateStatus status,
+                           Map<String, Object> output) {
+        taskResourceApi.updateTaskByRefName(output, workflowId, taskReferenceName, status.name());
     }
 
     @Override
-    public void updateTask(String workflowId, String taskReferenceName, TaskStatus status, Object output) {
+    public void updateTask(String workflowId, String taskReferenceName, TaskUpdateStatus status, Object output) {
         Map<String, Object> outputMap = new HashMap<>();
         try {
             outputMap = SerializerFactory.getSerializer().convertMap(output);
         } catch (Exception e) {
             outputMap.put("result", output);
         }
-        taskResourceApi.updateTaskByRefName(outputMap, workflowId, taskReferenceName, status.toString());
+        taskResourceApi.updateTaskByRefName(outputMap, workflowId, taskReferenceName, status.name());
     }
 
     @Override

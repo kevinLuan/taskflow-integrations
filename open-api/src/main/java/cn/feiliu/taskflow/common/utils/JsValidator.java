@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
+import static cn.feiliu.common.api.utils.CommonUtils.f;
 
 /**
  * @author SHOUSHEN.LUAN

@@ -14,7 +14,6 @@
  */
 package cn.feiliu.taskflow.serialization;
 
-import cn.feiliu.taskflow.sdk.config.PropertyFactory;
 import cn.feiliu.taskflow.sdk.config.SpringPropertyReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Any;
@@ -55,7 +54,6 @@ public class TaskflowAutoConfiguration implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        PropertyFactory.enabledSpringEnv();
         SpringPropertyReader.init(environment);
     }
 }

@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
+import static cn.feiliu.common.api.utils.CommonUtils.f;
 
 /** Configures automated polling of tasks and execution via the registered {@link Worker}s. */
 public class TaskRunnerConfigurer {

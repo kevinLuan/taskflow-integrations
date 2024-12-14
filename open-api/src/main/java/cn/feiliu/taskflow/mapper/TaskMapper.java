@@ -15,6 +15,7 @@
 package cn.feiliu.taskflow.mapper;
 
 import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.proto.TaskModelPb;
@@ -47,7 +48,7 @@ class TaskMapper {
             to.setWorkerId(from.getWorkerId());
         }
         if (from.getStatus() != null) {
-            to.setStatus(toProto(from.getStatus()));
+            to.setStatus(TaskModelPb.TaskResult.Status.valueOf(from.getStatus().name()));
         }
         for (Map.Entry<String, Object> pair : from.getOutputData().entrySet()) {
             to.putOutputData(pair.getKey(), ValueMapper.getInstance().toProto(pair.getValue()));
@@ -62,54 +63,12 @@ class TaskMapper {
         to.setReasonForIncompletion(from.getReasonForIncompletion());
         to.setCallbackAfterSeconds(from.getCallbackAfterSeconds());
         to.setWorkerId(from.getWorkerId());
-        to.setStatus(fromProto(from.getStatus()));
+        to.setStatus(TaskUpdateStatus.valueOf(from.getStatus().name()));
         Map<String, Object> outputDataMap = new HashMap<String, Object>();
         for (Map.Entry<String, Value> pair : from.getOutputDataMap().entrySet()) {
             outputDataMap.put(pair.getKey(), ValueMapper.getInstance().fromProto(pair.getValue()));
         }
         to.setOutputData(outputDataMap);
-        return to;
-    }
-
-    public TaskModelPb.TaskResult.Status toProto(TaskStatus from) {
-        TaskModelPb.TaskResult.Status to;
-        switch (from) {
-            case IN_PROGRESS:
-                to = TaskModelPb.TaskResult.Status.IN_PROGRESS;
-                break;
-            case FAILED:
-                to = TaskModelPb.TaskResult.Status.FAILED;
-                break;
-            case FAILED_WITH_TERMINAL_ERROR:
-                to = TaskModelPb.TaskResult.Status.FAILED_WITH_TERMINAL_ERROR;
-                break;
-            case COMPLETED:
-                to = TaskModelPb.TaskResult.Status.COMPLETED;
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected enum constant: " + from);
-        }
-        return to;
-    }
-
-    public TaskStatus fromProto(TaskModelPb.TaskResult.Status from) {
-        TaskStatus to;
-        switch (from) {
-            case IN_PROGRESS:
-                to = TaskStatus.IN_PROGRESS;
-                break;
-            case FAILED:
-                to = TaskStatus.FAILED;
-                break;
-            case FAILED_WITH_TERMINAL_ERROR:
-                to = TaskStatus.FAILED_WITH_TERMINAL_ERROR;
-                break;
-            case COMPLETED:
-                to = TaskStatus.COMPLETED;
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected enum constant: " + from);
-        }
         return to;
     }
 
@@ -119,7 +78,7 @@ class TaskMapper {
             to.setTaskType(from.getTaskType());
         }
         if (from.getStatus() != null) {
-            to.setStatus(toProto(from.getStatus()));
+            to.setStatus(TaskModelPb.Task.Status.valueOf(from.getStatus().name()));
         }
         for (Map.Entry<String, Object> pair : from.getInputData().entrySet()) {
             to.putInputData(pair.getKey(), ValueMapper.getInstance().toProto(pair.getValue()));
@@ -196,7 +155,7 @@ class TaskMapper {
     public ExecutingTask fromProto(TaskModelPb.Task from) {
         ExecutingTask to = new ExecutingTask();
         to.setTaskType(from.getTaskType());
-        to.setStatus(fromProto(from.getStatus()));
+        to.setStatus(TaskStatus.valueOf(from.getStatus().name()));
         Map<String, Object> inputDataMap = new HashMap<String, Object>();
         for (Map.Entry<String, Value> pair : from.getInputDataMap().entrySet()) {
             inputDataMap.put(pair.getKey(), ValueMapper.getInstance().fromProto(pair.getValue()));
@@ -240,78 +199,6 @@ class TaskMapper {
         to.setIteration(from.getIteration());
         to.setSubWorkflowId(from.getSubWorkflowId());
         to.setSubworkflowChanged(from.getSubworkflowChanged());
-        return to;
-    }
-
-    public TaskModelPb.Task.Status toProto(ExecutingTask.Status from) {
-        TaskModelPb.Task.Status to;
-        switch (from) {
-            case IN_PROGRESS:
-                to = TaskModelPb.Task.Status.IN_PROGRESS;
-                break;
-            case CANCELED:
-                to = TaskModelPb.Task.Status.CANCELED;
-                break;
-            case FAILED:
-                to = TaskModelPb.Task.Status.FAILED;
-                break;
-            case FAILED_WITH_TERMINAL_ERROR:
-                to = TaskModelPb.Task.Status.FAILED_WITH_TERMINAL_ERROR;
-                break;
-            case COMPLETED:
-                to = TaskModelPb.Task.Status.COMPLETED;
-                break;
-            case COMPLETED_WITH_ERRORS:
-                to = TaskModelPb.Task.Status.COMPLETED_WITH_ERRORS;
-                break;
-            case SCHEDULED:
-                to = TaskModelPb.Task.Status.SCHEDULED;
-                break;
-            case TIMED_OUT:
-                to = TaskModelPb.Task.Status.TIMED_OUT;
-                break;
-            case SKIPPED:
-                to = TaskModelPb.Task.Status.SKIPPED;
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected enum constant: " + from);
-        }
-        return to;
-    }
-
-    public ExecutingTask.Status fromProto(TaskModelPb.Task.Status from) {
-        ExecutingTask.Status to;
-        switch (from) {
-            case IN_PROGRESS:
-                to = ExecutingTask.Status.IN_PROGRESS;
-                break;
-            case CANCELED:
-                to = ExecutingTask.Status.CANCELED;
-                break;
-            case FAILED:
-                to = ExecutingTask.Status.FAILED;
-                break;
-            case FAILED_WITH_TERMINAL_ERROR:
-                to = ExecutingTask.Status.FAILED_WITH_TERMINAL_ERROR;
-                break;
-            case COMPLETED:
-                to = ExecutingTask.Status.COMPLETED;
-                break;
-            case COMPLETED_WITH_ERRORS:
-                to = ExecutingTask.Status.COMPLETED_WITH_ERRORS;
-                break;
-            case SCHEDULED:
-                to = ExecutingTask.Status.SCHEDULED;
-                break;
-            case TIMED_OUT:
-                to = ExecutingTask.Status.TIMED_OUT;
-                break;
-            case SKIPPED:
-                to = ExecutingTask.Status.SKIPPED;
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected enum constant: " + from);
-        }
         return to;
     }
 

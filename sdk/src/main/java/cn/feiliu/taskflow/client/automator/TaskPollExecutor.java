@@ -14,6 +14,7 @@
  */
 package cn.feiliu.taskflow.client.automator;
 
+import cn.feiliu.common.api.utils.CommonUtils;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.api.ITaskClient;
 import cn.feiliu.taskflow.client.automator.scheduling.MultiTaskResult;
@@ -21,11 +22,11 @@ import cn.feiliu.taskflow.client.automator.scheduling.PollExecuteStatus;
 import cn.feiliu.taskflow.client.spi.DiscoveryService;
 import cn.feiliu.taskflow.client.telemetry.MetricsContainer;
 import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import cn.feiliu.taskflow.common.utils.SdkUtils;
-import cn.feiliu.taskflow.common.utils.TaskflowUtils;
 import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
 import cn.feiliu.taskflow.sdk.worker.Worker;
 import com.google.common.base.Stopwatch;
@@ -134,7 +135,7 @@ class TaskPollExecutor {
         } catch (Throwable e) {
             LOGGER.error("Unable to execute taskId: {} of type: {} ,error:{}", task.getTaskId(), task.getTaskDefName(), e);
             if (result == null) {
-                task.setStatus(ExecutingTask.Status.FAILED);
+                task.setStatus(TaskStatus.FAILED);
                 result = new TaskExecResult(task);
             }
             handleException(e, result, worker, task);
@@ -173,14 +174,14 @@ class TaskPollExecutor {
                         futures.add(apiClient.getApis().getGrpcApi().addLog(taskLog));
                     }
                 }
-                TaskflowUtils.blockedWait(futures, 30_000);
+                CommonUtils.blockedWait(futures, 30_000);
             } else {
                 ITaskClient taskClient = apiClient.getApis().getTaskClient();
                 taskClient.updateTask(result);
             }
         };
         try {
-            TaskflowUtils.retryOperation(runnable, count, "updateTask");
+            CommonUtils.retryOperation(runnable, count, "updateTask");
         } catch (Exception e) {
             worker.onErrorUpdate(task);
             MetricsContainer.incrementTaskUpdateErrorCount(worker.getTaskDefName(), e);
@@ -191,9 +192,9 @@ class TaskPollExecutor {
     private void handleException(Throwable t, TaskExecResult result, Worker worker, ExecutingTask task) {
         LOGGER.error(String.format("Error while executing task %s", task.toString()), t);
         MetricsContainer.incrementTaskExecutionErrorCount(worker.getTaskDefName(), t);
-        result.setStatus(TaskStatus.FAILED);
+        result.setStatus(TaskUpdateStatus.FAILED);
         result.setReasonForIncompletion("Error while executing the task: " + t);
-        result.log(TaskflowUtils.dumpFullStackTrace(t));
+        result.log(CommonUtils.dumpFullStackTrace(t));
         updateTaskResult(updateRetryCount, task, result, worker);
     }
 
@@ -340,7 +341,7 @@ class TaskPollExecutor {
             try {
                 doExecuteTask(worker, task);
             } catch (Throwable t) {
-                task.setStatus(ExecutingTask.Status.FAILED);
+                task.setStatus(TaskStatus.FAILED);
                 TaskExecResult result = new TaskExecResult(task);
                 handleException(t, result, worker, task);
             } finally {

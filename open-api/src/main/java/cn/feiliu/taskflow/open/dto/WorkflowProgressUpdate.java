@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.open.dto;
 
-import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import lombok.Data;
 
@@ -72,7 +72,7 @@ public class WorkflowProgressUpdate {
          * <b>FAILED, FAILED_WITH_TERMINAL_ERROR, COMPLETED<b>:任务的终端状态。当您不希望重试任务时，使用FAILED_WITH_TERMINAL_ERROR。
          */
         @NotNull
-        private TaskStatus          status     = TaskStatus.COMPLETED;
+        private TaskUpdateStatus    status     = TaskUpdateStatus.COMPLETED;
         /*任务执行输出数据*/
         private Map<String, Object> outputData = new HashMap<>();
         private List<TaskLog>       logs       = new CopyOnWriteArrayList<>();

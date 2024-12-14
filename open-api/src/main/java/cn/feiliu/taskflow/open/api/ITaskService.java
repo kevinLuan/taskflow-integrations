@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.open.api;
 
-import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
@@ -113,6 +113,6 @@ public interface ITaskService {
      * @param status            Status of the task
      * @param output            Output for the task
      */
-    void updateTask(String workflowId, String taskReferenceName, TaskStatus status, Map<String, Object> output);
+    void updateTask(String workflowId, String taskReferenceName, TaskUpdateStatus status, Map<String, Object> output);
 
 }

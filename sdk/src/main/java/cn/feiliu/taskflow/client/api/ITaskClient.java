@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.open.api.ITaskService;
 
 /**
@@ -30,6 +30,6 @@ public interface ITaskClient extends ITaskService {
      * @param status            Status of the task
      * @param output            Output for the task
      */
-    void updateTask(String workflowId, String taskReferenceName, TaskStatus status, Object output);
+    void updateTask(String workflowId, String taskReferenceName, TaskUpdateStatus status, Object output);
 
 }

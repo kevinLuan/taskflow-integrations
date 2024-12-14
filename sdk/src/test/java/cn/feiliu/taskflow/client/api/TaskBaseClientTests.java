@@ -15,7 +15,7 @@
 package cn.feiliu.taskflow.client.api;
 
 import cn.feiliu.common.api.utils.CommonUtils;
-import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.SimpleTask;
 import cn.feiliu.taskflow.open.api.IWorkflowService;
@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static cn.feiliu.common.api.utils.CommonUtils.f;
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
-import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
 import static org.junit.Assert.*;
 
 public class TaskBaseClientTests {
@@ -79,7 +79,7 @@ public class TaskBaseClientTests {
         for (ExecutingTask executingTask : tasks) {
             Map<String, Object> map = Map.of("test", "更新方式2");
             taskClient.updateTask(executingTask.getWorkflowInstanceId(), executingTask.getReferenceTaskName(),
-                TaskStatus.COMPLETED, map);
+                TaskUpdateStatus.COMPLETED, map);
         }
     }
 
@@ -98,7 +98,7 @@ public class TaskBaseClientTests {
                     Map<String, Object> map = Map.of("hello_world", new Date());
                     System.out.println(f("更新任务 taskId: %s, taskName: %s", executingTask.getTaskId(),
                         executingTask.getTaskDefName()));
-                    taskClient.updateTask(workflowId, referenceName, TaskStatus.COMPLETED, map);
+                    taskClient.updateTask(workflowId, referenceName, TaskUpdateStatus.COMPLETED, map);
                 }
             }
             count++;

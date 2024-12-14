@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.common.metadata.tasks;
 
+import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
-import com.google.protobuf.Any;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,48 +24,11 @@ import java.util.Map;
 
 @Data
 public class ExecutingTask {
-    public enum Status {
-        IN_PROGRESS(false, true, true), //
-        CANCELED(true, false, false), //
-        FAILED(true, false, true), //
-        // No retries even if retries are configured, the task and the related workflow should be terminated
-        FAILED_WITH_TERMINAL_ERROR(true, false, false),
-
-        COMPLETED(true, true, true), //
-        COMPLETED_WITH_ERRORS(true, true, true), //
-        SCHEDULED(false, true, true), //
-        TIMED_OUT(true, false, true), //
-        SKIPPED(true, true, false);
-
-        private final boolean terminal;
-
-        private final boolean successful;
-
-        private final boolean retriable;
-
-        Status(boolean terminal, boolean successful, boolean retriable) {
-            this.terminal = terminal;
-            this.successful = successful;
-            this.retriable = retriable;
-        }
-
-        public boolean isTerminal() {
-            return terminal;
-        }
-
-        public boolean isSuccessful() {
-            return successful;
-        }
-
-        public boolean isRetriable() {
-            return retriable;
-        }
-    }
 
     /*Type of the task*/
     private String              taskType;
 
-    private Status              status;
+    private TaskStatus          status;
 
     private Map<String, Object> inputData          = new HashMap<>();
     private String              referenceTaskName;

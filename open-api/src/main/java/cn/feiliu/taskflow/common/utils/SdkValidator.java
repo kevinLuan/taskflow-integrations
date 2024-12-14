@@ -19,7 +19,7 @@ import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
 
 import java.util.*;
 
-import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
+import static cn.feiliu.common.api.utils.CommonUtils.f;
 
 /**
  * @author SHOUSHEN.LUAN
