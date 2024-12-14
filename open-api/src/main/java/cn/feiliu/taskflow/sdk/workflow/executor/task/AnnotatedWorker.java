@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.sdk.workflow.executor.task;
 
+import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.utils.TaskflowUtils;
-import cn.feiliu.taskflow.open.exceptions.TaskParameterException;
 import cn.feiliu.taskflow.serialization.SerializerFactory;
 import cn.feiliu.taskflow.sdk.worker.Worker;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
@@ -32,18 +32,19 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
+import static cn.feiliu.common.api.utils.CommonUtils.f;
+
 public class AnnotatedWorker implements Worker {
-    private static Logger              log             = LoggerFactory.getLogger(AnnotatedWorker.class);
-    private String                     name;
+    private static Logger   log             = LoggerFactory.getLogger(AnnotatedWorker.class);
+    private String          name;
 
-    private Method                     workerMethod;
+    private Method          workerMethod;
 
-    private Object                     obj;
+    private Object          obj;
 
-    private int                        pollingInterval = 100;
+    private int             pollingInterval = 100;
 
-    private Set<TaskExecResult.Status> failedStatuses  = Set.of(TaskExecResult.Status.FAILED,
-                                                           TaskExecResult.Status.FAILED_WITH_TERMINAL_ERROR);
+    private Set<TaskStatus> failedStatuses  = Set.of(TaskStatus.FAILED, TaskStatus.FAILED_WITH_TERMINAL_ERROR);
 
     public AnnotatedWorker(String name, Method workerMethod, Object obj) {
         this.name = name;
@@ -65,13 +66,13 @@ public class AnnotatedWorker implements Worker {
             Object invocationResult = workerMethod.invoke(obj, parameters);
             result = setValue(invocationResult, context.getTaskResult());
             if (!failedStatuses.contains(result.getStatus()) && result.getCallbackAfterSeconds() > 0) {
-                result.setStatus(TaskExecResult.Status.IN_PROGRESS);
+                result.setStatus(TaskStatus.IN_PROGRESS);
             }
-        } catch (TaskParameterException e) {//参数错误或缺失必须的参数
+        } catch (IllegalArgumentException e) {
             if (result == null) {
                 result = new TaskExecResult(task);
             }
-            result.setStatus(TaskExecResult.Status.FAILED);
+            result.setStatus(TaskStatus.FAILED);
             result.setReasonForIncompletion(e.getMessage());
         } catch (InvocationTargetException invocationTargetException) {
             if (result == null) {
@@ -80,9 +81,9 @@ public class AnnotatedWorker implements Worker {
             Throwable e = invocationTargetException.getCause();
             log.error("invocation error", e);
             if (e instanceof NonRetryableException) {
-                result.setStatus(TaskExecResult.Status.FAILED_WITH_TERMINAL_ERROR);
+                result.setStatus(TaskStatus.FAILED_WITH_TERMINAL_ERROR);
             } else {
-                result.setStatus(TaskExecResult.Status.FAILED);
+                result.setStatus(TaskStatus.FAILED);
             }
             result.setReasonForIncompletion(e.getMessage());
             result.log(TaskflowUtils.dumpFullStackTrace(e));
@@ -134,7 +135,7 @@ public class AnnotatedWorker implements Worker {
         final Object value = task.getInputData().get(inputParam.value());
         if (value == null) {
             if (inputParam.required()) {
-                throw new TaskParameterException(String.format("The required %s('%s') parameter is missing", name,
+                throw new IllegalArgumentException(f("The required %s('%s') parameter is missing", name,
                     inputParam.value()));
             }
             return null;
@@ -163,7 +164,7 @@ public class AnnotatedWorker implements Worker {
             return SerializerFactory.getSerializer().convertList(value);
         } catch (Throwable t) {
             String msg = String.format("The required %s('%s') parameter is missing", name, ip.value());
-            throw new TaskParameterException(msg, t);
+            throw new IllegalArgumentException(msg, t);
         }
     }
 
@@ -172,7 +173,7 @@ public class AnnotatedWorker implements Worker {
             return SerializerFactory.getSerializer().convert(value, type);
         } catch (Throwable e) {
             String msg = String.format("The required %s('%s') parameter is missing", name, ip.value());
-            throw new TaskParameterException(msg, e);
+            throw new IllegalArgumentException(msg, e);
         }
     }
 
@@ -187,7 +188,7 @@ public class AnnotatedWorker implements Worker {
 
     private TaskExecResult setValue(Object invocationResult, TaskExecResult result) {
         if (invocationResult == null) {
-            result.setStatus(TaskExecResult.Status.COMPLETED);
+            result.setStatus(TaskStatus.COMPLETED);
             return result;
         }
         OutputParam opAnnotation = workerMethod.getAnnotatedReturnType().getAnnotation(OutputParam.class);
@@ -197,25 +198,25 @@ public class AnnotatedWorker implements Worker {
         if (opAnnotation != null) {
             String name = opAnnotation.value();
             result.getOutputData().put(name, invocationResult);
-            result.setStatus(TaskExecResult.Status.COMPLETED);
+            result.setStatus(TaskStatus.COMPLETED);
             return result;
         } else if (invocationResult instanceof TaskExecResult) {
             return (TaskExecResult) invocationResult;
         } else if (invocationResult instanceof Map) {
             Map resultAsMap = (Map) invocationResult;
             result.getOutputData().putAll(resultAsMap);
-            result.setStatus(TaskExecResult.Status.COMPLETED);
+            result.setStatus(TaskStatus.COMPLETED);
             return result;
         } else if (invocationResult instanceof String || invocationResult instanceof Number
                    || invocationResult instanceof Boolean) {
             result.getOutputData().put("result", invocationResult);
-            result.setStatus(TaskExecResult.Status.COMPLETED);
+            result.setStatus(TaskStatus.COMPLETED);
             return result;
         } else if (invocationResult instanceof List) {
 
             List resultAsList = SerializerFactory.getSerializer().convertList(invocationResult);
             result.getOutputData().put("result", resultAsList);
-            result.setStatus(TaskExecResult.Status.COMPLETED);
+            result.setStatus(TaskStatus.COMPLETED);
             return result;
 
         } else if (invocationResult instanceof DynamicForkInput) {
@@ -227,13 +228,13 @@ public class AnnotatedWorker implements Worker {
             }
             result.getOutputData().put(DynamicFork.FORK_TASK_PARAM, workflowTasks);
             result.getOutputData().put(DynamicFork.FORK_TASK_INPUT_PARAM, forkInput.getInputs());
-            result.setStatus(TaskExecResult.Status.COMPLETED);
+            result.setStatus(TaskStatus.COMPLETED);
             return result;
 
         } else {
             Map resultAsMap = SerializerFactory.getSerializer().convertMap(invocationResult);
             result.getOutputData().putAll(resultAsMap);
-            result.setStatus(TaskExecResult.Status.COMPLETED);
+            result.setStatus(TaskStatus.COMPLETED);
             return result;
         }
     }

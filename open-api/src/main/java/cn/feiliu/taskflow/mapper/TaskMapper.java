@@ -14,6 +14,7 @@
  */
 package cn.feiliu.taskflow.mapper;
 
+import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.proto.TaskModelPb;
@@ -70,7 +71,7 @@ class TaskMapper {
         return to;
     }
 
-    public TaskModelPb.TaskResult.Status toProto(TaskExecResult.Status from) {
+    public TaskModelPb.TaskResult.Status toProto(TaskStatus from) {
         TaskModelPb.TaskResult.Status to;
         switch (from) {
             case IN_PROGRESS:
@@ -91,20 +92,20 @@ class TaskMapper {
         return to;
     }
 
-    public TaskExecResult.Status fromProto(TaskModelPb.TaskResult.Status from) {
-        TaskExecResult.Status to;
+    public TaskStatus fromProto(TaskModelPb.TaskResult.Status from) {
+        TaskStatus to;
         switch (from) {
             case IN_PROGRESS:
-                to = TaskExecResult.Status.IN_PROGRESS;
+                to = TaskStatus.IN_PROGRESS;
                 break;
             case FAILED:
-                to = TaskExecResult.Status.FAILED;
+                to = TaskStatus.FAILED;
                 break;
             case FAILED_WITH_TERMINAL_ERROR:
-                to = TaskExecResult.Status.FAILED_WITH_TERMINAL_ERROR;
+                to = TaskStatus.FAILED_WITH_TERMINAL_ERROR;
                 break;
             case COMPLETED:
-                to = TaskExecResult.Status.COMPLETED;
+                to = TaskStatus.COMPLETED;
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected enum constant: " + from);

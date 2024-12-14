@@ -15,7 +15,6 @@
 package cn.feiliu.taskflow.sdk.exceptions;
 
 import cn.feiliu.taskflow.open.exceptions.ApiException;
-import cn.feiliu.taskflow.open.exceptions.NotFoundException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.SneakyThrows;
@@ -35,13 +34,11 @@ public class ExceptionRateLimiter {
      * 100 times in 10 minutes
      * For the first 100 errors, just print them as is...
      */
-    private final int                                           maxLimit = 100;
-    private final int                                           maxSize  = 128;
+    private final int                       maxLimit = 100;
+    private final int                       maxSize  = 128;
     /*Reset after 10 minutes errors*/
-    private final Cache<Class<? extends Throwable>, AtomicLong> cache    = CacheBuilder.newBuilder()
-                                                                             .maximumSize(maxSize)
-                                                                             .expireAfterWrite(10, TimeUnit.MINUTES)
-                                                                             .build();
+    private final Cache<Object, AtomicLong> cache    = CacheBuilder.newBuilder().maximumSize(maxSize)
+                                                         .expireAfterWrite(10, TimeUnit.MINUTES).build();
 
     /**
      * 根据限速控制来决定是否应该记录日志
@@ -52,8 +49,8 @@ public class ExceptionRateLimiter {
     @SneakyThrows
     public void shouldRecordLog(Throwable t, Consumer<ExceptionSummary> consumer) {
         AtomicLong cnt;
-        if ((t instanceof ApiException && ((ApiException) t).getStatusCode() == 404)) {
-            cnt = cache.get(NotFoundException.class, () -> new AtomicLong(0));
+        if (t instanceof ApiException) {
+            cnt = cache.get(((ApiException) t).getStatusCode(), () -> new AtomicLong(0));
         } else if (ExceptionParser.isConnectionException(t)) {
             cnt = cache.get(ConnectException.class, () -> new AtomicLong(0));
         } else if (ExceptionParser.isTimeoutException(t)) {

@@ -15,7 +15,6 @@
 package cn.feiliu.taskflow.open;
 
 import cn.feiliu.taskflow.open.exceptions.ApiException;
-import cn.feiliu.taskflow.open.exceptions.ConflictException;
 import lombok.*;
 
 import javax.annotation.Nullable;
@@ -85,9 +84,6 @@ public final class ApiResponse<T> {
         int code = this.code;
         if (engineErrorResponse != null && engineErrorResponse.getMessage() != null) {
             message = engineErrorResponse.getMessage();
-        }
-        if (code == 409) {
-            throw new ConflictException(message, code, headers, engineErrorResponse);
         }
         throw new ApiException(message, code, headers, engineErrorResponse);
     }

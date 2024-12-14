@@ -20,6 +20,7 @@ import cn.feiliu.taskflow.client.automator.scheduling.MultiTaskResult;
 import cn.feiliu.taskflow.client.automator.scheduling.PollExecuteStatus;
 import cn.feiliu.taskflow.client.spi.DiscoveryService;
 import cn.feiliu.taskflow.client.telemetry.MetricsContainer;
+import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
@@ -190,7 +191,7 @@ class TaskPollExecutor {
     private void handleException(Throwable t, TaskExecResult result, Worker worker, ExecutingTask task) {
         LOGGER.error(String.format("Error while executing task %s", task.toString()), t);
         MetricsContainer.incrementTaskExecutionErrorCount(worker.getTaskDefName(), t);
-        result.setStatus(TaskExecResult.Status.FAILED);
+        result.setStatus(TaskStatus.FAILED);
         result.setReasonForIncompletion("Error while executing the task: " + t);
         result.log(TaskflowUtils.dumpFullStackTrace(t));
         updateTaskResult(updateRetryCount, task, result, worker);

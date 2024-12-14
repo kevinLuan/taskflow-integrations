@@ -14,15 +14,14 @@
  */
 package cn.feiliu.taskflow.open.api;
 
+import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 import cn.feiliu.taskflow.common.utils.ExternalPayloadStorage;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Client for taskflow task management including polling for task, updating task status etc.
@@ -114,7 +113,6 @@ public interface ITaskService {
      * @param status            Status of the task
      * @param output            Output for the task
      */
-    void updateTask(String workflowId, String taskReferenceName, TaskExecResult.Status status,
-                    Map<String, Object> output);
+    void updateTask(String workflowId, String taskReferenceName, TaskStatus status, Map<String, Object> output);
 
 }

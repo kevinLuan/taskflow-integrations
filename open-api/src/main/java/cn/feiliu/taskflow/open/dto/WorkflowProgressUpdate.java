@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.open.dto;
 
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
+import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
 import lombok.Data;
 
@@ -65,16 +65,16 @@ public class WorkflowProgressUpdate {
     public static class TaskRefUpdate {
         /*任务引用名称*/
         @NotNull
-        private String                taskReferenceName;
+        private String              taskReferenceName;
         /**
          * <b>IN_PROGRESS<b>的状态:用于长时间运行的任务，表示任务仍在进行中，应该在以后的时间再次检查。
          * 例如，当作业由另一个进程执行时，worker在DB中检查作业的状态。<p>
          * <b>FAILED, FAILED_WITH_TERMINAL_ERROR, COMPLETED<b>:任务的终端状态。当您不希望重试任务时，使用FAILED_WITH_TERMINAL_ERROR。
          */
         @NotNull
-        private TaskExecResult.Status status     = TaskExecResult.Status.COMPLETED;
+        private TaskStatus          status     = TaskStatus.COMPLETED;
         /*任务执行输出数据*/
-        private Map<String, Object>   outputData = new HashMap<>();
-        private List<TaskLog>         logs       = new CopyOnWriteArrayList<>();
+        private Map<String, Object> outputData = new HashMap<>();
+        private List<TaskLog>       logs       = new CopyOnWriteArrayList<>();
     }
 }

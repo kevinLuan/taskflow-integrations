@@ -24,7 +24,7 @@ import cn.feiliu.taskflow.common.model.WorkflowRun;
 import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 import cn.feiliu.taskflow.open.dto.CreateWorkflowRequest;
 import cn.feiliu.taskflow.open.dto.WorkflowProgressUpdate;
-import cn.feiliu.taskflow.open.exceptions.ConflictException;
+import cn.feiliu.taskflow.open.exceptions.ApiException;
 import lombok.SneakyThrows;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -122,7 +122,7 @@ public class WorkflowStateUpdateTests {
         try {
             apiClient.getApis().getWorkflowClient().startWorkflow(request);
             fail("未出现逾期结果");
-        } catch (ConflictException ce) {
+        } catch (ApiException ce) {
             assertTrue(true);
         }
     }

@@ -17,7 +17,6 @@ package cn.feiliu.taskflow.open.api;
 import cn.feiliu.taskflow.common.model.WorkflowRun;
 import cn.feiliu.taskflow.open.dto.CorrelationIdsSearchRequest;
 import cn.feiliu.taskflow.open.dto.WorkflowProgressUpdate;
-import cn.feiliu.taskflow.open.exceptions.ConflictException;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowRerunRequest;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.common.model.BulkResponseResult;
@@ -36,7 +35,7 @@ public interface IWorkflowService {
      * @param startWorkflowRequest the {@link StartWorkflowRequest} object to start the workflow
      * @return the id of the workflow instance that can be used for tracking
      */
-    String startWorkflow(StartWorkflowRequest startWorkflowRequest) throws ConflictException;
+    String startWorkflow(StartWorkflowRequest startWorkflowRequest);
 
     /**
      * Retrieve a workflow by workflow id

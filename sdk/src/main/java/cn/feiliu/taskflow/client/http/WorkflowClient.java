@@ -23,7 +23,6 @@ import cn.feiliu.taskflow.client.http.api.WorkflowBulkResourceApi;
 import cn.feiliu.taskflow.client.http.api.WorkflowResourceApi;
 import cn.feiliu.taskflow.open.dto.WorkflowProgressUpdate;
 import cn.feiliu.taskflow.open.exceptions.ApiException;
-import cn.feiliu.taskflow.open.exceptions.ConflictException;
 import com.google.common.base.Preconditions;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowRerunRequest;
 import cn.feiliu.taskflow.common.metadata.workflow.SkipTaskRequest;
@@ -77,7 +76,7 @@ public class WorkflowClient implements IWorkflowClient {
     }
 
     @Override
-    public String startWorkflow(StartWorkflowRequest req) throws ConflictException {
+    public String startWorkflow(StartWorkflowRequest req) {
         if (apiClient.isUseGRPC()) {
             return apiClient.getApis().getGrpcApi().startWorkflow(req);
         } else {

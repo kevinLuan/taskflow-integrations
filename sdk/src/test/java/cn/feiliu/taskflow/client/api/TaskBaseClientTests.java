@@ -14,14 +14,14 @@
  */
 package cn.feiliu.taskflow.client.api;
 
+import cn.feiliu.common.api.utils.CommonUtils;
+import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
 import cn.feiliu.taskflow.sdk.workflow.def.tasks.SimpleTask;
 import cn.feiliu.taskflow.open.api.IWorkflowService;
-import com.google.common.util.concurrent.Uninterruptibles;
 import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
 import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 import org.junit.BeforeClass;
@@ -79,7 +79,7 @@ public class TaskBaseClientTests {
         for (ExecutingTask executingTask : tasks) {
             Map<String, Object> map = Map.of("test", "更新方式2");
             taskClient.updateTask(executingTask.getWorkflowInstanceId(), executingTask.getReferenceTaskName(),
-                TaskExecResult.Status.COMPLETED, map);
+                TaskStatus.COMPLETED, map);
         }
     }
 
@@ -98,11 +98,11 @@ public class TaskBaseClientTests {
                     Map<String, Object> map = Map.of("hello_world", new Date());
                     System.out.println(f("更新任务 taskId: %s, taskName: %s", executingTask.getTaskId(),
                         executingTask.getTaskDefName()));
-                    taskClient.updateTask(workflowId, referenceName, TaskExecResult.Status.COMPLETED, map);
+                    taskClient.updateTask(workflowId, referenceName, TaskStatus.COMPLETED, map);
                 }
             }
             count++;
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+            CommonUtils.sleepUninterruptibly(1, TimeUnit.SECONDS);
             workflow = workflowClient.getWorkflow(workflowId, true);
         }
         assertTrue(count < maxLoop);
