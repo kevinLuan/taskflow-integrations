@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.open.dto;
 
-import cn.feiliu.taskflow.common.enums.WorkflowScheduleExecutionState;
+import cn.feiliu.taskflow.common.enums.WorkflowStatus;
 import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
 import lombok.*;
 
@@ -29,37 +29,37 @@ import java.util.Objects;
 @ToString
 public class WorkflowScheduleExecution {
     /*执行ID*/
-    private Long                           id;
+    private Long                 id;
     /*调度名称*/
-    private String                         scheduleName;
+    private String               scheduleName;
     /*调度时间*/
-    private Long                           scheduledTime;
+    private Long                 scheduledTime;
     /*执行时间*/
-    private Long                           executionTime;
+    private Long                 executionTime;
     /*执行原因*/
-    private String                         reason;
+    private String               reason;
     /*跟踪栈*/
-    private String                         stackTrace;
+    private String               stackTrace;
     /*工作流请求*/
-    private StartWorkflowRequest           startWorkflowRequest;
+    private StartWorkflowRequest startWorkflowRequest;
     /*执行状态*/
-    private WorkflowScheduleExecutionState state;
+    private WorkflowStatus       state;
     /*工作流运行实例ID*/
-    private String                         workflowId;
+    private String               workflowId;
     /*工作流定义名称*/
-    private String                         workflowName;
+    private String               workflowName;
 
     public static class Builder {
-        private Long                           id;
-        private String                         scheduleName;
-        private Long                           scheduledTime;
-        private Long                           executionTime;
-        private String                         reason;
-        private String                         stackTrace;
-        private StartWorkflowRequest           startWorkflowRequest;
-        private WorkflowScheduleExecutionState state;
-        private String                         workflowId;
-        private String                         workflowName;
+        private Long                 id;
+        private String               scheduleName;
+        private Long                 scheduledTime;
+        private Long                 executionTime;
+        private String               reason;
+        private String               stackTrace;
+        private StartWorkflowRequest startWorkflowRequest;
+        private WorkflowStatus       state;
+        private String               workflowId;
+        private String               workflowName;
 
         public Builder id(Long id) {
             this.id = id;
@@ -96,7 +96,7 @@ public class WorkflowScheduleExecution {
             return this;
         }
 
-        public Builder state(WorkflowScheduleExecutionState state) {
+        public Builder state(WorkflowStatus state) {
             this.state = state;
             return this;
         }
