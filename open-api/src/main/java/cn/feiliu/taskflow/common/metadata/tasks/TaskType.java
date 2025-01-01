@@ -29,6 +29,7 @@ public enum TaskType {
     START_WORKFLOW, //
     EVENT, //
     WAIT, //
+    WAIT_FOR_WEBHOOK,//
     USER_DEFINED, //
     HTTP, //
     LAMBDA, //
