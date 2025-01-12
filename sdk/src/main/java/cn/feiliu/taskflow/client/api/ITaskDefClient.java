@@ -14,8 +14,9 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.open.api.ITaskDefService;
+
+import cn.feiliu.taskflow.api.ITaskDefService;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
 
 import java.util.List;
 

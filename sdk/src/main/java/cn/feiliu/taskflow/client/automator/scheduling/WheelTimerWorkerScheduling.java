@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client.automator.scheduling;
 
-import cn.feiliu.taskflow.sdk.worker.Worker;
+import cn.feiliu.taskflow.core.executor.task.Worker;
 import com.google.common.collect.Lists;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;

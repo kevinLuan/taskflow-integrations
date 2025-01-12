@@ -14,10 +14,11 @@
  */
 package cn.feiliu.taskflow.sdk.workflow.def.tasks;
 
-import cn.feiliu.taskflow.common.metadata.tasks.TaskType;
-import cn.feiliu.taskflow.common.metadata.workflow.SubFlowParams;
-import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
+import cn.feiliu.taskflow.core.def.tasks.Task;
+import cn.feiliu.taskflow.dto.tasks.TaskType;
+import cn.feiliu.taskflow.dto.workflow.FlowTask;
+import cn.feiliu.taskflow.dto.workflow.SubFlowParams;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
 
 public class SubWorkflow extends Task<SubWorkflow> {
 

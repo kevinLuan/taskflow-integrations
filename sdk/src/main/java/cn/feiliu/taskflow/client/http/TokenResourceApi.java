@@ -15,10 +15,10 @@
 package cn.feiliu.taskflow.client.http;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.open.ApiResponse;
-import cn.feiliu.taskflow.open.dto.Application;
-import cn.feiliu.taskflow.open.dto.TokenResponse;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.dto.Application;
+import cn.feiliu.taskflow.dto.TokenResponse;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.squareup.okhttp.Call;
 
 import java.util.*;

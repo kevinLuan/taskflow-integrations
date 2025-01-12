@@ -15,15 +15,15 @@
 package cn.feiliu.taskflow.client.api;
 
 import cn.feiliu.common.api.utils.CommonUtils;
+import cn.feiliu.taskflow.api.IWorkflowService;
 import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.SimpleTask;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.core.def.tasks.SimpleTask;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
+import cn.feiliu.taskflow.dto.tasks.TaskLog;
+import cn.feiliu.taskflow.dto.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

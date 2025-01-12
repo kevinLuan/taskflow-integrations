@@ -15,6 +15,9 @@
 package cn.feiliu.taskflow.client.automator;
 
 import cn.feiliu.common.api.utils.CommonUtils;
+import cn.feiliu.shaded.spectator.api.Registry;
+import cn.feiliu.shaded.spectator.api.Spectator;
+import cn.feiliu.shaded.spectator.api.patterns.ThreadPoolMonitor;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.api.ITaskClient;
 import cn.feiliu.taskflow.client.automator.scheduling.MultiTaskResult;
@@ -23,22 +26,16 @@ import cn.feiliu.taskflow.client.spi.DiscoveryService;
 import cn.feiliu.taskflow.client.telemetry.MetricsContainer;
 import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.utils.SdkUtils;
-import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
-import cn.feiliu.taskflow.sdk.worker.Worker;
+import cn.feiliu.taskflow.core.executor.task.Worker;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.TaskExecResult;
+import cn.feiliu.taskflow.dto.tasks.TaskLog;
 import com.google.common.base.Stopwatch;
-import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.api.Spectator;
-import com.netflix.spectator.api.Timer;
-import com.netflix.spectator.api.patterns.ThreadPoolMonitor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import cn.feiliu.shaded.spectator.api.Timer;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
@@ -230,14 +227,8 @@ class TaskPollExecutor {
     }
 
     boolean isActive(Worker worker) {
-        Boolean discoveryOverride = WorkerPropertyManager.getPollOutOfDiscovery(worker.getTaskDefName(),ALL_WORKERS,false);
-        if (discoveryService != null && !discoveryService.getStatus().isUp() && !discoveryOverride) {
+        if (discoveryService != null && !discoveryService.getStatus().isUp()) {
             LOGGER.debug("Instance is NOT UP in discovery - will not poll");
-            return false;
-        }
-        if (worker.paused()) {
-            MetricsContainer.incrementTaskPausedCount(worker.getTaskDefName());
-            LOGGER.debug("Worker {} has been paused. Not polling anymore!", worker.getClass());
             return false;
         }
         return true;
@@ -254,7 +245,7 @@ class TaskPollExecutor {
             if (isActive(worker)) {
                 String taskType = worker.getTaskDefName();
                 PollingSemaphore pollingSemaphore = getPollingSemaphore(worker);
-                String domain = WorkerPropertyManager.getDomainWithFallback(taskType, ALL_WORKERS, taskToDomain.get(taskType));
+                String domain = taskToDomain.get(taskType);
                 Optional<Integer> availablePermitsOpt = pollingSemaphore.tryAcquireAvailablePermits();
                 if (availablePermitsOpt.isPresent()) {
                     final int maxAmount = availablePermitsOpt.get();
@@ -298,7 +289,7 @@ class TaskPollExecutor {
     private List<ExecutingTask> getBatchTasks(Worker worker, String domain, int maxAmount) throws Exception {
         LOGGER.debug("Polling tasks of type: {}", worker.getTaskDefName());
         String workerId = worker.getIdentity();
-        int timeout = SdkUtils.getReasonableTimeout(worker);
+        int timeout  = 100;
         String taskName = worker.getTaskDefName();
         Timer timer = MetricsContainer.getBatchPollTimer(worker.getTaskDefName());
         if (apiClient.isUseGRPC()) {

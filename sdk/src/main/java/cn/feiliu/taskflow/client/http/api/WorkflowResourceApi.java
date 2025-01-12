@@ -15,21 +15,21 @@
 package cn.feiliu.taskflow.client.http.api;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.common.model.WorkflowRun;
-import cn.feiliu.taskflow.open.ApiResponse;
-import cn.feiliu.taskflow.open.dto.CorrelationIdsSearchRequest;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
 import cn.feiliu.taskflow.client.utils.Assertion;
 import cn.feiliu.taskflow.client.utils.HttpHelper;
-import cn.feiliu.taskflow.open.dto.WorkflowProgressUpdate;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.dto.CorrelationIdsSearchRequest;
+import cn.feiliu.taskflow.dto.WorkflowProgressUpdate;
+import cn.feiliu.taskflow.dto.result.WorkflowRun;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.dto.workflow.SkipTaskRequest;
+import cn.feiliu.taskflow.dto.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.dto.workflow.WorkflowRerunRequest;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowRerunRequest;
-import cn.feiliu.taskflow.common.metadata.workflow.SkipTaskRequest;
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Interceptor;
 

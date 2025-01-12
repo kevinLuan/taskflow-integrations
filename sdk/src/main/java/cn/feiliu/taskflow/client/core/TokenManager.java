@@ -14,9 +14,9 @@
  */
 package cn.feiliu.taskflow.client.core;
 
+import cn.feiliu.common.api.utils.AuthTokenUtil;
 import cn.feiliu.taskflow.client.api.IAuthClient;
-import cn.feiliu.taskflow.common.AuthTokenUtil;
-import cn.feiliu.taskflow.open.dto.TokenResponse;
+import cn.feiliu.taskflow.dto.TokenResponse;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;

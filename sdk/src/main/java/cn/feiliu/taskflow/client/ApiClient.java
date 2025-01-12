@@ -30,14 +30,14 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.*;
 
 import cn.feiliu.taskflow.client.core.TokenManager;
-import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
 import cn.feiliu.taskflow.client.http.types.ResponseTypeHandler;
 import cn.feiliu.taskflow.client.utils.HttpHelper;
 import cn.feiliu.taskflow.client.utils.SecurityHelper;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
-import cn.feiliu.taskflow.sdk.workflow.executor.extension.TaskHandlerManager;
+import cn.feiliu.taskflow.core.executor.extension.TaskHandlerManager;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.squareup.okhttp.*;
 import lombok.Getter;
 import lombok.SneakyThrows;

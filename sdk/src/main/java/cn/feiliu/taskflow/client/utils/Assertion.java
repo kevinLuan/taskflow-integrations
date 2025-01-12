@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client.utils;
 
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.exceptions.ApiException;
 
 import java.util.Collection;
 

@@ -16,19 +16,19 @@ package cn.feiliu.taskflow.client.sdk;
 
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 
+import cn.feiliu.common.api.utils.MapBuilder;
 import cn.feiliu.taskflow.client.api.BaseClientApi;
 import cn.feiliu.taskflow.client.core.TaskEngine;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
-import cn.feiliu.taskflow.sdk.worker.Worker;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.DoWhile;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.For;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.ForkFor;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.SimpleTask;
-import cn.feiliu.taskflow.sdk.workflow.task.InputParam;
-import cn.feiliu.taskflow.sdk.workflow.task.WorkerTask;
-import cn.feiliu.taskflow.sdk.workflow.utils.MapBuilder;
+import cn.feiliu.taskflow.core.def.tasks.DoWhile;
+import cn.feiliu.taskflow.core.def.tasks.For;
+import cn.feiliu.taskflow.core.def.tasks.ForkFor;
+import cn.feiliu.taskflow.core.def.tasks.SimpleTask;
+import cn.feiliu.taskflow.core.executor.task.Worker;
+import cn.feiliu.taskflow.core.task.InputParam;
+import cn.feiliu.taskflow.core.task.WorkerTask;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import org.junit.AfterClass;
@@ -99,7 +99,7 @@ public class AnalysisTest {
                                                 "${workflow.input.taskflow}")))))//
             ).build();
         Assert.assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
-        Map<String, Object> reqData = new MapBuilder().put("items", new Integer[] { 1, 2 }).put("loopCount", 2)
+        Map<String, Object> reqData = MapBuilder.newBuilder().put("items", new Integer[] { 1, 2 }).put("loopCount", 2)
             .put("taskflow", "任务云平台 --> http://www.taskflow.cn").build();
         doExecute(workflowDef, reqData, 120);
         Assert.assertTrue(getWorkflowEngine().deleteWorkflowDef(workflowDef.getName(), workflowDef.getVersion()));
@@ -122,13 +122,13 @@ public class AnalysisTest {
     }
 
     public static class MyWorkers {
-        @WorkerTask(value = testEchoAny, title = "单元测试任务", threadCount = 10)
+        @WorkerTask(value = testEchoAny, threadCount = 10)
         public String echoAny(@InputParam("msg") Object msg) {
             System.out.println(String.format("echoAny: `%s`", msg));
             return "echoAny: " + msg;
         }
 
-        @WorkerTask(value = testRandomItems, title = "testRamdom", threadCount = 10)
+        @WorkerTask(value = testRandomItems, threadCount = 10)
         public List<String> randomItems(@InputParam("status") Boolean status) {
             if (status) {
                 return Lists.newArrayList("AA", "BB");

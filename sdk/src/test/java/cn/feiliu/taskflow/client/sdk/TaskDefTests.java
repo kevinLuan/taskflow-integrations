@@ -16,11 +16,10 @@ package cn.feiliu.taskflow.client.sdk;
 
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.DoWhile;
-
 import static org.junit.Assert.*;
 
+import cn.feiliu.taskflow.core.def.tasks.DoWhile;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
 import org.junit.Test;
 
 import java.util.concurrent.ThreadLocalRandom;

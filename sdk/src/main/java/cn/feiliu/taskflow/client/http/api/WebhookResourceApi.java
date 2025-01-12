@@ -15,9 +15,9 @@
 package cn.feiliu.taskflow.client.http.api;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.open.ApiResponse;
-import cn.feiliu.taskflow.open.dto.WorkflowScheduleExecution;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.dto.WorkflowScheduleExecution;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.squareup.okhttp.Call;
 
 import static cn.feiliu.common.api.utils.CommonUtils.f;

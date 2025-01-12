@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.open.api.ITriggerService;
+import cn.feiliu.taskflow.api.ITriggerService;
 
 /**
  * @author SHOUSHEN.LUAN

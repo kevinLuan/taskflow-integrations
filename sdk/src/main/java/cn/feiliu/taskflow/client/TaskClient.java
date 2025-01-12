@@ -17,11 +17,10 @@ package cn.feiliu.taskflow.client;
 import cn.feiliu.taskflow.client.http.api.TaskResourceApi;
 import cn.feiliu.taskflow.client.api.ITaskClient;
 import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
-import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.TaskExecResult;
+import cn.feiliu.taskflow.dto.tasks.TaskLog;
 import cn.feiliu.taskflow.serialization.SerializerFactory;
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 
 import java.util.*;
 
@@ -62,7 +61,7 @@ public class TaskClient implements ITaskClient {
 
     @Override
     public ExecutingTask pollTask(String taskType, String workerId, String domain) {
-        int timeout = WorkerPropertyManager.getBatchPollTimeoutInMS(taskType);
+        int timeout = 100;
         List<ExecutingTask> tasks = batchPollTasksInDomain(taskType, domain, workerId, 1, timeout);
         if (tasks == null || tasks.isEmpty()) {
             return null;

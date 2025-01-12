@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.client.api;
 
+import cn.feiliu.taskflow.api.ITaskService;
 import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
-import cn.feiliu.taskflow.open.api.ITaskService;
 
 /**
  * @author SHOUSHEN.LUAN

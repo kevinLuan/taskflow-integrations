@@ -14,9 +14,7 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.client.http.TokenResourceApi;
-import cn.feiliu.taskflow.open.dto.Application;
+import cn.feiliu.taskflow.dto.Application;
 import org.junit.Assert;
 import org.junit.Test;
 

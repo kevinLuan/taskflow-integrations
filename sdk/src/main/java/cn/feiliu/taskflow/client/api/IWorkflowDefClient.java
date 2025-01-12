@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.open.api.IWorkflowDefService;
+import cn.feiliu.taskflow.api.IWorkflowDefService;
 
 /**
  * @author SHOUSHEN.LUAN

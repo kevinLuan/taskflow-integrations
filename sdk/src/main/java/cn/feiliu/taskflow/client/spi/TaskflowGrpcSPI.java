@@ -15,11 +15,11 @@
 package cn.feiliu.taskflow.client.spi;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.TaskExecResult;
+import cn.feiliu.taskflow.dto.tasks.TaskLog;
+import cn.feiliu.taskflow.dto.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.exceptions.ApiException;
 
 import java.util.List;
 import java.util.concurrent.Future;

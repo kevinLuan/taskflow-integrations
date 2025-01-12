@@ -14,10 +14,9 @@
  */
 package cn.feiliu.taskflow.client.automator.scheduling;
 
-import cn.feiliu.taskflow.sdk.worker.Worker;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import cn.feiliu.taskflow.core.executor.task.Worker;
 import java.util.function.Consumer;
 import java.util.function.Function;
 

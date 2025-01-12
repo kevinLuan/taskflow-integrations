@@ -16,9 +16,9 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.client.api.IAuthClient;
 import cn.feiliu.taskflow.client.http.TokenResourceApi;
-import cn.feiliu.taskflow.open.ApiResponse;
-import cn.feiliu.taskflow.open.dto.Application;
-import cn.feiliu.taskflow.open.dto.TokenResponse;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.dto.Application;
+import cn.feiliu.taskflow.dto.TokenResponse;
 
 /**
  * @author SHOUSHEN.LUAN

@@ -15,17 +15,17 @@
 package cn.feiliu.taskflow.client.http.api;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
 import cn.feiliu.taskflow.client.utils.Assertion;
 import cn.feiliu.taskflow.client.utils.HttpHelper;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.PollData;
+import cn.feiliu.taskflow.dto.tasks.TaskExecResult;
+import cn.feiliu.taskflow.dto.tasks.TaskLog;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.google.common.collect.Lists;
-import cn.feiliu.taskflow.common.metadata.tasks.PollData;
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 import com.squareup.okhttp.Call;
 
 import java.net.InetAddress;

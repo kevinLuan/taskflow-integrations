@@ -17,11 +17,11 @@ package cn.feiliu.taskflow.client.api;
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 
 import cn.feiliu.taskflow.common.enums.WorkflowTimeoutPolicy;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-
 import static org.junit.Assert.*;
+
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
+import cn.feiliu.taskflow.dto.workflow.FlowTask;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
 import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Test;

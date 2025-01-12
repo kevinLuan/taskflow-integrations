@@ -14,14 +14,14 @@
  */
 package cn.feiliu.taskflow.client;
 
+import cn.feiliu.common.api.core.ExecutionHookFactory;
 import cn.feiliu.taskflow.client.api.*;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.core.WorkflowEngine;
 import cn.feiliu.taskflow.client.http.WebhookClient;
 import cn.feiliu.taskflow.client.http.WorkflowClient;
 import cn.feiliu.taskflow.client.spi.TaskflowGrpcSPI;
-import cn.feiliu.taskflow.common.utils.ExternalServiceFactory;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.exceptions.ApiException;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -43,8 +43,8 @@ public final class TaskflowApis {
     private final Optional<TaskflowGrpcSPI> grpc_api;
 
     {
-        ExternalServiceFactory.register(TaskflowGrpcSPI.class);
-        grpc_api = ExternalServiceFactory.getFirstServiceInstance(TaskflowGrpcSPI.class);
+        ExecutionHookFactory.register(TaskflowGrpcSPI.class);
+        grpc_api = ExecutionHookFactory.getFirstServiceInstance(TaskflowGrpcSPI.class);
     }
 
     TaskflowApis(ApiClient client) {

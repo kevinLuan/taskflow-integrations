@@ -14,11 +14,7 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.model.WorkflowRun;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
-
-import java.util.concurrent.CompletableFuture;
+import cn.feiliu.taskflow.api.IWorkflowService;
 
 /**
  * @author SHOUSHEN.LUAN

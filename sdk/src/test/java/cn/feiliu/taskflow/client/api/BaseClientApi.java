@@ -14,11 +14,11 @@
  */
 package cn.feiliu.taskflow.client.api;
 
+import cn.feiliu.taskflow.api.IWorkflowService;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.core.WorkflowEngine;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
 import lombok.Getter;
 import lombok.SneakyThrows;
 

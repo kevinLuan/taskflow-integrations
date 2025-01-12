@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.sdk.exceptions;
 
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

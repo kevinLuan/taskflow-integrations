@@ -17,9 +17,9 @@ package cn.feiliu.taskflow.client.http.api;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
 import cn.feiliu.taskflow.client.utils.Assertion;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.open.ApiResponse;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.squareup.okhttp.Call;
 
 import java.util.ArrayList;

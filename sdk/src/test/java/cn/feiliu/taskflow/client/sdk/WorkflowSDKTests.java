@@ -17,13 +17,13 @@ package cn.feiliu.taskflow.client.sdk;
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 import static org.junit.Assert.assertTrue;
 
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
-import cn.feiliu.taskflow.sdk.worker.Worker;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.*;
-import cn.feiliu.taskflow.sdk.workflow.task.InputParam;
-import cn.feiliu.taskflow.sdk.workflow.task.WorkerTask;
+import cn.feiliu.taskflow.core.def.tasks.*;
+import cn.feiliu.taskflow.core.executor.task.Worker;
+import cn.feiliu.taskflow.core.task.InputParam;
+import cn.feiliu.taskflow.core.task.WorkerTask;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import org.junit.*;
@@ -242,13 +242,13 @@ public class WorkflowSDKTests {
     }
 
     public static class MyWorkers {
-        @WorkerTask(value = SIMPLE_TASK, title = "单元测试任务")
+        @WorkerTask(value = SIMPLE_TASK)
         public String sdkTask(@InputParam("name") Object name) {
             System.out.println("自定义工作节点:::" + name);
             return "Hello " + name;
         }
 
-        @WorkerTask(value = RANDOM_ITEMS, title = "random-items", threadCount = 3)
+        @WorkerTask(value = RANDOM_ITEMS, threadCount = 3)
         public List<String> randomItems(@InputParam("status") Boolean status) {
             if (status) {
                 return Lists.newArrayList("A", "B");
