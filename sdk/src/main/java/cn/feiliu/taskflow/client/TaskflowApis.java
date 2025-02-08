@@ -14,38 +14,26 @@
  */
 package cn.feiliu.taskflow.client;
 
-import cn.feiliu.common.api.core.ExecutionHookFactory;
 import cn.feiliu.taskflow.client.api.*;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.core.WorkflowEngine;
 import cn.feiliu.taskflow.client.http.WebhookClient;
 import cn.feiliu.taskflow.client.http.WorkflowClient;
-import cn.feiliu.taskflow.client.spi.TaskflowGrpcSPI;
-import cn.feiliu.taskflow.exceptions.ApiException;
-
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author SHOUSHEN.LUAN
  * @since 2024-10-04
  */
 public final class TaskflowApis {
-    final ApiClient                         client;
-    private IAuthClient                     authClient;
-    private TaskEngine                      taskEngine;
-    private WorkflowEngine                  workflowEngine;
-    private final IWebhookClient            triggerClient;
-    private final IWorkflowClient           workflowClient;
-    private final ITaskClient               taskClient;
-    private final ISchedulerClient          schedulerClient;
-    private final IWorkflowDefClient        workflowDefClient;
-    private final Optional<TaskflowGrpcSPI> grpc_api;
-
-    {
-        ExecutionHookFactory.register(TaskflowGrpcSPI.class);
-        grpc_api = ExecutionHookFactory.getFirstServiceInstance(TaskflowGrpcSPI.class);
-    }
+    final ApiClient                  client;
+    private IAuthClient              authClient;
+    private TaskEngine               taskEngine;
+    private WorkflowEngine           workflowEngine;
+    private final IWebhookClient     triggerClient;
+    private final IWorkflowClient    workflowClient;
+    private final ITaskClient        taskClient;
+    private final ISchedulerClient   schedulerClient;
+    private final IWorkflowDefClient workflowDefClient;
 
     TaskflowApis(ApiClient client) {
         this.client = client;
@@ -127,22 +115,7 @@ public final class TaskflowApis {
         return triggerClient;
     }
 
-    public TaskflowGrpcSPI getGrpcApi() {
-        if (client.isUseGRPC()) {
-            return Objects.requireNonNull(grpc_api.get());
-        } else {
-            throw new ApiException("The grpc api is currently not supported");
-        }
-    }
-
-    public boolean isGrpcSpiAvailable() {
-        return grpc_api.isPresent();
-    }
-
     public void shutdown() {
-        if (grpc_api.isPresent()) {
-            grpc_api.get().shutdown();
-        }
         workflowClient.shutdown();
         taskEngine.shutdown();
     }

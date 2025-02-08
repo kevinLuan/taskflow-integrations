@@ -53,11 +53,8 @@ public class WorkflowClient implements IWorkflowClient {
         this.apiClient = apiClient;
         this.httpClient = new WorkflowResourceApi(apiClient);
         this.bulkResourceApi = new WorkflowBulkResourceApi(apiClient);
-        if (!apiClient.isUseGRPC()) {
-            int threadCount = apiClient.getExecutorThreadCount() > 0 ? apiClient.getExecutorThreadCount() : 64;
-            this.executorService = new ThreadPoolExecutor(0, threadCount, 60L, TimeUnit.SECONDS,
-                new SynchronousQueue<>());
-        }
+        int threadCount = apiClient.getExecutorThreadCount() > 0 ? apiClient.getExecutorThreadCount() : 16;
+        this.executorService = new ThreadPoolExecutor(0, threadCount, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
     }
 
     public IWorkflowService withReadTimeout(int readTimeout) {
@@ -77,11 +74,7 @@ public class WorkflowClient implements IWorkflowClient {
 
     @Override
     public String startWorkflow(StartWorkflowRequest req) {
-        if (apiClient.isUseGRPC()) {
-            return apiClient.getApis().getGrpcApi().startWorkflow(req);
-        } else {
-            return httpClient.startWorkflow(req);
-        }
+        return httpClient.startWorkflow(req);
     }
 
     @Override

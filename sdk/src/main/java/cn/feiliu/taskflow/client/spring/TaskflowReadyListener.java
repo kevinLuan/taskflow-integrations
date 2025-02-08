@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 启动时，扫描所有被 {@link TaskflowWorkers} 注解的类，并注册为 Worker
+ * 启动时，扫描所有被 {@link Workers} 注解的类，并注册为 Worker
  */
 class TaskflowReadyListener implements ApplicationListener<ContextRefreshedEvent> {
 
@@ -43,7 +43,7 @@ class TaskflowReadyListener implements ApplicationListener<ContextRefreshedEvent
     @SneakyThrows
     public void onApplicationEvent(ContextRefreshedEvent refreshedEvent) {
         ApplicationContext applicationContext = refreshedEvent.getApplicationContext();
-        Map<String, Object> beans = applicationContext.getBeansWithAnnotation(TaskflowWorkers.class);
+        Map<String, Object> beans = applicationContext.getBeansWithAnnotation(Workers.class);
         for (Map.Entry<String, Object> entry : beans.entrySet()) {
             if (CACHE.getIfPresent(entry.getKey()) == null) {
                 Object bean = entry.getValue();

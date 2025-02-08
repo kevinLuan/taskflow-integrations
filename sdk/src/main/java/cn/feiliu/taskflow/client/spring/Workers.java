@@ -12,33 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.sdk.exceptions;
+package cn.feiliu.taskflow.client.spring;
 
-import lombok.Data;
+import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.lang.annotation.*;
 
 /**
+ * 自定义 Workers 分组
+ *
  * @author SHOUSHEN.LUAN
- * @since 2024-08-20
+ * @since 2024-09-01
  */
-@Data(staticConstructor = "of")
-public class ExceptionSummary {
-    /*周期时间内第x次出现该类异常*/
-    private final long      errorCount;
-    /*原始异常栈*/
-    private final Throwable throwable;
-
-    /**
-     * 尝试解析异常类型
-     *
-     * @return
-     */
-    public Optional<String> tryParserType() {
-        return ExceptionParser.tryParserType(throwable);
-    }
-
-    public boolean isFirst() {
-        return errorCount == 1;
-    }
+@Target({ ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Service
+public @interface Workers {
 }

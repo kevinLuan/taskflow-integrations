@@ -58,8 +58,6 @@ public final class ApiClient {
 
     private boolean                   useSSL;
 
-    private boolean                   useGRPC;
-
     private int                       executorThreadCount = 0;
 
     private final TokenManager        tokenManager;
@@ -85,22 +83,6 @@ public final class ApiClient {
         } else {
             return basePath;
         }
-    }
-
-    public boolean isUseGRPC() {
-        return useGRPC;
-    }
-
-    public void setUseGRPC(String host, int port) {
-        this.grpcHost = host;
-        this.grpcPort = port;
-        if (this.useGRPC = getApis().isGrpcSpiAvailable()) {
-            getApis().getGrpcApi().init(this);
-        }
-    }
-
-    public boolean useSSL() {
-        return useSSL;
     }
 
     /**

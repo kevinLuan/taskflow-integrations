@@ -36,6 +36,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import cn.feiliu.shaded.spectator.api.Timer;
+
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
@@ -163,19 +164,8 @@ class TaskPollExecutor {
 
     private void updateTaskResult(int count, ExecutingTask task, TaskExecResult result, Worker worker) {
         Runnable runnable = () -> {
-            if (apiClient.isUseGRPC()) {
-                List<Future<?>> futures = new ArrayList<>();
-                futures.add(apiClient.getApis().getGrpcApi().asyncUpdateTask(result));
-                for (TaskLog taskLog : result.getLogs()) {
-                    if (StringUtils.isNotBlank(taskLog.getLog())) {
-                        futures.add(apiClient.getApis().getGrpcApi().addLog(taskLog));
-                    }
-                }
-                CommonUtils.blockedWait(futures, 30_000);
-            } else {
-                ITaskClient taskClient = apiClient.getApis().getTaskClient();
-                taskClient.updateTask(result);
-            }
+            ITaskClient taskClient = apiClient.getApis().getTaskClient();
+            taskClient.updateTask(result);
         };
         try {
             CommonUtils.retryOperation(runnable, count, "updateTask");
@@ -289,17 +279,11 @@ class TaskPollExecutor {
     private List<ExecutingTask> getBatchTasks(Worker worker, String domain, int maxAmount) throws Exception {
         LOGGER.debug("Polling tasks of type: {}", worker.getTaskDefName());
         String workerId = worker.getIdentity();
-        int timeout  = 100;
+        int timeout = 100;
         String taskName = worker.getTaskDefName();
         Timer timer = MetricsContainer.getBatchPollTimer(worker.getTaskDefName());
-        if (apiClient.isUseGRPC()) {
-            return timer.record(() -> {
-                return apiClient.getApis().getGrpcApi().batchPollTask(taskName, workerId, domain, maxAmount, timeout);
-            });
-        } else {
-            ITaskClient taskClient = apiClient.getApis().getTaskClient();
-            return timer.record(() -> taskClient.batchPollTasksInDomain(taskName, domain, workerId, maxAmount, timeout));
-        }
+        ITaskClient taskClient = apiClient.getApis().getTaskClient();
+        return timer.record(() -> taskClient.batchPollTasksInDomain(taskName, domain, workerId, maxAmount, timeout));
     }
 
     private List<CompletableFuture<ExecutingTask>> submitTasks(Worker worker, List<ExecutingTask> tasks, String domain, PollingSemaphore pollingSemaphore) {
