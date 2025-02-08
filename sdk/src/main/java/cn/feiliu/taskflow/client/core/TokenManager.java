@@ -48,7 +48,6 @@ public class TokenManager implements AutoCloseable {
     private String                         keyId;
     private String                         keySecret;
     private final String                   TOKEN               = "tf_token";
-    private final String                   REFRESH_INTERVAL    = "FEILIU_SECURITY_TOKEN_REFRESH_INTERVAL";
     private final RateLimiter              rateLimiter         = RateLimiter.create(1);
 
     public TokenManager(IAuthClient authClient, String keyId, String keySecret) {
@@ -66,9 +65,10 @@ public class TokenManager implements AutoCloseable {
      * @return
      */
     private Integer getRefreshIntervalTimes() {
-        String refreshInterval = System.getenv(REFRESH_INTERVAL);
+        String key = "feiliu_security_token_refresh_interval";
+        String refreshInterval = System.getenv(key);
         if (refreshInterval == null) {
-            refreshInterval = System.getProperty(REFRESH_INTERVAL);
+            refreshInterval = System.getProperty(key);
         }
         if (refreshInterval != null) {
             try {
@@ -83,13 +83,11 @@ public class TokenManager implements AutoCloseable {
      * 应该启动调度程序并初始化令牌
      */
     public void shouldStartSchedulerAndInitializeToken() {
-        if (useSecurity()) {
-            scheduleTokenRefresh();
-            try {
-                getBearerToken();
-            } catch (Throwable t) {
-                log.error(t.getMessage(), t);
-            }
+        scheduleTokenRefresh();
+        try {
+            getBearerToken();
+        } catch (Throwable t) {
+            log.error(t.getMessage(), t);
         }
     }
 
@@ -108,10 +106,6 @@ public class TokenManager implements AutoCloseable {
         }, tokenRefreshInSeconds, tokenRefreshInSeconds, TimeUnit.SECONDS);
     }
 
-    public boolean useSecurity() {
-        return StringUtils.isNotBlank(keyId) && StringUtils.isNotBlank(keySecret);
-    }
-
     /**
      * 强制刷新token并返回Bearer格式的token
      *
@@ -126,9 +120,6 @@ public class TokenManager implements AutoCloseable {
     @SneakyThrows
     public String getBearerToken() {
         try {
-            if (!useSecurity()) {//暂不支持该场景
-                throw new RuntimeException("KeyId and KeySecret must be set in order to get an authentication token");
-            }
             return CACHE.get(TOKEN, () -> refreshAndGetBearerToken());
         } catch (UncheckedExecutionException e) {
             throw e.getCause();

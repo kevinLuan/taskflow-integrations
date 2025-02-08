@@ -17,7 +17,6 @@ package cn.feiliu.taskflow.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -53,8 +52,6 @@ public final class ApiClient {
     private KeyManager[]              keyManagers;
 
     private OkHttpClient              httpClient;
-    private String                    grpcHost            = "localhost";
-    private int                       grpcPort            = 9000;
 
     private boolean                   useSSL;
 
@@ -136,26 +133,6 @@ public final class ApiClient {
         this.httpClient.getDispatcher().getExecutorService().shutdown();
         tokenManager.close();
         apis.shutdown();
-    }
-
-    public int getGrpcPort() {
-        return grpcPort;
-    }
-
-    public String getGrpcHost() {
-        return grpcHost;
-    }
-
-    public void setGrpcPort(int grpcPort) {
-        this.grpcPort = grpcPort;
-    }
-
-    public String getHost() {
-        try {
-            return new URL(basePath).getHost();
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     /**
@@ -427,12 +404,10 @@ public final class ApiClient {
      * @param headerParams Header参数映射
      */
     public void updateParamsForAuth(String path, Map<String, String> headerParams) {
-        if (tokenManager.useSecurity()) {
-            if ("/auth/token".equalsIgnoreCase(path)) {
-                headerParams.put("Authorization", tokenManager.constructCredentials());
-            } else {
-                headerParams.put("Authorization", getToken());
-            }
+        if ("/auth/token".equalsIgnoreCase(path)) {
+            headerParams.put("Authorization", tokenManager.constructCredentials());
+        } else {
+            headerParams.put("Authorization", getToken());
         }
     }
 
@@ -501,10 +476,6 @@ public final class ApiClient {
 
     public Map<String, String> getDefaultHeaderMap() {
         return Collections.unmodifiableMap(defaultHeaderMap);
-    }
-
-    public boolean useSecurity() {
-        return tokenManager.useSecurity();
     }
 
     public String getToken() {
