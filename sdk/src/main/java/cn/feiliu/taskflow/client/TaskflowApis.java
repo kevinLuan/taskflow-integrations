@@ -74,6 +74,11 @@ public final class TaskflowApis {
         return workflowEngine;
     }
 
+    /**
+     * 获取工作流定义客户端
+     *
+     * @return
+     */
     public IWorkflowDefClient getWorkflowDefClient() {
         return workflowDefClient;
     }

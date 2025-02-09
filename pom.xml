@@ -9,7 +9,6 @@
     <name>${project.artifactId}</name>
     <modules>
         <module>sdk</module>
-        <module>discovery</module>
         <module>taskflow-client-spring</module>
     </modules>
     <version>${revision}</version>
@@ -93,11 +92,6 @@
             <dependency>
                 <groupId>cn.taskflow</groupId>
                 <artifactId>taskflow-common</artifactId>
-                <version>${taskflow.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>cn.taskflow</groupId>
-                <artifactId>taskflow-discovery</artifactId>
                 <version>${taskflow.version}</version>
             </dependency>
             <dependency>
