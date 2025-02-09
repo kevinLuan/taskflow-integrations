@@ -57,41 +57,6 @@ public class WorkflowResourceApi {
         this.apiClient = apiClient;
     }
 
-    public Call executeWorkflowCall(StartWorkflowRequest body, ProgressResponseBody.ProgressListener progressListener,
-                                    ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                        throws ApiException {
-        Object localVarPostBody = body;
-        String localVarPath = "/workflow/start";
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "application/json" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = { "application/json" };
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
-        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
-    }
-
     /**
      * Starts the decision task for a workflow
      *

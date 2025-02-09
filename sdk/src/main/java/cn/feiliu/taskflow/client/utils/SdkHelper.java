@@ -52,4 +52,24 @@ public class SdkHelper {
             return contentType;
         }
     }
+
+    /**
+     * 使用给定的分隔符连接字符串数组
+     * 注意：如果将来添加commons-lang或guava作为依赖，这个方法可能会被替换为这些库中的工具方法
+     *
+     * @param array 要连接的字符串数组
+     * @param separator 分隔符
+     * @return 连接后的字符串结果
+     */
+    public static String join(String[] array, String separator) {
+        if (array.length == 0)
+            return "";
+
+        StringBuilder out = new StringBuilder();
+        out.append(array[0]);
+        for (int i = 1; i < array.length; i++) {
+            out.append(separator).append(array[i]);
+        }
+        return out.toString();
+    }
 }

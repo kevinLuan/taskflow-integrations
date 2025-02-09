@@ -116,7 +116,7 @@ public class HttpHelper {
                 return accept;
             }
         }
-        return StringUtil.join(accepts, ",");
+        return SdkHelper.join(accepts, ",");
     }
 
     /**
