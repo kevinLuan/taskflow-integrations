@@ -96,19 +96,7 @@ public class WorkflowResourceApi {
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (includeTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeTasks", includeTasks));
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, null, null, localVarHeaderParams, null);
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, null, null, null);
     }
 
     private Call getExecutionStatusValidateBeforeCall(String workflowId, Boolean includeTasks) throws ApiException {
@@ -162,7 +150,7 @@ public class WorkflowResourceApi {
             throw new ApiException("Missing the required parameter 'name' when calling getRunningWorkflow(Async)");
         }
         String path = f("/workflow/running/%s", name);
-        List<Pair> queryParams = new ArrayList<Pair>();
+        List<Pair> queryParams = new ArrayList<>();
         if (version != null)
             queryParams.addAll(HttpHelper.parameterToPair("version", version));
         if (startTime != null)
@@ -196,21 +184,8 @@ public class WorkflowResourceApi {
         if (includeTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeTasks", includeTasks));
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = { "application/json" };
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+            localVarPostBody, null);
     }
 
     private Call getWorkflowsValidateBeforeCall(List<String> body, String name, Boolean includeClosed,
@@ -260,23 +235,8 @@ public class WorkflowResourceApi {
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeClosed", includeClosed));
         if (includeTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeTasks", includeTasks));
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+            localVarPostBody, null);
     }
 
     /**
@@ -322,20 +282,9 @@ public class WorkflowResourceApi {
         if (includeTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeTasks", includeTasks));
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = { "application/json" };
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
+        Map<String, Object> localVarFormParams = new HashMap<>();
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+            localVarPostBody, localVarFormParams);
     }
 
     /**
@@ -351,24 +300,6 @@ public class WorkflowResourceApi {
     public List<ExecutingWorkflow> getWorkflowsByCorrelationId(String name, String correlationId,
                                                                Boolean includeClosed, Boolean includeTasks)
                                                                                                            throws ApiException {
-        ApiResponse<List<ExecutingWorkflow>> resp = getWorkflows1WithHttpInfo(name, correlationId, includeClosed,
-            includeTasks);
-        return resp.getData();
-    }
-
-    /**
-     * 获取给定关联ID的工作流列表
-     *
-     * @param name          工作流名称(必需)
-     * @param correlationId 关联ID(必需)
-     * @param includeClosed 是否包含已关闭的工作流(可选,默认为false)
-     * @param includeTasks  是否包含任务(可选,默认为false)
-     * @return 带HTTP信息的API响应
-     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
-     */
-    private ApiResponse<List<ExecutingWorkflow>> getWorkflows1WithHttpInfo(String name, String correlationId,
-                                                                           Boolean includeClosed, Boolean includeTasks)
-                                                                                                                       throws ApiException {
         if (name == null) {
             throw new ApiException("Missing the required parameter 'name' when calling getWorkflows1(Async)");
         }
@@ -379,7 +310,8 @@ public class WorkflowResourceApi {
         Call call = getWorkflows1Call(name, correlationId, includeClosed, includeTasks);
         Type localVarReturnType = new TypeReference<List<ExecutingWorkflow>>() {
         }.getType();
-        return apiClient.execute(call, localVarReturnType);
+        ApiResponse<List<ExecutingWorkflow>> resp = apiClient.execute(call, localVarReturnType);
+        return resp.getData();
     }
 
     /**
@@ -390,29 +322,8 @@ public class WorkflowResourceApi {
      * @throws ApiException 如果序列化请求体对象失败
      */
     public Call pauseWorkflowCall(String workflowId) throws ApiException {
-        Object localVarPostBody = null;
-
         String localVarPath = f("/workflow/%s/pause", workflowId);
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-        return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+        return apiClient.buildCall(localVarPath, "PUT", null, null, null, null);
     }
 
     /**
@@ -441,18 +352,8 @@ public class WorkflowResourceApi {
         String localVarPath = f("/workflow/%s/rerun", workflowId);
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<>();
-        Map<String, String> localVarHeaderParams = new HashMap<>();
-        Map<String, Object> localVarFormParams = new HashMap<>();
-        final String[] localVarAccepts = { "text/plain" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = { "application/json" };
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+            localVarPostBody, null);
     }
 
     /**
@@ -480,28 +381,8 @@ public class WorkflowResourceApi {
      * @throws ApiException 如果序列化请求体对象失败
      */
     public Call resetWorkflowCall(String workflowId) throws ApiException {
-        Object localVarPostBody = null;
         String localVarPath = f("/workflow/%s/resetcallbacks", workflowId);
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+        return apiClient.buildCall(localVarPath, "POST", null, null, null, null);
     }
 
     /**
@@ -533,20 +414,8 @@ public class WorkflowResourceApi {
         if (useLatestDefinitions != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("useLatestDefinitions", useLatestDefinitions));
 
-        Map<String, String> localVarHeaderParams = new HashMap<>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, new HashMap<>());
+            localVarPostBody, null);
     }
 
     /**
@@ -573,26 +442,7 @@ public class WorkflowResourceApi {
     public Call resumeWorkflowCall(String workflowId) throws ApiException {
         Object localVarPostBody = null;
         String localVarPath = f("/workflow/%s/resume", workflowId);
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-        return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+        return apiClient.buildCall(localVarPath, "PUT", null, null, localVarPostBody, null);
     }
 
     private Call resumeWorkflowValidateBeforeCall(String workflowId) throws ApiException {
@@ -608,19 +458,8 @@ public class WorkflowResourceApi {
      * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void resumeWorkflow(String workflowId) throws ApiException {
-        resumeWorkflowWithHttpInfo(workflowId);
-    }
-
-    /**
-     * 恢复工作流
-     *
-     * @param workflowId 工作流ID(必需)
-     * @return 带HTTP信息的API响应
-     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
-     */
-    private ApiResponse<Void> resumeWorkflowWithHttpInfo(String workflowId) throws ApiException {
         Call call = resumeWorkflowValidateBeforeCall(workflowId);
-        return apiClient.execute(call);
+        ApiResponse<Void> resp = apiClient.execute(call);
     }
 
     /**
@@ -639,24 +478,8 @@ public class WorkflowResourceApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         if (resumeSubworkflowTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("resumeSubworkflowTasks", resumeSubworkflowTasks));
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+            localVarPostBody, null);
     }
 
     private Call retryValidateBeforeCall(String workflowId, Boolean resumeSubworkflowTasks) throws ApiException {
@@ -673,20 +496,8 @@ public class WorkflowResourceApi {
      * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void retry(String workflowId, Boolean resumeSubworkflowTasks) throws ApiException {
-        retryWithHttpInfo(workflowId, resumeSubworkflowTasks);
-    }
-
-    /**
-     * 重试最后一个失败的任务
-     *
-     * @param workflowId             工作流ID(必需)
-     * @param resumeSubworkflowTasks 是否恢复子工作流任务(可选,默认为false)
-     * @return 带HTTP信息的API响应
-     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
-     */
-    private ApiResponse<Void> retryWithHttpInfo(String workflowId, Boolean resumeSubworkflowTasks) throws ApiException {
         Call call = retryValidateBeforeCall(workflowId, resumeSubworkflowTasks);
-        return apiClient.execute(call);
+        ApiResponse<Void> response = apiClient.execute(call);
     }
 
     /**
@@ -709,22 +520,8 @@ public class WorkflowResourceApi {
         if (skipTaskRequest != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("skipTaskRequest", skipTaskRequest));
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
         return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+            localVarPostBody, null);
     }
 
     private Call skipTaskFromWorkflowValidateBeforeCall(String workflowId, String taskReferenceName,
@@ -746,23 +543,8 @@ public class WorkflowResourceApi {
      */
     public void skipTaskFromWorkflow(String workflowId, String taskReferenceName, SkipTaskRequest skipTaskRequest)
                                                                                                                   throws ApiException {
-        skipTaskFromWorkflowWithHttpInfo(workflowId, taskReferenceName, skipTaskRequest);
-    }
-
-    /**
-     * 跳过一个当前正在运行的工作流中的给定任务
-     *
-     * @param workflowId        工作流ID(必需)
-     * @param taskReferenceName 任务引用名称(必需)
-     * @param skipTaskRequest   跳过任务请求(必需)
-     * @return 带HTTP信息的API响应
-     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
-     *                      response body
-     */
-    private ApiResponse<Void> skipTaskFromWorkflowWithHttpInfo(String workflowId, String taskReferenceName,
-                                                               SkipTaskRequest skipTaskRequest) throws ApiException {
         Call call = skipTaskFromWorkflowValidateBeforeCall(workflowId, taskReferenceName, skipTaskRequest);
-        return apiClient.execute(call);
+        ApiResponse<Void> response = apiClient.execute(call);
     }
 
     private Call startWorkflowValidateBeforeCall(StartWorkflowRequest startWorkflowRequest) throws ApiException {
@@ -823,20 +605,8 @@ public class WorkflowResourceApi {
         String localVarPath = f("/workflow/%s/variables", workflowId);
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams);
+            localVarPostBody, null);
     }
 
     /**

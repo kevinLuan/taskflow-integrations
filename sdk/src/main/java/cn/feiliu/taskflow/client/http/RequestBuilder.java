@@ -43,8 +43,9 @@ public class RequestBuilder {
 
     /**
      * 私有构造函数
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @param method HTTP方法
      */
     private RequestBuilder(ApiClient client, String path, String method) {
@@ -59,8 +60,9 @@ public class RequestBuilder {
 
     /**
      * 创建GET请求构建器
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @return RequestBuilder实例
      */
     public static RequestBuilder get(ApiClient client, String path) {
@@ -73,8 +75,9 @@ public class RequestBuilder {
 
     /**
      * 创建POST请求构建器
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @return RequestBuilder实例
      */
     public static RequestBuilder post(ApiClient client, String path) {
@@ -83,8 +86,9 @@ public class RequestBuilder {
 
     /**
      * 创建PUT请求构建器
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @return RequestBuilder实例
      */
     public static RequestBuilder put(ApiClient client, String path) {
@@ -93,8 +97,9 @@ public class RequestBuilder {
 
     /**
      * 创建DELETE请求构建器
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @return RequestBuilder实例
      */
     public static RequestBuilder delete(ApiClient client, String path) {
@@ -103,8 +108,9 @@ public class RequestBuilder {
 
     /**
      * 创建PATCH请求构建器
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @return RequestBuilder实例
      */
     public static RequestBuilder patch(ApiClient client, String path) {
@@ -113,8 +119,9 @@ public class RequestBuilder {
 
     /**
      * 创建HEAD请求构建器
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @return RequestBuilder实例
      */
     public static RequestBuilder head(ApiClient client, String path) {
@@ -123,8 +130,9 @@ public class RequestBuilder {
 
     /**
      * 创建OPTIONS请求构建器
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @return RequestBuilder实例
      */
     public static RequestBuilder options(ApiClient client, String path) {
@@ -133,11 +141,12 @@ public class RequestBuilder {
 
     /**
      * 通用的创建请求构建器方法
-     * @deprecated 建议使用具体的HTTP方法构建器方法替代，如 {@link #get}, {@link #post} 等
+     *
      * @param client API客户端实例
-     * @param path 请求路径
+     * @param path   请求路径
      * @param method HTTP方法
      * @return RequestBuilder实例
+     * @deprecated 建议使用具体的HTTP方法构建器方法替代，如 {@link #get}, {@link #post} 等
      */
     @Deprecated
     public static RequestBuilder create(ApiClient client, String path, String method) {
@@ -146,7 +155,8 @@ public class RequestBuilder {
 
     /**
      * 添加查询参数
-     * @param name 参数名
+     *
+     * @param name  参数名
      * @param value 参数值
      * @return RequestBuilder实例(支持链式调用)
      */
@@ -164,8 +174,9 @@ public class RequestBuilder {
 
     /**
      * 添加集合类型的查询参数
-     * @param name 参数名
-     * @param value 集合参数值
+     *
+     * @param name   参数名
+     * @param value  集合参数值
      * @param format 格式化方式
      * @return RequestBuilder实例(支持链式调用)
      */
@@ -183,6 +194,7 @@ public class RequestBuilder {
 
     /**
      * 设置请求体
+     *
      * @param body 请求体对象
      * @return RequestBuilder实例(支持链式调用)
      */
@@ -193,7 +205,8 @@ public class RequestBuilder {
 
     /**
      * 添加请求头
-     * @param name 请求头名称
+     *
+     * @param name  请求头名称
      * @param value 请求头值
      * @return RequestBuilder实例(支持链式调用)
      */
@@ -206,6 +219,7 @@ public class RequestBuilder {
 
     /**
      * 批量添加请求头
+     *
      * @param headers 请求头Map
      * @return RequestBuilder实例(支持链式调用)
      */
@@ -218,7 +232,8 @@ public class RequestBuilder {
 
     /**
      * 添加表单参数
-     * @param name 参数名
+     *
+     * @param name  参数名
      * @param value 参数值
      * @return RequestBuilder实例(支持链式调用)
      */
@@ -236,6 +251,7 @@ public class RequestBuilder {
 
     /**
      * 设置进度监听器
+     *
      * @param listener 进度监听器实例
      * @return RequestBuilder实例(支持链式调用)
      */
@@ -246,10 +262,17 @@ public class RequestBuilder {
 
     /**
      * 构建最终的HTTP请求
+     *
      * @return Request对象
      * @throws ApiException 构建请求过程中的异常
      */
     public Request build() throws ApiException {
+        if (!headerParams.containsKey("Accept")) {
+            headerParams.putIfAbsent("Accept", "application/json");
+        }
+        if (!headerParams.containsKey("Content-Type")) {
+            headerParams.putIfAbsent("Content-Type", "application/json");
+        }
         client.updateParamsForAuth(path, headerParams);
         final String url = HttpHelper.buildUrl(client, path, queryParams, collectionQueryParams);
         final Request.Builder reqBuilder = new Request.Builder().url(url);

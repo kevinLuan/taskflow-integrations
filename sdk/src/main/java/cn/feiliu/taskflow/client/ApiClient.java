@@ -384,14 +384,12 @@ public final class ApiClient {
      * @param queryParams           查询参数
      * @param collectionQueryParams 收集查询参数
      * @param body                  请求Body参数
-     * @param headerParams          请求Header参数
      * @param formParams            请求Form参数
      * @return The HTTP call
      * @throws ApiException 当序列化请求对象失败时抛出该异常
      */
     public Call buildCall(String path, String method, List<Pair> queryParams, List<Pair> collectionQueryParams,
-                          Object body, Map<String, String> headerParams, Map<String, Object> formParams)
-                                                                                                        throws ApiException {
+                          Object body, Map<String, Object> formParams) throws ApiException {
         Request request = RequestBuilder.of(this, path, method).queryParams(queryParams)
             .collectionQueryParams(collectionQueryParams).body(body).headers(headerParams).formParams(formParams)
             .build();
