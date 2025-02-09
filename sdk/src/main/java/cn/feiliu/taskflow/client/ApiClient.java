@@ -379,22 +379,22 @@ public final class ApiClient {
     /**
      * 根据给定参数构建HTTP请求
      *
-     * @param path                    HTTP 请求的子路径(uri)
-     * @param method                  请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
-     * @param queryParams             查询参数
-     * @param collectionQueryParams   收集查询参数
-     * @param body                    请求Body参数
-     * @param headerParams            请求Header参数
-     * @param formParams              请求Form参数
-     * @param progressRequestListener 进度请求监听器
+     * @param path                  HTTP 请求的子路径(uri)
+     * @param method                请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+     * @param queryParams           查询参数
+     * @param collectionQueryParams 收集查询参数
+     * @param body                  请求Body参数
+     * @param headerParams          请求Header参数
+     * @param formParams            请求Form参数
      * @return The HTTP call
      * @throws ApiException 当序列化请求对象失败时抛出该异常
      */
     public Call buildCall(String path, String method, List<Pair> queryParams, List<Pair> collectionQueryParams,
-                          Object body, Map<String, String> headerParams, Map<String, Object> formParams,
-                          ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        Request request = HttpHelper.buildRequest(this, path, method, queryParams, collectionQueryParams, body,
-            headerParams, formParams, progressRequestListener);
+                          Object body, Map<String, String> headerParams, Map<String, Object> formParams)
+                                                                                                        throws ApiException {
+        Request request = RequestBuilder.of(this, path, method).queryParams(queryParams)
+            .collectionQueryParams(collectionQueryParams).body(body).headers(headerParams).formParams(formParams)
+            .build();
         return httpClient.newCall(request);
     }
 
@@ -494,31 +494,30 @@ public final class ApiClient {
     }
 
     public Call buildPostCall(String localVarPath, Object body) {
-        List<Pair> queryParams = new ArrayList<>();
-        List<Pair> collectionQueryParams = new ArrayList<>();
-        Map<String, Object> formParams = new HashMap<>();
-        return buildCall(localVarPath, "POST", queryParams, collectionQueryParams, body, headerParams, formParams, null);
+        Request request = RequestBuilder.post(this, localVarPath).body(body).headers(headerParams).build();
+        return httpClient.newCall(request);
     }
 
     public Call buildPostCall(String localVarPath, Object body, List<Pair> queryParams) {
-        List<Pair> collectionQueryParams = new ArrayList<>();
-        return buildCall(localVarPath, "POST", queryParams, collectionQueryParams, body, headerParams, new HashMap<>(),
-            null);
+        Request request = RequestBuilder.post(this, localVarPath).body(body).headers(headerParams)
+            .queryParams(queryParams).build();
+        return httpClient.newCall(request);
     }
 
     public Call buildGetCall(String localVarPath, List<Pair> collectionQueryParams) {
-        List<Pair> queryParams = new ArrayList<>();
-        Map<String, Object> formParams = new HashMap<>();
-        return buildCall(localVarPath, "GET", queryParams, collectionQueryParams, null, headerParams, formParams, null);
+        Request request = RequestBuilder.get(this, localVarPath).collectionQueryParams(collectionQueryParams)
+            .headers(headerParams).build();
+        return httpClient.newCall(request);
     }
 
     public Call buildDeleteCall(String path) {
-        return this.buildDeleteCall(path, new ArrayList<>());
+        Request request = RequestBuilder.delete(this, path).build();
+        return httpClient.newCall(request);
     }
 
     public Call buildDeleteCall(String path, List<Pair> params) {
-        Map<String, Object> formParams = new HashMap<>();
-        return buildCall(path, "DELETE", new ArrayList<>(), params, null, headerParams, formParams, null);
+        Request request = RequestBuilder.delete(this, path).collectionQueryParams(params).headers(headerParams).build();
+        return httpClient.newCall(request);
     }
 
     /**

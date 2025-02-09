@@ -44,8 +44,8 @@ public class HttpHelper {
      * @param headerParams Header parameters in the from of Map
      * @param reqBuilder   Request.Builder
      */
-    private static void processHeaderParams(ApiClient client, Map<String, String> headerParams,
-                                            Request.Builder reqBuilder) {
+    public static void processHeaderParams(ApiClient client, Map<String, String> headerParams,
+                                           Request.Builder reqBuilder) {
         for (Map.Entry<String, String> param : headerParams.entrySet()) {
             reqBuilder.header(param.getKey(), HttpHelper.parameterToString(param.getValue()));
         }
@@ -123,7 +123,7 @@ public class HttpHelper {
      * 从给定数组中选择Content-Type头的值:如果JSON存在于给定数组中，则使用它;否则使用数组的第一个。
      *
      * @param contentTypes 要从中选择的内容类型数组
-     * @return 要使用的Content-Type报头。如果给定的数组为空，或者匹配“any”，则使用JSON。
+     * @return 要使用的Content-Type报头。如果给定的数组为空，或者匹配"any"，则使用JSON。
      */
     public static String selectHeaderContentType(String[] contentTypes) {
         if (contentTypes.length == 0 || contentTypes[0].equals("*/*")) {
@@ -520,57 +520,4 @@ public class HttpHelper {
         }
         return url.toString();
     }
-
-    /**
-     * 根据给定参数构建HTTP请求
-     *
-     * @param path                    HTTP 请求的子路径(uri)
-     * @param method                  请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
-     * @param queryParams             查询参数
-     * @param collectionQueryParams   收集查询参数
-     * @param body                    请求Body参数
-     * @param headerParams            请求Header参数
-     * @param formParams              请求Form参数
-     * @param progressRequestListener 进度请求监听器
-     * @return The HTTP call
-     * @throws ApiException 当序列化请求对象失败时抛出该异常
-     */
-    public static Request buildRequest(ApiClient client, String path, String method, List<Pair> queryParams,
-                                       List<Pair> collectionQueryParams, Object body, Map<String, String> headerParams,
-                                       Map<String, Object> formParams,
-                                       ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                           throws ApiException {
-        client.updateParamsForAuth(path, headerParams);
-        final String url = HttpHelper.buildUrl(client, path, queryParams, collectionQueryParams);
-        final Request.Builder reqBuilder = new Request.Builder().url(url);
-        HttpHelper.processHeaderParams(client, headerParams, reqBuilder);
-        String contentType = Optional.ofNullable(headerParams.get("Content-Type")).orElse("application/json");
-        RequestBody reqBody;
-        if (!HttpMethod.permitsRequestBody(method)) {
-            reqBody = null;
-        } else if ("application/x-www-form-urlencoded".equals(contentType)) {
-            reqBody = HttpHelper.buildRequestBodyFormEncoding(formParams);
-        } else if ("multipart/form-data".equals(contentType)) {
-            reqBody = HttpHelper.buildRequestBodyMultipart(formParams);
-        } else if (body == null) {
-            if ("DELETE".equals(method)) {
-                // 允许调用DELETE而不发送请求体
-                reqBody = null;
-            } else {
-                // 使用空请求体(用于POST、PUT和PATCH)
-                reqBody = RequestBody.create(MediaType.parse(contentType), "");
-            }
-        } else {
-            reqBody = HttpHelper.serialize(body, contentType);
-        }
-        Request request = null;
-        if (progressRequestListener != null && reqBody != null) {
-            ProgressRequestBody progressRequestBody = new ProgressRequestBody(reqBody, progressRequestListener);
-            request = reqBuilder.method(method, progressRequestBody).build();
-        } else {
-            request = reqBuilder.method(method, reqBody).build();
-        }
-        return request;
-    }
-
 }
