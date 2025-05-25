@@ -15,13 +15,13 @@
 package cn.feiliu.taskflow.client.http.api;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.utils.Assertion;
 import cn.feiliu.taskflow.client.utils.HttpHelper;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.dto.result.BulkResponseResult;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.google.common.collect.Lists;
-import cn.feiliu.taskflow.common.model.BulkResponseResult;
 import com.squareup.okhttp.Call;
 
 import java.util.List;

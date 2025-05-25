@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client.http.types;
 
-import cn.feiliu.taskflow.open.ApiResponse;
+import cn.feiliu.taskflow.dto.ApiResponse;
 import com.google.inject.util.Types;
 
 import java.lang.reflect.Type;

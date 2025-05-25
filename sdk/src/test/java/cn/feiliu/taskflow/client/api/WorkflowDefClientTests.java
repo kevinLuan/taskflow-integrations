@@ -15,12 +15,13 @@
 package cn.feiliu.taskflow.client.api;
 
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.common.metadata.workflow.FlowTask;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.open.utils.JsonUtils;
 
+import cn.feiliu.taskflow.common.enums.WorkflowTimeoutPolicy;
 import static org.junit.Assert.*;
+
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
+import cn.feiliu.taskflow.dto.workflow.FlowTask;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
 import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class WorkflowDefClientTests {
         workflowDef.setVersion(1);
         workflowDef.setOwnerEmail("your_email@abc.com");
         workflowDef.setTimeoutSeconds(600);
-        workflowDef.setTimeoutPolicy(WorkflowDefinition.TimeoutPolicy.TIME_OUT_WF);
+        workflowDef.setTimeoutPolicy(WorkflowTimeoutPolicy.TIME_OUT_WF);
         FlowTask workflowTask = new FlowTask();
         workflowTask.setName("test_task");
         workflowTask.setTaskReferenceName("testTaskRef");
@@ -57,7 +58,6 @@ public class WorkflowDefClientTests {
         WorkflowDefinition workflowDefinition = getWorkflowEngine().getWorkflowDef(workflowDef.getName(),
             workflowDef.getVersion());
         assertNotNull(workflowDefinition);
-        System.out.println(JsonUtils.serialize(workflowDefinition));
         unregisterTaskDef(workflowDef);
         Assert.assertTrue(getWorkflowEngine().deleteWorkflowDef(workflowDef.getName(), workflowDef.getVersion()));
     }

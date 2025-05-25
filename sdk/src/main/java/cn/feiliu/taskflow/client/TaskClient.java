@@ -16,11 +16,11 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.client.http.api.TaskResourceApi;
 import cn.feiliu.taskflow.client.api.ITaskClient;
-import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.TaskExecResult;
+import cn.feiliu.taskflow.dto.tasks.TaskLog;
 import cn.feiliu.taskflow.serialization.SerializerFactory;
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
 
 import java.util.*;
 
@@ -61,7 +61,7 @@ public class TaskClient implements ITaskClient {
 
     @Override
     public ExecutingTask pollTask(String taskType, String workerId, String domain) {
-        int timeout = WorkerPropertyManager.getBatchPollTimeoutInMS(taskType);
+        int timeout = 100;
         List<ExecutingTask> tasks = batchPollTasksInDomain(taskType, domain, workerId, 1, timeout);
         if (tasks == null || tasks.isEmpty()) {
             return null;
@@ -78,21 +78,12 @@ public class TaskClient implements ITaskClient {
     @Override
     public List<ExecutingTask> batchPollTasksInDomain(String taskType, String domain, String workerId, int count,
                                                       int timeoutInMillisecond) {
-        if (apiClient.isUseGRPC()) {
-            return apiClient.getApis().getGrpcApi()
-                .batchPollTask(taskType, workerId, domain, count, timeoutInMillisecond);
-        } else {
-            return taskResourceApi.batchPoll(taskType, workerId, domain, count, timeoutInMillisecond);
-        }
+        return taskResourceApi.batchPoll(taskType, workerId, domain, count, timeoutInMillisecond);
     }
 
     @Override
     public void updateTask(TaskExecResult taskResult) {
-        if (apiClient.isUseGRPC()) {
-            apiClient.getApis().getGrpcApi().updateTask(taskResult);
-        } else {
-            taskResourceApi.updateTask(taskResult);
-        }
+        taskResourceApi.updateTask(taskResult);
     }
 
     /**
@@ -104,20 +95,20 @@ public class TaskClient implements ITaskClient {
      * @param output            任务输出
      */
     @Override
-    public void updateTask(String workflowId, String taskReferenceName, TaskExecResult.Status status,
+    public void updateTask(String workflowId, String taskReferenceName, TaskUpdateStatus status,
                            Map<String, Object> output) {
-        taskResourceApi.updateTaskByRefName(output, workflowId, taskReferenceName, status.toString());
+        taskResourceApi.updateTaskByRefName(output, workflowId, taskReferenceName, status.name());
     }
 
     @Override
-    public void updateTask(String workflowId, String taskReferenceName, TaskExecResult.Status status, Object output) {
+    public void updateTask(String workflowId, String taskReferenceName, TaskUpdateStatus status, Object output) {
         Map<String, Object> outputMap = new HashMap<>();
         try {
             outputMap = SerializerFactory.getSerializer().convertMap(output);
         } catch (Exception e) {
             outputMap.put("result", output);
         }
-        taskResourceApi.updateTaskByRefName(outputMap, workflowId, taskReferenceName, status.toString());
+        taskResourceApi.updateTaskByRefName(outputMap, workflowId, taskReferenceName, status.name());
     }
 
     @Override

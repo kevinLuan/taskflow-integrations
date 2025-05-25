@@ -20,16 +20,36 @@ import okio.*;
 
 import java.io.IOException;
 
+/**
+ * 带进度监听的响应体包装类
+ */
 public class ProgressResponseBody extends ResponseBody {
 
+    /**
+     * 进度监听接口
+     */
     public interface ProgressListener {
+        /**
+         * 响应进度回调方法
+         * @param bytesRead 已读取字节数
+         * @param contentLength 总字节数
+         * @param done 是否完成
+         */
         void update(long bytesRead, long contentLength, boolean done);
     }
 
+    // 原始响应体
     private final ResponseBody     responseBody;
+    // 进度监听器
     private final ProgressListener progressListener;
+    // 缓冲数据源
     private BufferedSource         bufferedSource;
 
+    /**
+     * 构造方法
+     * @param responseBody 原始响应体
+     * @param progressListener 进度监听器
+     */
     public ProgressResponseBody(ResponseBody responseBody, ProgressListener progressListener) {
         this.responseBody = responseBody;
         this.progressListener = progressListener;
@@ -53,14 +73,20 @@ public class ProgressResponseBody extends ResponseBody {
         return bufferedSource;
     }
 
+    /**
+     * 创建带进度监听的数据源
+     * @param source 原始数据源
+     * @return 包装后的数据源
+     */
     private Source source(Source source) {
         return new ForwardingSource(source) {
+            // 已读取的总字节数
             long totalBytesRead = 0L;
 
             @Override
             public long read(Buffer sink, long byteCount) throws IOException {
                 long bytesRead = super.read(sink, byteCount);
-                // read() returns the number of bytes read, or -1 if this source is exhausted.
+                // read() 返回实际读取的字节数，如果数据源已耗尽则返回 -1
                 totalBytesRead += bytesRead != -1 ? bytesRead : 0;
                 progressListener.update(totalBytesRead, responseBody.contentLength(), bytesRead == -1);
                 return bytesRead;

@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.open.dto.Application;
-import cn.feiliu.taskflow.open.dto.TokenResponse;
+import cn.feiliu.taskflow.dto.Application;
+import cn.feiliu.taskflow.dto.TokenResponse;
 
 /**
  * @author SHOUSHEN.LUAN

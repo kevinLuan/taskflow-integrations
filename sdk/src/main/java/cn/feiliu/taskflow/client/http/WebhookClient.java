@@ -17,7 +17,7 @@ package cn.feiliu.taskflow.client.http;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.api.IWebhookClient;
 import cn.feiliu.taskflow.client.http.api.WebhookResourceApi;
-import cn.feiliu.taskflow.open.dto.WorkflowScheduleExecution;
+import cn.feiliu.taskflow.dto.WorkflowScheduleExecution;
 
 /**
  * @author SHOUSHEN.LUAN

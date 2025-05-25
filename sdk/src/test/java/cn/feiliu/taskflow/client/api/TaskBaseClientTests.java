@@ -14,16 +14,16 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.WorkTask;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
-import com.google.common.util.concurrent.Uninterruptibles;
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
+import cn.feiliu.common.api.utils.CommonUtils;
+import cn.feiliu.taskflow.api.IWorkflowService;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
+import cn.feiliu.taskflow.core.def.tasks.SimpleTask;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
+import cn.feiliu.taskflow.dto.tasks.TaskLog;
+import cn.feiliu.taskflow.dto.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
+import static cn.feiliu.common.api.utils.CommonUtils.f;
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 import static org.junit.Assert.*;
 
@@ -55,7 +55,7 @@ public class TaskBaseClientTests {
         String taskName = "noWorkTask2";
         getApiClient().getApis().getTaskEngine().createIfAbsent(new TaskDefinition(taskName));
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder(workflowName, 1)
-            .addTask(new WorkTask(taskName, taskName + "Ref")).build();
+            .addTask(new SimpleTask(taskName, taskName + "Ref")).build();
         assertTrue(getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, true));
 
         String workflowId = workflowClient.startWorkflow(StartWorkflowRequest.of(workflowName, 1));
@@ -79,7 +79,7 @@ public class TaskBaseClientTests {
         for (ExecutingTask executingTask : tasks) {
             Map<String, Object> map = Map.of("test", "更新方式2");
             taskClient.updateTask(executingTask.getWorkflowInstanceId(), executingTask.getReferenceTaskName(),
-                TaskExecResult.Status.COMPLETED, map);
+                TaskUpdateStatus.COMPLETED, map);
         }
     }
 
@@ -98,11 +98,11 @@ public class TaskBaseClientTests {
                     Map<String, Object> map = Map.of("hello_world", new Date());
                     System.out.println(f("更新任务 taskId: %s, taskName: %s", executingTask.getTaskId(),
                         executingTask.getTaskDefName()));
-                    taskClient.updateTask(workflowId, referenceName, TaskExecResult.Status.COMPLETED, map);
+                    taskClient.updateTask(workflowId, referenceName, TaskUpdateStatus.COMPLETED, map);
                 }
             }
             count++;
-            Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+            CommonUtils.sleepUninterruptibly(1, TimeUnit.SECONDS);
             workflow = workflowClient.getWorkflow(workflowId, true);
         }
         assertTrue(count < maxLoop);

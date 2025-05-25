@@ -14,22 +14,21 @@
  */
 package cn.feiliu.taskflow.client.http;
 
+import cn.feiliu.taskflow.api.IWorkflowService;
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.common.model.WorkflowRun;
 import cn.feiliu.taskflow.client.api.IWorkflowClient;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
-import cn.feiliu.taskflow.open.dto.CorrelationIdsSearchRequest;
 import cn.feiliu.taskflow.client.http.api.WorkflowBulkResourceApi;
 import cn.feiliu.taskflow.client.http.api.WorkflowResourceApi;
-import cn.feiliu.taskflow.open.dto.WorkflowProgressUpdate;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
-import cn.feiliu.taskflow.open.exceptions.ConflictException;
+import cn.feiliu.taskflow.dto.CorrelationIdsSearchRequest;
+import cn.feiliu.taskflow.dto.WorkflowProgressUpdate;
+import cn.feiliu.taskflow.dto.result.BulkResponseResult;
+import cn.feiliu.taskflow.dto.result.WorkflowRun;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.dto.workflow.SkipTaskRequest;
+import cn.feiliu.taskflow.dto.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.dto.workflow.WorkflowRerunRequest;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.google.common.base.Preconditions;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowRerunRequest;
-import cn.feiliu.taskflow.common.metadata.workflow.SkipTaskRequest;
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.model.BulkResponseResult;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +53,8 @@ public class WorkflowClient implements IWorkflowClient {
         this.apiClient = apiClient;
         this.httpClient = new WorkflowResourceApi(apiClient);
         this.bulkResourceApi = new WorkflowBulkResourceApi(apiClient);
-        if (!apiClient.isUseGRPC()) {
-            int threadCount = apiClient.getExecutorThreadCount() > 0 ? apiClient.getExecutorThreadCount() : 64;
-            this.executorService = new ThreadPoolExecutor(0, threadCount, 60L, TimeUnit.SECONDS,
-                new SynchronousQueue<>());
-        }
+        int threadCount = apiClient.getExecutorThreadCount() > 0 ? apiClient.getExecutorThreadCount() : 16;
+        this.executorService = new ThreadPoolExecutor(0, threadCount, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
     }
 
     public IWorkflowService withReadTimeout(int readTimeout) {
@@ -77,12 +73,8 @@ public class WorkflowClient implements IWorkflowClient {
     }
 
     @Override
-    public String startWorkflow(StartWorkflowRequest req) throws ConflictException {
-        if (apiClient.isUseGRPC()) {
-            return apiClient.getApis().getGrpcApi().startWorkflow(req);
-        } else {
-            return httpClient.startWorkflow(req);
-        }
+    public String startWorkflow(StartWorkflowRequest req) {
+        return httpClient.startWorkflow(req);
     }
 
     @Override

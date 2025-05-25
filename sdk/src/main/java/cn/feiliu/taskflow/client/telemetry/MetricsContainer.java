@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.client.telemetry;
 
-import com.netflix.spectator.api.*;
-import com.netflix.spectator.api.patterns.PolledMeter;
+import cn.feiliu.shaded.spectator.api.*;
+import cn.feiliu.shaded.spectator.api.patterns.PolledMeter;
 
 import java.util.ArrayList;
 import java.util.List;

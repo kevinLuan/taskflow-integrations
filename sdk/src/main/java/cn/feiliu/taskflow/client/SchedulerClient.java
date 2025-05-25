@@ -15,11 +15,11 @@
 package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.client.api.ISchedulerClient;
-import cn.feiliu.taskflow.open.dto.WorkflowScheduleExecution;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
 import cn.feiliu.taskflow.client.http.api.SchedulerResourceApi;
-import cn.feiliu.taskflow.open.dto.SaveScheduleRequest;
-import cn.feiliu.taskflow.open.dto.WorkflowSchedule;
+import cn.feiliu.taskflow.dto.SaveScheduleRequest;
+import cn.feiliu.taskflow.dto.WorkflowSchedule;
+import cn.feiliu.taskflow.dto.WorkflowScheduleExecution;
+import cn.feiliu.taskflow.exceptions.ApiException;
 
 import java.util.List;
 

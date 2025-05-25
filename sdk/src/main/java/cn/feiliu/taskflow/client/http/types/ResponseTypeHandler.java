@@ -15,9 +15,9 @@
 package cn.feiliu.taskflow.client.http.types;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.open.ApiResponse;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
 import cn.feiliu.taskflow.client.utils.HttpHelper;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.google.inject.util.Types;
 import com.squareup.okhttp.Response;
 

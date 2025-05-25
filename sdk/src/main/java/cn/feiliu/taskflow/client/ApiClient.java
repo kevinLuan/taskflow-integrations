@@ -17,7 +17,6 @@ package cn.feiliu.taskflow.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -30,19 +29,19 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.*;
 
 import cn.feiliu.taskflow.client.core.TokenManager;
-import cn.feiliu.taskflow.open.ApiResponse;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
 import cn.feiliu.taskflow.client.http.types.ResponseTypeHandler;
 import cn.feiliu.taskflow.client.utils.HttpHelper;
 import cn.feiliu.taskflow.client.utils.SecurityHelper;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
-import cn.feiliu.taskflow.sdk.workflow.executor.extension.TaskHandlerManager;
+import cn.feiliu.taskflow.core.executor.extension.TaskHandlerManager;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.squareup.okhttp.*;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
-public class ApiClient {
+public final class ApiClient {
     private final String              basePath;
     private final Map<String, String> defaultHeaderMap    = new HashMap();
 
@@ -53,12 +52,8 @@ public class ApiClient {
     private KeyManager[]              keyManagers;
 
     private OkHttpClient              httpClient;
-    private String                    grpcHost            = "localhost";
-    private int                       grpcPort            = 9000;
 
     private boolean                   useSSL;
-
-    private boolean                   useGRPC;
 
     private int                       executorThreadCount = 0;
 
@@ -72,8 +67,10 @@ public class ApiClient {
         this.httpClient = new OkHttpClient();
         this.httpClient.setRetryOnConnectionFailure(true);
         this.verifyingSsl = true;
-        this.tokenManager = new TokenManager(this, keyId, keySecret);
         this.apis = new TaskflowApis(this);
+        this.tokenManager = new TokenManager(this.apis.getAuthClient(), keyId, keySecret);
+        //所有的对象初始化完成后，最后执行初始调度执行
+        this.tokenManager.shouldStartSchedulerAndInitializeToken();
     }
 
     private String normalizePath(String basePath) {
@@ -83,22 +80,6 @@ public class ApiClient {
         } else {
             return basePath;
         }
-    }
-
-    public boolean isUseGRPC() {
-        return useGRPC;
-    }
-
-    public void setUseGRPC(String host, int port) {
-        this.grpcHost = host;
-        this.grpcPort = port;
-        if (this.useGRPC = getApis().isGrpcSpiAvailable()) {
-            getApis().getGrpcApi().init(this);
-        }
-    }
-
-    public boolean useSSL() {
-        return useSSL;
     }
 
     /**
@@ -152,26 +133,6 @@ public class ApiClient {
         this.httpClient.getDispatcher().getExecutorService().shutdown();
         tokenManager.close();
         apis.shutdown();
-    }
-
-    public int getGrpcPort() {
-        return grpcPort;
-    }
-
-    public String getGrpcHost() {
-        return grpcHost;
-    }
-
-    public void setGrpcPort(int grpcPort) {
-        this.grpcPort = grpcPort;
-    }
-
-    public String getHost() {
-        try {
-            return new URL(basePath).getHost();
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     /**
@@ -418,22 +379,20 @@ public class ApiClient {
     /**
      * 根据给定参数构建HTTP请求
      *
-     * @param path                    HTTP 请求的子路径(uri)
-     * @param method                  请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
-     * @param queryParams             查询参数
-     * @param collectionQueryParams   收集查询参数
-     * @param body                    请求Body参数
-     * @param headerParams            请求Header参数
-     * @param formParams              请求Form参数
-     * @param progressRequestListener 进度请求监听器
+     * @param path                  HTTP 请求的子路径(uri)
+     * @param method                请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+     * @param queryParams           查询参数
+     * @param collectionQueryParams 收集查询参数
+     * @param body                  请求Body参数
+     * @param formParams            请求Form参数
      * @return The HTTP call
      * @throws ApiException 当序列化请求对象失败时抛出该异常
      */
     public Call buildCall(String path, String method, List<Pair> queryParams, List<Pair> collectionQueryParams,
-                          Object body, Map<String, String> headerParams, Map<String, Object> formParams,
-                          ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        Request request = HttpHelper.buildRequest(this, path, method, queryParams, collectionQueryParams, body,
-            headerParams, formParams, progressRequestListener);
+                          Object body, Map<String, Object> formParams) throws ApiException {
+        Request request = RequestBuilder.of(this, path, method).queryParams(queryParams)
+            .collectionQueryParams(collectionQueryParams).body(body).headers(headerParams).formParams(formParams)
+            .build();
         return httpClient.newCall(request);
     }
 
@@ -443,12 +402,10 @@ public class ApiClient {
      * @param headerParams Header参数映射
      */
     public void updateParamsForAuth(String path, Map<String, String> headerParams) {
-        if (tokenManager.useSecurity()) {
-            if ("/auth/token".equalsIgnoreCase(path)) {
-                headerParams.put("Authorization", tokenManager.constructCredentials());
-            } else {
-                headerParams.put("Authorization", getToken());
-            }
+        if ("/auth/token".equalsIgnoreCase(path)) {
+            headerParams.put("Authorization", tokenManager.constructCredentials());
+        } else {
+            headerParams.put("Authorization", getToken());
         }
     }
 
@@ -519,10 +476,6 @@ public class ApiClient {
         return Collections.unmodifiableMap(defaultHeaderMap);
     }
 
-    public boolean useSecurity() {
-        return tokenManager.useSecurity();
-    }
-
     public String getToken() {
         return tokenManager.getBearerToken();
     }
@@ -539,31 +492,30 @@ public class ApiClient {
     }
 
     public Call buildPostCall(String localVarPath, Object body) {
-        List<Pair> queryParams = new ArrayList<>();
-        List<Pair> collectionQueryParams = new ArrayList<>();
-        Map<String, Object> formParams = new HashMap<>();
-        return buildCall(localVarPath, "POST", queryParams, collectionQueryParams, body, headerParams, formParams, null);
+        Request request = RequestBuilder.post(this, localVarPath).body(body).headers(headerParams).build();
+        return httpClient.newCall(request);
     }
 
     public Call buildPostCall(String localVarPath, Object body, List<Pair> queryParams) {
-        List<Pair> collectionQueryParams = new ArrayList<>();
-        return buildCall(localVarPath, "POST", queryParams, collectionQueryParams, body, headerParams, new HashMap<>(),
-            null);
+        Request request = RequestBuilder.post(this, localVarPath).body(body).headers(headerParams)
+            .queryParams(queryParams).build();
+        return httpClient.newCall(request);
     }
 
     public Call buildGetCall(String localVarPath, List<Pair> collectionQueryParams) {
-        List<Pair> queryParams = new ArrayList<>();
-        Map<String, Object> formParams = new HashMap<>();
-        return buildCall(localVarPath, "GET", queryParams, collectionQueryParams, null, headerParams, formParams, null);
+        Request request = RequestBuilder.get(this, localVarPath).collectionQueryParams(collectionQueryParams)
+            .headers(headerParams).build();
+        return httpClient.newCall(request);
     }
 
     public Call buildDeleteCall(String path) {
-        return this.buildDeleteCall(path, new ArrayList<>());
+        Request request = RequestBuilder.delete(this, path).build();
+        return httpClient.newCall(request);
     }
 
     public Call buildDeleteCall(String path, List<Pair> params) {
-        Map<String, Object> formParams = new HashMap<>();
-        return buildCall(path, "DELETE", new ArrayList<>(), params, null, headerParams, formParams, null);
+        Request request = RequestBuilder.delete(this, path).collectionQueryParams(params).headers(headerParams).build();
+        return httpClient.newCall(request);
     }
 
     /**

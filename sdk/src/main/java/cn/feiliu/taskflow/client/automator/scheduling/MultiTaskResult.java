@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client.automator.scheduling;
 
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
 
 import java.util.List;
 import java.util.Objects;

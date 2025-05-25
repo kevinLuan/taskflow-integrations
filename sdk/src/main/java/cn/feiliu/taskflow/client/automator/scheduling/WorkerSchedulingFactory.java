@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client.automator.scheduling;
 
-import cn.feiliu.taskflow.common.utils.ExternalServiceFactory;
+import cn.feiliu.common.api.core.ExecutionHookFactory;
 
 /**
  * @author SHOUSHEN.LUAN
@@ -22,11 +22,11 @@ import cn.feiliu.taskflow.common.utils.ExternalServiceFactory;
  */
 public class WorkerSchedulingFactory {
     static {
-        ExternalServiceFactory.register(WorkerScheduling.class);
+        ExecutionHookFactory.register(WorkerScheduling.class);
     }
 
     public static WorkerScheduling getWorkerScheduling() {
-        return ExternalServiceFactory.getFirstServiceInstance(WorkerScheduling.class)
+        return ExecutionHookFactory.getFirstServiceInstance(WorkerScheduling.class)
                 .orElseGet(() -> new WheelTimerWorkerScheduling());
     }
 }

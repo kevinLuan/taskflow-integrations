@@ -19,8 +19,8 @@ import cn.feiliu.taskflow.client.automator.scheduling.WorkerScheduling;
 import cn.feiliu.taskflow.client.automator.scheduling.WorkerSchedulingFactory;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.spi.DiscoveryService;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.sdk.worker.Worker;
+import cn.feiliu.taskflow.core.executor.task.Worker;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
+import static cn.feiliu.common.api.utils.CommonUtils.f;
 
 /** Configures automated polling of tasks and execution via the registered {@link Worker}s. */
 public class TaskRunnerConfigurer {

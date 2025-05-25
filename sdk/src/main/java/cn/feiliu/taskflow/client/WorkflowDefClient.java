@@ -16,12 +16,10 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.client.api.IWorkflowDefClient;
 import cn.feiliu.taskflow.client.http.api.WorkflowDefResourceApi;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.common.utils.TaskflowUtils;
-import cn.feiliu.taskflow.common.utils.Validator;
-import cn.feiliu.taskflow.sdk.workflow.def.ValidationException;
+import cn.feiliu.taskflow.core.def.ValidationException;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
+import cn.feiliu.taskflow.utils.FeiliuValidator;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -69,7 +67,7 @@ public class WorkflowDefClient implements IWorkflowDefClient {
     }
 
     private void verify(WorkflowDefinition workflowDef) {
-        List<String> errors = Validator.verifyWorkflowDef(workflowDef);
+        List<String> errors = FeiliuValidator.verifyWorkflowDef(workflowDef);
         if (errors.size() > 0) {
             throw new ValidationException("Errors in workflow definition.\n" + String.join("\n", errors))
                 .addErrors(errors);

@@ -15,32 +15,30 @@
 package cn.feiliu.taskflow.client.http.api;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.common.model.WorkflowRun;
-import cn.feiliu.taskflow.open.ApiResponse;
-import cn.feiliu.taskflow.open.dto.CorrelationIdsSearchRequest;
 import cn.feiliu.taskflow.client.http.*;
 import cn.feiliu.taskflow.client.http.types.TypeFactory;
 import cn.feiliu.taskflow.client.utils.Assertion;
 import cn.feiliu.taskflow.client.utils.HttpHelper;
-import cn.feiliu.taskflow.open.dto.WorkflowProgressUpdate;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.ApiResponse;
+import cn.feiliu.taskflow.dto.CorrelationIdsSearchRequest;
+import cn.feiliu.taskflow.dto.WorkflowProgressUpdate;
+import cn.feiliu.taskflow.dto.result.WorkflowRun;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.dto.workflow.SkipTaskRequest;
+import cn.feiliu.taskflow.dto.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.dto.workflow.WorkflowRerunRequest;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowRerunRequest;
-import cn.feiliu.taskflow.common.metadata.workflow.SkipTaskRequest;
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
 import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Interceptor;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static cn.feiliu.taskflow.common.utils.TaskflowUtils.f;
+import static cn.feiliu.common.api.utils.CommonUtils.f;
 
 public class WorkflowResourceApi {
     private ApiClient apiClient;
@@ -57,47 +55,11 @@ public class WorkflowResourceApi {
         this.apiClient = apiClient;
     }
 
-    public Call executeWorkflowCall(StartWorkflowRequest body, ProgressResponseBody.ProgressListener progressListener,
-                                    ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                        throws ApiException {
-        Object localVarPostBody = body;
-        String localVarPath = "/workflow/start";
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "application/json" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = { "application/json" };
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
-        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
-    }
-
     /**
-     * Starts the decision task for a workflow
+     * 启动工作流的决策任务
      *
-     * @param workflowId (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId 工作流ID(必需)
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void decide(String workflowId) throws ApiException {
         Assertion.assertNotNull(workflowId, "workflowId");
@@ -107,12 +69,11 @@ public class WorkflowResourceApi {
     }
 
     /**
-     * Removes the workflow from the system
+     * 从系统中删除工作流
      *
-     * @param workflowId      (required)
-     * @param archiveWorkflow (optional, default to true)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId      工作流ID(必需)
+     * @param archiveWorkflow 是否归档工作流(可选,默认为true)
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void delete(String workflowId, Boolean archiveWorkflow) throws ApiException {
         Assertion.assertNotNull(workflowId, "workflowId");
@@ -123,73 +84,34 @@ public class WorkflowResourceApi {
     }
 
     /**
-     * Build call for getExecutionStatus
+     * 构建获取执行状态的调用
      *
-     * @param workflowId              (required)
-     * @param includeTasks            (optional, default to true)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @param workflowId   工作流ID(必需)
+     * @param includeTasks 是否包含任务(可选,默认为true)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    public Call getExecutionStatusCall(String workflowId, Boolean includeTasks,
-                                       final ProgressResponseBody.ProgressListener progressListener,
-                                       final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                 throws ApiException {
-        Object localVarPostBody = null;
+    public Call getExecutionStatusCall(String workflowId, Boolean includeTasks) throws ApiException {
         String localVarPath = "/workflow/" + workflowId;
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         if (includeTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeTasks", includeTasks));
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
-        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
+        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, null, null, null);
     }
 
-    private Call getExecutionStatusValidateBeforeCall(String workflowId,
-                                                      Boolean includeTasks,
-                                                      final ProgressResponseBody.ProgressListener progressListener,
-                                                      final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                                throws ApiException {
+    private Call getExecutionStatusValidateBeforeCall(String workflowId, Boolean includeTasks) throws ApiException {
         Assertion.assertNotNull(workflowId, "workflowId");
-        Call call = getExecutionStatusCall(workflowId, includeTasks, progressListener, progressRequestListener);
+        Call call = getExecutionStatusCall(workflowId, includeTasks);
         return call;
     }
 
     /**
-     * Gets the workflow by workflow id
+     * 通过工作流ID获取工作流
      *
-     * @param workflowId   (required)
-     * @param includeTasks (optional, default to true)
-     * @return Workflow
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId   工作流ID(必需)
+     * @param includeTasks 是否包含任务(可选,默认为true)
+     * @return 工作流对象
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public ExecutingWorkflow getExecutionStatus(String workflowId, Boolean includeTasks) throws ApiException {
         ApiResponse<ExecutingWorkflow> resp = getExecutionStatusWithHttpInfo(workflowId, includeTasks);
@@ -197,17 +119,16 @@ public class WorkflowResourceApi {
     }
 
     /**
-     * Gets the workflow by workflow id
+     * 通过工作流ID获取工作流
      *
-     * @param workflowId   (required)
-     * @param includeTasks (optional, default to true)
-     * @return ApiResponse&lt;Workflow&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId   工作流ID(必需)
+     * @param includeTasks 是否包含任务(可选,默认为true)
+     * @return 带HTTP信息的工作流API响应
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     private ApiResponse<ExecutingWorkflow> getExecutionStatusWithHttpInfo(String workflowId, Boolean includeTasks)
                                                                                                                   throws ApiException {
-        Call call = getExecutionStatusValidateBeforeCall(workflowId, includeTasks, null, null);
+        Call call = getExecutionStatusValidateBeforeCall(workflowId, includeTasks);
         Type localVarReturnType = new TypeReference<ExecutingWorkflow>() {
         }.getType();
         return apiClient.execute(call, localVarReturnType);
@@ -216,13 +137,12 @@ public class WorkflowResourceApi {
     /**
      * 检索所有正在运行的工作流
      *
-     * @param name      (required)
-     * @param version   (optional, default to 1)
-     * @param startTime (optional)
-     * @param endTime   (optional)
-     * @return List&lt;String&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param name      工作流名称(必需)
+     * @param version   版本号(可选,默认为1)
+     * @param startTime 开始时间(可选)
+     * @param endTime   结束时间(可选)
+     * @return 工作流ID列表
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public List<String> getRunningWorkflow(String name, Integer version, Long startTime, Long endTime)
                                                                                                       throws ApiException {
@@ -230,7 +150,7 @@ public class WorkflowResourceApi {
             throw new ApiException("Missing the required parameter 'name' when calling getRunningWorkflow(Async)");
         }
         String path = f("/workflow/running/%s", name);
-        List<Pair> queryParams = new ArrayList<Pair>();
+        List<Pair> queryParams = new ArrayList<>();
         if (version != null)
             queryParams.addAll(HttpHelper.parameterToPair("version", version));
         if (startTime != null)
@@ -243,21 +163,17 @@ public class WorkflowResourceApi {
     }
 
     /**
-     * Build call for getWorkflows
+     * 构建获取工作流列表的调用
      *
-     * @param body                    (required)
-     * @param name                    (required)
-     * @param includeClosed           (optional, default to false)
-     * @param includeTasks            (optional, default to false)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @param body          请求体(必需)
+     * @param name          工作流名称(必需)
+     * @param includeClosed 是否包含已关闭的工作流(可选,默认为false)
+     * @param includeTasks  是否包含任务(可选,默认为false)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    public Call getWorkflowsCall(List<String> body, String name, Boolean includeClosed, Boolean includeTasks,
-                                 final ProgressResponseBody.ProgressListener progressListener,
-                                 final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                           throws ApiException {
+    public Call getWorkflowsCall(List<String> body, String name, Boolean includeClosed, Boolean includeTasks)
+                                                                                                             throws ApiException {
         Object localVarPostBody = body;
         String localVarPath = f("/workflow/%s/correlated", name);
 
@@ -268,102 +184,49 @@ public class WorkflowResourceApi {
         if (includeTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeTasks", includeTasks));
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = { "application/json" };
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
+            localVarPostBody, null);
     }
 
-    private Call getWorkflowsValidateBeforeCall(List<String> body,
-                                                String name,
-                                                Boolean includeClosed,
-                                                Boolean includeTasks,
-                                                final ProgressResponseBody.ProgressListener progressListener,
-                                                final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                          throws ApiException {
+    private Call getWorkflowsValidateBeforeCall(List<String> body, String name, Boolean includeClosed,
+                                                Boolean includeTasks) throws ApiException {
         Assertion.assertNotNull(body, "body");
         Assertion.assertNotNull(name, "name");
-        Call call = getWorkflowsCall(body, name, includeClosed, includeTasks, progressListener, progressRequestListener);
+        Call call = getWorkflowsCall(body, name, includeClosed, includeTasks);
         return call;
     }
 
     /**
-     * Lists workflows for the given correlation id list
+     * 获取给定关联ID列表的工作流列表
      *
-     * @param body          (required)
-     * @param name          (required)
-     * @param includeClosed (optional, default to false)
-     * @param includeTasks  (optional, default to false)
-     * @return Map&lt;String, List&lt;Workflow&gt;&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param body          关联ID列表(必需)
+     * @param name          工作流名称(必需)
+     * @param includeClosed 是否包含已关闭的工作流(可选,默认为false)
+     * @param includeTasks  是否包含任务(可选,默认为false)
+     * @return 关联ID到工作流列表的映射
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public Map<String, List<ExecutingWorkflow>> getWorkflows(List<String> body, String name, Boolean includeClosed,
                                                              Boolean includeTasks) throws ApiException {
-        ApiResponse<Map<String, List<ExecutingWorkflow>>> resp = getWorkflowsWithHttpInfo(body, name, includeClosed,
-            includeTasks);
+        Call call = getWorkflowsValidateBeforeCall(body, name, includeClosed, includeTasks);
+        Type localVarReturnType = new TypeReference<Map<String, List<ExecutingWorkflow>>>() {
+        }.getType();
+        ApiResponse<Map<String, List<ExecutingWorkflow>>> resp = apiClient.execute(call, localVarReturnType);
         return resp.getData();
     }
 
     /**
-     * Lists workflows for the given correlation id list
+     * 构建获取工作流列表的调用
      *
-     * @param body          (required)
-     * @param name          (required)
-     * @param includeClosed (optional, default to false)
-     * @param includeTasks  (optional, default to false)
-     * @return ApiResponse&lt;Map&lt;String, List&lt;Workflow&gt;&gt;&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param name          工作流名称(必需)
+     * @param correlationId 关联ID(必需)
+     * @param includeClosed 是否包含已关闭的工作流(可选,默认为false)
+     * @param includeTasks  是否包含任务(可选,默认为false)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    private ApiResponse<Map<String, List<ExecutingWorkflow>>> getWorkflowsWithHttpInfo(List<String> body, String name,
-                                                                                       Boolean includeClosed,
-                                                                                       Boolean includeTasks)
-                                                                                                            throws ApiException {
-        Call call = getWorkflowsValidateBeforeCall(body, name, includeClosed, includeTasks, null, null);
-        Type localVarReturnType = new TypeReference<Map<String, List<ExecutingWorkflow>>>() {
-        }.getType();
-        return apiClient.execute(call, localVarReturnType);
-    }
-
-    /**
-     * Build call for getWorkflows1
-     *
-     * @param name                    (required)
-     * @param correlationId           (required)
-     * @param includeClosed           (optional, default to false)
-     * @param includeTasks            (optional, default to false)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public Call getWorkflows1Call(String name, String correlationId, Boolean includeClosed, Boolean includeTasks,
-                                  final ProgressResponseBody.ProgressListener progressListener,
-                                  final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                            throws ApiException {
+    public Call getWorkflows1Call(String name, String correlationId, Boolean includeClosed, Boolean includeTasks)
+                                                                                                                 throws ApiException {
         Object localVarPostBody = null;
         String localVarPath = f("/workflow/%s/correlated/%s", name, correlationId);
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -372,85 +235,42 @@ public class WorkflowResourceApi {
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeClosed", includeClosed));
         if (includeTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeTasks", includeTasks));
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
+            localVarPostBody, null);
     }
 
     /**
-     * Lists workflows for the given correlation id list and workflow name list
+     * 获取给定工作流名称列表和关联ID列表的工作流列表
      *
-     * @param request       (required)
-     * @param includeClosed (optional, default to false)
-     * @param includeTasks  (optional, default to false)
-     * @return Map of correlation id to workflow list
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @param request       请求对象(必需)
+     * @param includeClosed 是否包含已关闭的工作流(可选,默认为false)
+     * @param includeTasks  是否包含任务(可选,默认为false)
+     * @return 关联ID到工作流列表的映射
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public Map<String, List<ExecutingWorkflow>> getWorkflowsByNamesAndCorrelationIds(CorrelationIdsSearchRequest request,
                                                                                      Boolean includeClosed,
                                                                                      Boolean includeTasks)
                                                                                                           throws ApiException {
-        Call call = getWorkflowsByNamesAndCorrelationIdsBeforeCall(request, includeClosed, includeTasks, null, null);
+        Assertion.assertNotNull(request, "request");
+        Call call = getWorkflowsByNamesAndCorrelationIdsCall(request, includeClosed, includeTasks);
         Type localVarReturnType = new TypeReference<Map<String, List<ExecutingWorkflow>>>() {
         }.getType();
         ApiResponse<Map<String, List<ExecutingWorkflow>>> response = apiClient.execute(call, localVarReturnType);
         return response.getData();
     }
 
-    private Call getWorkflowsByNamesAndCorrelationIdsBeforeCall(CorrelationIdsSearchRequest request,
-                                                                Boolean includeClosed,
-                                                                Boolean includeTasks,
-                                                                final ProgressResponseBody.ProgressListener progressListener,
-                                                                final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                                          throws ApiException {
-        Assertion.assertNotNull(request, "request");
-        Call call = getWorkflowsByNamesAndCorrelationIdsCall(request, includeClosed, includeTasks, progressListener,
-            progressRequestListener);
-        return call;
-    }
-
     /**
-     * Build call for getWorkflows1
+     * 构建获取工作流列表的调用
      *
-     * @param body                    (required)
-     * @param includeClosed           (optional, default to false)
-     * @param includeTasks            (optional, default to false)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @param body          请求体(必需)
+     * @param includeClosed 是否包含已关闭的工作流(可选,默认为false)
+     * @param includeTasks  是否包含任务(可选,默认为false)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    private Call getWorkflowsByNamesAndCorrelationIdsCall(CorrelationIdsSearchRequest body,
-                                                          Boolean includeClosed,
-                                                          Boolean includeTasks,
-                                                          final ProgressResponseBody.ProgressListener progressListener,
-                                                          final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                                    throws ApiException {
+    private Call getWorkflowsByNamesAndCorrelationIdsCall(CorrelationIdsSearchRequest body, Boolean includeClosed,
+                                                          Boolean includeTasks) throws ApiException {
         Object localVarPostBody = body;
 
         String localVarPath = "/workflow/correlated/batch";
@@ -462,41 +282,24 @@ public class WorkflowResourceApi {
         if (includeTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("includeTasks", includeTasks));
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = { "application/json" };
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
+        Map<String, Object> localVarFormParams = new HashMap<>();
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
+            localVarPostBody, localVarFormParams);
     }
 
-    private Call getWorkflows1ValidateBeforeCall(String name,
-                                                 String correlationId,
-                                                 Boolean includeClosed,
-                                                 Boolean includeTasks,
-                                                 final ProgressResponseBody.ProgressListener progressListener,
-                                                 final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                           throws ApiException {
+    /**
+     * 获取给定关联ID的工作流列表
+     *
+     * @param name          工作流名称(必需)
+     * @param correlationId 关联ID(必需)
+     * @param includeClosed 是否包含已关闭的工作流(可选,默认为false)
+     * @param includeTasks  是否包含任务(可选,默认为false)
+     * @return 工作流列表
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
+     */
+    public List<ExecutingWorkflow> getWorkflowsByCorrelationId(String name, String correlationId,
+                                                               Boolean includeClosed, Boolean includeTasks)
+                                                                                                           throws ApiException {
         if (name == null) {
             throw new ApiException("Missing the required parameter 'name' when calling getWorkflows1(Async)");
         }
@@ -504,316 +307,105 @@ public class WorkflowResourceApi {
             throw new ApiException("Missing the required parameter 'correlationId' when calling getWorkflows1(Async)");
         }
 
-        Call call = getWorkflows1Call(name, correlationId, includeClosed, includeTasks, progressListener,
-            progressRequestListener);
-        return call;
-    }
-
-    /**
-     * Lists workflows for the given correlation id
-     *
-     * @param name          (required)
-     * @param correlationId (required)
-     * @param includeClosed (optional, default to false)
-     * @param includeTasks  (optional, default to false)
-     * @return List&lt;Workflow&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
-     */
-    public List<ExecutingWorkflow> getWorkflowsByCorrelationId(String name, String correlationId,
-                                                               Boolean includeClosed, Boolean includeTasks)
-                                                                                                           throws ApiException {
-        ApiResponse<List<ExecutingWorkflow>> resp = getWorkflows1WithHttpInfo(name, correlationId, includeClosed,
-            includeTasks);
+        Call call = getWorkflows1Call(name, correlationId, includeClosed, includeTasks);
+        Type localVarReturnType = new TypeReference<List<ExecutingWorkflow>>() {
+        }.getType();
+        ApiResponse<List<ExecutingWorkflow>> resp = apiClient.execute(call, localVarReturnType);
         return resp.getData();
     }
 
     /**
-     * Lists workflows for the given correlation id
+     * 构建暂停工作流的调用
      *
-     * @param name          (required)
-     * @param correlationId (required)
-     * @param includeClosed (optional, default to false)
-     * @param includeTasks  (optional, default to false)
-     * @return ApiResponse&lt;List&lt;Workflow&gt;&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId 工作流ID(必需)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    private ApiResponse<List<ExecutingWorkflow>> getWorkflows1WithHttpInfo(String name, String correlationId,
-                                                                           Boolean includeClosed, Boolean includeTasks)
-                                                                                                                       throws ApiException {
-        Call call = getWorkflows1ValidateBeforeCall(name, correlationId, includeClosed, includeTasks, null, null);
-        Type localVarReturnType = new TypeReference<List<ExecutingWorkflow>>() {
-        }.getType();
-        return apiClient.execute(call, localVarReturnType);
-    }
-
-    /**
-     * Build call for pauseWorkflow
-     *
-     * @param workflowId              (required)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public Call pauseWorkflowCall(String workflowId, final ProgressResponseBody.ProgressListener progressListener,
-                                  final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                            throws ApiException {
-        Object localVarPostBody = null;
-
+    public Call pauseWorkflowCall(String workflowId) throws ApiException {
         String localVarPath = f("/workflow/%s/pause", workflowId);
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
-        return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
-    }
-
-    private Call pauseWorkflowValidateBeforeCall(String workflowId,
-                                                 final ProgressResponseBody.ProgressListener progressListener,
-                                                 final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                           throws ApiException {
-        Assertion.assertNotNull(workflowId, "workflowId");
-        Call call = pauseWorkflowCall(workflowId, progressListener, progressRequestListener);
-        return call;
+        return apiClient.buildCall(localVarPath, "PUT", null, null, null, null);
     }
 
     /**
-     * Pauses the workflow
+     * 暂停工作流
      *
-     * @param workflowId (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId 工作流ID(必需)
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void pauseWorkflow(String workflowId) throws ApiException {
-        pauseWorkflowWithHttpInfo(workflowId);
+        Assertion.assertNotNull(workflowId, "workflowId");
+        Call call = pauseWorkflowCall(workflowId);
+        ApiResponse<Void> response = apiClient.execute(call);
     }
 
     /**
-     * Pauses the workflow
+     * 构建重新运行的调用
      *
-     * @param workflowId (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param rerunWorkflowRequest 重新运行工作流请求(必需)
+     * @param workflowId           工作流ID(必需)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    private ApiResponse<Void> pauseWorkflowWithHttpInfo(String workflowId) throws ApiException {
-        Call call = pauseWorkflowValidateBeforeCall(workflowId, null, null);
-        return apiClient.execute(call);
-    }
-
-    /**
-     * Build call for rerun
-     *
-     * @param rerunWorkflowRequest    (required)
-     * @param workflowId              (required)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public Call rerunCall(WorkflowRerunRequest rerunWorkflowRequest, String workflowId,
-                          final ProgressResponseBody.ProgressListener progressListener,
-                          final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                    throws ApiException {
+    public Call rerunCall(WorkflowRerunRequest rerunWorkflowRequest, String workflowId) throws ApiException {
         Object localVarPostBody = rerunWorkflowRequest;
 
         String localVarPath = f("/workflow/%s/rerun", workflowId);
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "text/plain" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = { "application/json" };
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
+        List<Pair> localVarCollectionQueryParams = new ArrayList<>();
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
-    }
-
-    private Call rerunValidateBeforeCall(WorkflowRerunRequest rerunWorkflowRequest, String workflowId,
-                                         final ProgressResponseBody.ProgressListener progressListener,
-                                         final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                   throws ApiException {
-        Assertion.assertNotNull(rerunWorkflowRequest, "rerunWorkflowRequest");
-        Assertion.assertNotNull(workflowId, "workflowId");
-        Call call = rerunCall(rerunWorkflowRequest, workflowId, progressListener, progressRequestListener);
-        return call;
+            localVarPostBody, null);
     }
 
     /**
-     * Reruns the workflow from a specific task
+     * 从特定任务重新运行工作流
      *
-     * @param rerunWorkflowRequest (required)
-     * @param workflowId           (required)
-     * @return String
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param rerunWorkflowRequest 重新运行工作流请求(必需)
+     * @param workflowId           工作流ID(必需)
+     * @return 字符串
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public String rerun(WorkflowRerunRequest rerunWorkflowRequest, String workflowId) throws ApiException {
-        ApiResponse<String> resp = rerunWithHttpInfo(rerunWorkflowRequest, workflowId);
-        return resp.getData();
-    }
-
-    /**
-     * Reruns the workflow from a specific task
-     *
-     * @param rerunWorkflowRequest (required)
-     * @param workflowId           (required)
-     * @return ApiResponse&lt;String&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
-     */
-    private ApiResponse<String> rerunWithHttpInfo(WorkflowRerunRequest rerunWorkflowRequest, String workflowId)
-                                                                                                               throws ApiException {
-        Call call = rerunValidateBeforeCall(rerunWorkflowRequest, workflowId, null, null);
+        Assertion.assertNotNull(rerunWorkflowRequest, "rerunWorkflowRequest");
+        Assertion.assertNotNull(workflowId, "workflowId");
+        Call call = rerunCall(rerunWorkflowRequest, workflowId);
         Type localVarReturnType = new TypeReference<String>() {
         }.getType();
-        return apiClient.execute(call, localVarReturnType);
+        return (String) apiClient.execute(call, localVarReturnType).getData();
     }
 
     /**
-     * Build call for resetWorkflow
+     * 构建重置工作流的调用
      *
-     * @param workflowId              (required)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
+     * @param workflowId 工作流ID(必需)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    public Call resetWorkflowCall(String workflowId, final ProgressResponseBody.ProgressListener progressListener,
-                                  final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                            throws ApiException {
-        Object localVarPostBody = null;
+    public Call resetWorkflowCall(String workflowId) throws ApiException {
         String localVarPath = f("/workflow/%s/resetcallbacks", workflowId);
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
-        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
-    }
-
-    private Call resetWorkflowValidateBeforeCall(String workflowId,
-                                                 final ProgressResponseBody.ProgressListener progressListener,
-                                                 final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                           throws ApiException {
-        Assertion.assertNotNull(workflowId, "workflowId");
-        Call call = resetWorkflowCall(workflowId, progressListener, progressRequestListener);
-        return call;
+        return apiClient.buildCall(localVarPath, "POST", null, null, null, null);
     }
 
     /**
-     * Resets callback times of all non-terminal SIMPLE tasks to 0
+     * 重置所有非终端简单任务的回调次数
      *
-     * @param workflowId (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId 工作流ID(必需)
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void resetWorkflow(String workflowId) throws ApiException {
-        resetWorkflowWithHttpInfo(workflowId);
+        Assertion.assertNotNull(workflowId, "workflowId");
+        Call call = resetWorkflowCall(workflowId);
+        ApiResponse<Void> response = apiClient.execute(call);
     }
 
     /**
-     * Resets callback times of all non-terminal SIMPLE tasks to 0
+     * 构建重新启动的调用
      *
-     * @param workflowId (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId           工作流ID(必需)
+     * @param useLatestDefinitions 是否使用最新定义(可选,默认为false)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    private ApiResponse<Void> resetWorkflowWithHttpInfo(String workflowId) throws ApiException {
-        Call call = resetWorkflowValidateBeforeCall(workflowId, null, null);
-        return apiClient.execute(call);
-    }
-
-    /**
-     * Build call for restart
-     *
-     * @param workflowId              (required)
-     * @param useLatestDefinitions    (optional, default to false)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public Call restartCall(String workflowId, Boolean useLatestDefinitions,
-                            final ProgressResponseBody.ProgressListener progressListener,
-                            final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                      throws ApiException {
+    public Call restartCall(String workflowId, Boolean useLatestDefinitions) throws ApiException {
         Object localVarPostBody = null;
         String localVarPath = f("/workflow/%s/restart", workflowId);
 
@@ -822,166 +414,63 @@ public class WorkflowResourceApi {
         if (useLatestDefinitions != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("useLatestDefinitions", useLatestDefinitions));
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
-    }
-
-    private Call restartValidateBeforeCall(String workflowId, Boolean useLatestDefinitions,
-                                           final ProgressResponseBody.ProgressListener progressListener,
-                                           final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                     throws ApiException {
-        Assertion.assertNotNull(workflowId, "workflowId");
-        Call call = restartCall(workflowId, useLatestDefinitions, progressListener, progressRequestListener);
-        return call;
+            localVarPostBody, null);
     }
 
     /**
-     * Restarts a completed workflow
+     * 重新启动一个已完成的工作流
      *
-     * @param workflowId           (required)
-     * @param useLatestDefinitions (optional, default to false)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId           工作流ID(必需)
+     * @param useLatestDefinitions 是否使用最新定义(可选,默认为false)
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void restart(String workflowId, Boolean useLatestDefinitions) throws ApiException {
-        restartWithHttpInfo(workflowId, useLatestDefinitions);
+        Assertion.assertNotNull(workflowId, "workflowId");
+        Call call = restartCall(workflowId, useLatestDefinitions);
+        ApiResponse<Void> response = apiClient.execute(call);
+
     }
 
     /**
-     * Restarts a completed workflow
+     * 构建恢复工作流的调用
      *
-     * @param workflowId           (required)
-     * @param useLatestDefinitions (optional, default to false)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId 工作流ID(必需)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    private ApiResponse<Void> restartWithHttpInfo(String workflowId, Boolean useLatestDefinitions) throws ApiException {
-        Call call = restartValidateBeforeCall(workflowId, useLatestDefinitions, null, null);
-        return apiClient.execute(call);
-    }
-
-    /**
-     * Build call for resumeWorkflow
-     *
-     * @param workflowId              (required)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public Call resumeWorkflowCall(String workflowId, final ProgressResponseBody.ProgressListener progressListener,
-                                   final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                             throws ApiException {
+    public Call resumeWorkflowCall(String workflowId) throws ApiException {
         Object localVarPostBody = null;
         String localVarPath = f("/workflow/%s/resume", workflowId);
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
-        return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
+        return apiClient.buildCall(localVarPath, "PUT", null, null, localVarPostBody, null);
     }
 
-    private Call resumeWorkflowValidateBeforeCall(String workflowId,
-                                                  final ProgressResponseBody.ProgressListener progressListener,
-                                                  final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                            throws ApiException {
+    private Call resumeWorkflowValidateBeforeCall(String workflowId) throws ApiException {
         Assertion.assertNotNull(workflowId, "workflowId");
-        Call call = resumeWorkflowCall(workflowId, progressListener, progressRequestListener);
+        Call call = resumeWorkflowCall(workflowId);
         return call;
     }
 
     /**
-     * Resumes the workflow
+     * 恢复工作流
      *
-     * @param workflowId (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId 工作流ID(必需)
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void resumeWorkflow(String workflowId) throws ApiException {
-        resumeWorkflowWithHttpInfo(workflowId);
+        Call call = resumeWorkflowValidateBeforeCall(workflowId);
+        ApiResponse<Void> resp = apiClient.execute(call);
     }
 
     /**
-     * Resumes the workflow
+     * 构建重试的调用
      *
-     * @param workflowId (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId             工作流ID(必需)
+     * @param resumeSubworkflowTasks 是否恢复子工作流任务(可选,默认为false)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    private ApiResponse<Void> resumeWorkflowWithHttpInfo(String workflowId) throws ApiException {
-        Call call = resumeWorkflowValidateBeforeCall(workflowId, null, null);
-        return apiClient.execute(call);
-    }
-
-    /**
-     * Build call for retry
-     *
-     * @param workflowId              (required)
-     * @param resumeSubworkflowTasks  (optional, default to false)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public Call retryCall(String workflowId, Boolean resumeSubworkflowTasks,
-                          final ProgressResponseBody.ProgressListener progressListener,
-                          final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                    throws ApiException {
+    public Call retryCall(String workflowId, Boolean resumeSubworkflowTasks) throws ApiException {
         Object localVarPostBody = null;
         String localVarPath = f("/workflow/%s/retry", workflowId);
 
@@ -989,87 +478,39 @@ public class WorkflowResourceApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         if (resumeSubworkflowTasks != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("resumeSubworkflowTasks", resumeSubworkflowTasks));
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
+            localVarPostBody, null);
     }
 
-    private Call retryValidateBeforeCall(String workflowId, Boolean resumeSubworkflowTasks,
-                                         final ProgressResponseBody.ProgressListener progressListener,
-                                         final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                   throws ApiException {
+    private Call retryValidateBeforeCall(String workflowId, Boolean resumeSubworkflowTasks) throws ApiException {
         Assertion.assertNotNull(workflowId, "workflowId");
-        Call call = retryCall(workflowId, resumeSubworkflowTasks, progressListener, progressRequestListener);
+        Call call = retryCall(workflowId, resumeSubworkflowTasks);
         return call;
     }
 
     /**
-     * Retries the last failed task
+     * 重试最后一个失败的任务
      *
-     * @param workflowId             (required)
-     * @param resumeSubworkflowTasks (optional, default to false)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId             工作流ID(必需)
+     * @param resumeSubworkflowTasks 是否恢复子工作流任务(可选,默认为false)
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void retry(String workflowId, Boolean resumeSubworkflowTasks) throws ApiException {
-        retryWithHttpInfo(workflowId, resumeSubworkflowTasks);
+        Call call = retryValidateBeforeCall(workflowId, resumeSubworkflowTasks);
+        ApiResponse<Void> response = apiClient.execute(call);
     }
 
     /**
-     * Retries the last failed task
+     * 构建跳过任务的调用
      *
-     * @param workflowId             (required)
-     * @param resumeSubworkflowTasks (optional, default to false)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId        工作流ID(必需)
+     * @param taskReferenceName 任务引用名称(必需)
+     * @param skipTaskRequest   跳过任务请求(必需)
+     * @return 要执行的Call对象
+     * @throws ApiException 如果序列化请求体对象失败
      */
-    private ApiResponse<Void> retryWithHttpInfo(String workflowId, Boolean resumeSubworkflowTasks) throws ApiException {
-        Call call = retryValidateBeforeCall(workflowId, resumeSubworkflowTasks, null, null);
-        return apiClient.execute(call);
-    }
-
-    /**
-     * Build call for skipTaskFromWorkflow
-     *
-     * @param workflowId              (required)
-     * @param taskReferenceName       (required)
-     * @param skipTaskRequest         (required)
-     * @param progressListener        Progress listener
-     * @param progressRequestListener Progress request listener
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     */
-    public Call skipTaskFromWorkflowCall(String workflowId, String taskReferenceName, SkipTaskRequest skipTaskRequest,
-                                         final ProgressResponseBody.ProgressListener progressListener,
-                                         final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                   throws ApiException {
+    public Call skipTaskFromWorkflowCall(String workflowId, String taskReferenceName, SkipTaskRequest skipTaskRequest)
+                                                                                                                      throws ApiException {
         Object localVarPostBody = null;
 
         String localVarPath = f("/workflow/%s/skiptask/%s", workflowId, taskReferenceName);
@@ -1079,78 +520,31 @@ public class WorkflowResourceApi {
         if (skipTaskRequest != null)
             localVarQueryParams.addAll(HttpHelper.parameterToPair("skipTaskRequest", skipTaskRequest));
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {};
-
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if (progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), progressListener)).build();
-                }
-            });
-        }
-
         return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, progressRequestListener);
+            localVarPostBody, null);
     }
 
-    private Call skipTaskFromWorkflowValidateBeforeCall(String workflowId,
-                                                        String taskReferenceName,
-                                                        SkipTaskRequest skipTaskRequest,
-                                                        final ProgressResponseBody.ProgressListener progressListener,
-                                                        final ProgressRequestBody.ProgressRequestListener progressRequestListener)
-                                                                                                                                  throws ApiException {
+    private Call skipTaskFromWorkflowValidateBeforeCall(String workflowId, String taskReferenceName,
+                                                        SkipTaskRequest skipTaskRequest) throws ApiException {
         Assertion.assertNotNull(workflowId, "workflowId");
         Assertion.assertNotNull(taskReferenceName, "taskReferenceName");
         Assertion.assertNotNull(skipTaskRequest, "skipTaskRequest");
-        Call call = skipTaskFromWorkflowCall(workflowId, taskReferenceName, skipTaskRequest, progressListener,
-            progressRequestListener);
+        Call call = skipTaskFromWorkflowCall(workflowId, taskReferenceName, skipTaskRequest);
         return call;
     }
 
     /**
-     * Skips a given task from a current running workflow
+     * 跳过一个当前正在运行的工作流中的给定任务
      *
-     * @param workflowId        (required)
-     * @param taskReferenceName (required)
-     * @param skipTaskRequest   (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param workflowId        工作流ID(必需)
+     * @param taskReferenceName 任务引用名称(必需)
+     * @param skipTaskRequest   跳过任务请求(必需)
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public void skipTaskFromWorkflow(String workflowId, String taskReferenceName, SkipTaskRequest skipTaskRequest)
                                                                                                                   throws ApiException {
-        skipTaskFromWorkflowWithHttpInfo(workflowId, taskReferenceName, skipTaskRequest);
-    }
-
-    /**
-     * Skips a given task from a current running workflow
-     *
-     * @param workflowId        (required)
-     * @param taskReferenceName (required)
-     * @param skipTaskRequest   (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
-     */
-    private ApiResponse<Void> skipTaskFromWorkflowWithHttpInfo(String workflowId, String taskReferenceName,
-                                                               SkipTaskRequest skipTaskRequest) throws ApiException {
-        Call call = skipTaskFromWorkflowValidateBeforeCall(workflowId, taskReferenceName, skipTaskRequest, null, null);
-        return apiClient.execute(call);
+        Call call = skipTaskFromWorkflowValidateBeforeCall(workflowId, taskReferenceName, skipTaskRequest);
+        ApiResponse<Void> response = apiClient.execute(call);
     }
 
     private Call startWorkflowValidateBeforeCall(StartWorkflowRequest startWorkflowRequest) throws ApiException {
@@ -1160,12 +554,11 @@ public class WorkflowResourceApi {
     }
 
     /**
-     * Start a new workflow with StartWorkflowRequest, which allows task to be executed in a domain
+     * 使用StartWorkflowRequest启动一个新工作流，允许在域中执行任务
      *
-     * @param startWorkflowRequest (required)
-     * @return String
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
-     *                      response body
+     * @param startWorkflowRequest 启动工作流请求(必需)
+     * @return 字符串
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public String startWorkflow(StartWorkflowRequest startWorkflowRequest) throws ApiException {
         ApiResponse<String> resp = startWorkflowWithHttpInfo(startWorkflowRequest);
@@ -1212,28 +605,16 @@ public class WorkflowResourceApi {
         String localVarPath = f("/workflow/%s/variables", workflowId);
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = { "*/*" };
-        final String localVarAccept = HttpHelper.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null)
-            localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {};
-
-        final String localVarContentType = HttpHelper.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams,
-            localVarPostBody, localVarHeaderParams, localVarFormParams, null);
+            localVarPostBody, null);
     }
 
     /**
-     * Update workflow and task status
-     * Updates the workflow variables, tasks and triggers evaluation.
+     * 更新工作流和任务状态
+     * 更新工作流变量、任务和触发器评估。
      *
      * @return WorkflowRun
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @throws ApiException 如果调用API失败,例如服务器错误或无法反序列化响应体
      */
     public WorkflowRun updateWorkflowState(WorkflowProgressUpdate body) throws ApiException {
         ApiResponse<WorkflowRun> resp = updateWorkflowAndTaskStateWithHttpInfo(body);

@@ -14,10 +14,9 @@
  */
 package cn.feiliu.taskflow.client.core;
 
-import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.client.AuthClient;
-import cn.feiliu.taskflow.common.AuthTokenUtil;
-import cn.feiliu.taskflow.open.dto.TokenResponse;
+import cn.feiliu.common.api.utils.AuthTokenUtil;
+import cn.feiliu.taskflow.client.api.IAuthClient;
+import cn.feiliu.taskflow.dto.TokenResponse;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
@@ -43,23 +42,21 @@ import java.util.concurrent.TimeUnit;
 public class TokenManager implements AutoCloseable {
     private static final Logger            log                 = LoggerFactory.getLogger(TokenManager.class);
     private long                           tokenRefreshInSeconds;
-    private AuthClient                     authClient;
+    private IAuthClient                    authClient;
     private final Cache<String, String>    CACHE;
     private final ScheduledExecutorService tokenRefreshService = Executors.newSingleThreadScheduledExecutor();
     private String                         keyId;
     private String                         keySecret;
     private final String                   TOKEN               = "tf_token";
-    private final String                   REFRESH_INTERVAL    = "FEILIU_SECURITY_TOKEN_REFRESH_INTERVAL";
     private final RateLimiter              rateLimiter         = RateLimiter.create(1);
 
-    public TokenManager(ApiClient apiClient, String keyId, String keySecret) {
-        this.authClient = new AuthClient(apiClient);
+    public TokenManager(IAuthClient authClient, String keyId, String keySecret) {
+        this.authClient = Objects.requireNonNull(authClient, "authClient Cannot be null");
         this.keyId = Objects.requireNonNull(keyId);
         this.keySecret = Objects.requireNonNull(keySecret);
         this.tokenRefreshInSeconds = getRefreshIntervalTimes();
         log.info("Setting token refresh interval to {} seconds", this.tokenRefreshInSeconds);
         this.CACHE = CacheBuilder.newBuilder().expireAfterWrite(tokenRefreshInSeconds, TimeUnit.SECONDS).build();
-        shouldStartSchedulerAndInitializeToken();
     }
 
     /**
@@ -68,9 +65,10 @@ public class TokenManager implements AutoCloseable {
      * @return
      */
     private Integer getRefreshIntervalTimes() {
-        String refreshInterval = System.getenv(REFRESH_INTERVAL);
+        String key = "feiliu_security_token_refresh_interval";
+        String refreshInterval = System.getenv(key);
         if (refreshInterval == null) {
-            refreshInterval = System.getProperty(REFRESH_INTERVAL);
+            refreshInterval = System.getProperty(key);
         }
         if (refreshInterval != null) {
             try {
@@ -84,14 +82,12 @@ public class TokenManager implements AutoCloseable {
     /**
      * 应该启动调度程序并初始化令牌
      */
-    private void shouldStartSchedulerAndInitializeToken() {
-        if (useSecurity()) {
-            scheduleTokenRefresh();
-            try {
-                getBearerToken();
-            } catch (Throwable t) {
-                log.error(t.getMessage(), t);
-            }
+    public void shouldStartSchedulerAndInitializeToken() {
+        scheduleTokenRefresh();
+        try {
+            getBearerToken();
+        } catch (Throwable t) {
+            log.error(t.getMessage(), t);
         }
     }
 
@@ -110,10 +106,6 @@ public class TokenManager implements AutoCloseable {
         }, tokenRefreshInSeconds, tokenRefreshInSeconds, TimeUnit.SECONDS);
     }
 
-    public boolean useSecurity() {
-        return StringUtils.isNotBlank(keyId) && StringUtils.isNotBlank(keySecret);
-    }
-
     /**
      * 强制刷新token并返回Bearer格式的token
      *
@@ -128,9 +120,6 @@ public class TokenManager implements AutoCloseable {
     @SneakyThrows
     public String getBearerToken() {
         try {
-            if (!useSecurity()) {//暂不支持该场景
-                throw new RuntimeException("KeyId and KeySecret must be set in order to get an authentication token");
-            }
             return CACHE.get(TOKEN, () -> refreshAndGetBearerToken());
         } catch (UncheckedExecutionException e) {
             throw e.getCause();

@@ -14,8 +14,9 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
+
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
 import org.junit.Assert;
 import org.junit.Test;
 

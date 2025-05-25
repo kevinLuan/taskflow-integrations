@@ -12,13 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.client.api;
+package cn.feiliu.taskflow.client.spring;
 
-import cn.feiliu.taskflow.api.ITriggerService;
+import org.springframework.stereotype.Service;
+
+import java.lang.annotation.*;
 
 /**
+ * 自定义 Workers 分组
+ *
  * @author SHOUSHEN.LUAN
- * @since 2024-10-04
+ * @since 2024-09-01
  */
-public interface IWebhookClient extends ITriggerService {
+@Target({ ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Service
+public @interface Workers {
 }

@@ -14,17 +14,16 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.common.DateTimeOps;
+import cn.feiliu.common.api.utils.DateTimeOps;
 import cn.feiliu.taskflow.common.enums.TriggerType;
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.open.dto.SaveScheduleRequest;
-import cn.feiliu.taskflow.open.dto.WorkflowSchedule;
-import cn.feiliu.taskflow.open.dto.WorkflowScheduleExecution;
-import cn.feiliu.taskflow.open.dto.trigger.CronTrigger;
-import cn.feiliu.taskflow.open.exceptions.ApiException;
+import cn.feiliu.taskflow.dto.SaveScheduleRequest;
+import cn.feiliu.taskflow.dto.WorkflowSchedule;
+import cn.feiliu.taskflow.dto.WorkflowScheduleExecution;
+import cn.feiliu.taskflow.dto.trigger.CronTrigger;
+import cn.feiliu.taskflow.dto.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.exceptions.ApiException;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
 
 import static cn.feiliu.taskflow.client.api.BaseClientApi.*;
 
@@ -106,7 +105,8 @@ public class SchedulerClientTests {
         System.out.println("结束时间: " + DateTimeOps.of(req.getTimeZone(), end));
         System.out.println("===============");
         for (Long exeTime : exeTimes) {
-            System.out.println("执行时间: " + DateTimeOps.of(req.getTimeZone(), exeTime).format(DateTimeOps.ZONE_FMT));
+            System.out.println("执行时间: "
+                               + DateTimeOps.of(req.getTimeZone(), exeTime).format(DateTimeOps.WITHOUT_ZONE_FMT));
         }
         Assert.assertEquals(8, exeTimes.size());
     }
@@ -130,6 +130,6 @@ public class SchedulerClientTests {
     private DateTimeOps getStartTime(ZoneId zoneId) {
         //使用本地日期的10点30分作为开始时间
         String originalTime = DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 10:30:00";
-        return DateTimeOps.parse(zoneId, DateTimeOps.SIMPLE_FMT, originalTime);
+        return DateTimeOps.parse(zoneId, DateTimeOps.WITHOUT_ZONE_FMT, originalTime);
     }
 }

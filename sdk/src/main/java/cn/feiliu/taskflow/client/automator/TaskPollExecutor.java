@@ -14,27 +14,28 @@
  */
 package cn.feiliu.taskflow.client.automator;
 
+import cn.feiliu.common.api.utils.CommonUtils;
+import cn.feiliu.shaded.spectator.api.Registry;
+import cn.feiliu.shaded.spectator.api.Spectator;
+import cn.feiliu.shaded.spectator.api.patterns.ThreadPoolMonitor;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.api.ITaskClient;
 import cn.feiliu.taskflow.client.automator.scheduling.MultiTaskResult;
 import cn.feiliu.taskflow.client.automator.scheduling.PollExecuteStatus;
 import cn.feiliu.taskflow.client.spi.DiscoveryService;
 import cn.feiliu.taskflow.client.telemetry.MetricsContainer;
-import cn.feiliu.taskflow.common.metadata.tasks.ExecutingTask;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskExecResult;
-import cn.feiliu.taskflow.common.metadata.tasks.TaskLog;
-import cn.feiliu.taskflow.common.utils.TaskflowUtils;
-import cn.feiliu.taskflow.sdk.config.WorkerPropertyManager;
-import cn.feiliu.taskflow.sdk.worker.Worker;
+import cn.feiliu.taskflow.common.enums.TaskStatus;
+import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
+import cn.feiliu.taskflow.core.executor.task.Worker;
+import cn.feiliu.taskflow.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.dto.tasks.TaskExecResult;
+import cn.feiliu.taskflow.dto.tasks.TaskLog;
 import com.google.common.base.Stopwatch;
-import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.api.Spectator;
-import com.netflix.spectator.api.Timer;
-import com.netflix.spectator.api.patterns.ThreadPoolMonitor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import cn.feiliu.shaded.spectator.api.Timer;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -132,7 +133,7 @@ class TaskPollExecutor {
         } catch (Throwable e) {
             LOGGER.error("Unable to execute taskId: {} of type: {} ,error:{}", task.getTaskId(), task.getTaskDefName(), e);
             if (result == null) {
-                task.setStatus(ExecutingTask.Status.FAILED);
+                task.setStatus(TaskStatus.FAILED);
                 result = new TaskExecResult(task);
             }
             handleException(e, result, worker, task);
@@ -163,22 +164,11 @@ class TaskPollExecutor {
 
     private void updateTaskResult(int count, ExecutingTask task, TaskExecResult result, Worker worker) {
         Runnable runnable = () -> {
-            if (apiClient.isUseGRPC()) {
-                List<Future<?>> futures = new ArrayList<>();
-                futures.add(apiClient.getApis().getGrpcApi().asyncUpdateTask(result));
-                for (TaskLog taskLog : result.getLogs()) {
-                    if (StringUtils.isNotBlank(taskLog.getLog())) {
-                        futures.add(apiClient.getApis().getGrpcApi().addLog(taskLog));
-                    }
-                }
-                TaskflowUtils.blockedWait(futures, 30_000);
-            } else {
-                ITaskClient taskClient = apiClient.getApis().getTaskClient();
-                taskClient.updateTask(result);
-            }
+            ITaskClient taskClient = apiClient.getApis().getTaskClient();
+            taskClient.updateTask(result);
         };
         try {
-            TaskflowUtils.retryOperation(runnable, count, "updateTask");
+            CommonUtils.retryOperation(runnable, count, "updateTask");
         } catch (Exception e) {
             worker.onErrorUpdate(task);
             MetricsContainer.incrementTaskUpdateErrorCount(worker.getTaskDefName(), e);
@@ -189,9 +179,9 @@ class TaskPollExecutor {
     private void handleException(Throwable t, TaskExecResult result, Worker worker, ExecutingTask task) {
         LOGGER.error(String.format("Error while executing task %s", task.toString()), t);
         MetricsContainer.incrementTaskExecutionErrorCount(worker.getTaskDefName(), t);
-        result.setStatus(TaskExecResult.Status.FAILED);
+        result.setStatus(TaskUpdateStatus.FAILED);
         result.setReasonForIncompletion("Error while executing the task: " + t);
-        result.log(TaskflowUtils.dumpFullStackTrace(t));
+        result.log(CommonUtils.dumpFullStackTrace(t));
         updateTaskResult(updateRetryCount, task, result, worker);
     }
 
@@ -227,14 +217,8 @@ class TaskPollExecutor {
     }
 
     boolean isActive(Worker worker) {
-        Boolean discoveryOverride = WorkerPropertyManager.getPollOutOfDiscovery(worker.getTaskDefName(),ALL_WORKERS,false);
-        if (discoveryService != null && !discoveryService.getStatus().isUp() && !discoveryOverride) {
+        if (discoveryService != null && !discoveryService.getStatus().isUp()) {
             LOGGER.debug("Instance is NOT UP in discovery - will not poll");
-            return false;
-        }
-        if (worker.paused()) {
-            MetricsContainer.incrementTaskPausedCount(worker.getTaskDefName());
-            LOGGER.debug("Worker {} has been paused. Not polling anymore!", worker.getClass());
             return false;
         }
         return true;
@@ -251,7 +235,7 @@ class TaskPollExecutor {
             if (isActive(worker)) {
                 String taskType = worker.getTaskDefName();
                 PollingSemaphore pollingSemaphore = getPollingSemaphore(worker);
-                String domain = WorkerPropertyManager.getDomainWithFallback(taskType, ALL_WORKERS, taskToDomain.get(taskType));
+                String domain = taskToDomain.get(taskType);
                 Optional<Integer> availablePermitsOpt = pollingSemaphore.tryAcquireAvailablePermits();
                 if (availablePermitsOpt.isPresent()) {
                     final int maxAmount = availablePermitsOpt.get();
@@ -295,17 +279,11 @@ class TaskPollExecutor {
     private List<ExecutingTask> getBatchTasks(Worker worker, String domain, int maxAmount) throws Exception {
         LOGGER.debug("Polling tasks of type: {}", worker.getTaskDefName());
         String workerId = worker.getIdentity();
-        int timeout = TaskflowUtils.getReasonableTimeout(worker);
+        int timeout = 100;
         String taskName = worker.getTaskDefName();
         Timer timer = MetricsContainer.getBatchPollTimer(worker.getTaskDefName());
-        if (apiClient.isUseGRPC()) {
-            return timer.record(() -> {
-                return apiClient.getApis().getGrpcApi().batchPollTask(taskName, workerId, domain, maxAmount, timeout);
-            });
-        } else {
-            ITaskClient taskClient = apiClient.getApis().getTaskClient();
-            return timer.record(() -> taskClient.batchPollTasksInDomain(taskName, domain, workerId, maxAmount, timeout));
-        }
+        ITaskClient taskClient = apiClient.getApis().getTaskClient();
+        return timer.record(() -> taskClient.batchPollTasksInDomain(taskName, domain, workerId, maxAmount, timeout));
     }
 
     private List<CompletableFuture<ExecutingTask>> submitTasks(Worker worker, List<ExecutingTask> tasks, String domain, PollingSemaphore pollingSemaphore) {
@@ -338,7 +316,7 @@ class TaskPollExecutor {
             try {
                 doExecuteTask(worker, task);
             } catch (Throwable t) {
-                task.setStatus(ExecutingTask.Status.FAILED);
+                task.setStatus(TaskStatus.FAILED);
                 TaskExecResult result = new TaskExecResult(task);
                 handleException(t, result, worker, task);
             } finally {

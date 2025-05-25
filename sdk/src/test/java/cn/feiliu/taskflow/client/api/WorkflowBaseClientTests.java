@@ -14,15 +14,16 @@
  */
 package cn.feiliu.taskflow.client.api;
 
-import cn.feiliu.taskflow.common.metadata.tasks.TaskDefinition;
-import cn.feiliu.taskflow.common.metadata.workflow.StartWorkflowRequest;
-import cn.feiliu.taskflow.common.metadata.workflow.WorkflowDefinition;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
-import cn.feiliu.taskflow.open.dto.CorrelationIdsSearchRequest;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.Http;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.SetVariable;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.Wait;
-import cn.feiliu.taskflow.sdk.workflow.def.tasks.WorkTask;
+import cn.feiliu.taskflow.common.enums.WorkflowTimeoutPolicy;
+import cn.feiliu.taskflow.core.def.tasks.Http;
+import cn.feiliu.taskflow.core.def.tasks.SetVariable;
+import cn.feiliu.taskflow.core.def.tasks.SimpleTask;
+import cn.feiliu.taskflow.core.def.tasks.Wait;
+import cn.feiliu.taskflow.dto.CorrelationIdsSearchRequest;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
+import cn.feiliu.taskflow.dto.tasks.TaskDefinition;
+import cn.feiliu.taskflow.dto.workflow.StartWorkflowRequest;
+import cn.feiliu.taskflow.dto.workflow.WorkflowDefinition;
 import com.google.common.util.concurrent.Uninterruptibles;
 import cn.feiliu.taskflow.client.util.TestUtil;
 import org.junit.Test;
@@ -120,8 +121,8 @@ public class WorkflowBaseClientTests {
         TestUtil.retryMethodCall(
                 () -> getTaskEngine().registerTaskDefs(List.of(taskDef1, taskDef2)));
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder(workflowName,1)
-                .addTask(new WorkTask(taskName1, taskName1))
-                .addTask(new WorkTask(taskName2, taskName2))
+                .addTask(new SimpleTask(taskName1, taskName1))
+                .addTask(new SimpleTask(taskName2, taskName2))
                 .build();
         getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef,true);
         StartWorkflowRequest startWorkflowRequest = new StartWorkflowRequest();
@@ -141,8 +142,8 @@ public class WorkflowBaseClientTests {
     @Test
     public void testUpdateVariables() {
         WorkflowDefinition workflowDef = WorkflowDefinition.newBuilder("update_variable_test", 1)
-            .addTask(new WorkTask("simple_task", "simple_task_ref"))
-            .timeoutPolicy(WorkflowDefinition.TimeoutPolicy.TIME_OUT_WF).timeoutSeconds(60).build();
+            .addTask(new SimpleTask("simple_task", "simple_task_ref")).timeoutPolicy(WorkflowTimeoutPolicy.TIME_OUT_WF)
+            .timeoutSeconds(60).build();
         getApiClient().getApis().getWorkflowEngine().registerWorkflow(workflowDef, false);
         StartWorkflowRequest request = new StartWorkflowRequest();
         request.setName(workflowDef.getName());

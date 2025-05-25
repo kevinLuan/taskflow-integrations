@@ -14,11 +14,11 @@
  */
 package cn.feiliu.taskflow.client.api;
 
+import cn.feiliu.taskflow.api.IWorkflowService;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.core.TaskEngine;
 import cn.feiliu.taskflow.client.core.WorkflowEngine;
-import cn.feiliu.taskflow.common.run.ExecutingWorkflow;
-import cn.feiliu.taskflow.open.api.IWorkflowService;
+import cn.feiliu.taskflow.dto.run.ExecutingWorkflow;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
@@ -34,8 +34,8 @@ public final class BaseClientApi {
 
     public static ApiClient createApiClient() {
         String basePath = getEnv(BASE_URL, "http://localhost:8082/api");
-        String keyId = getEnv(KEY_ID, "1927c0cb318");
-        String keySecret = getEnv(KEY_SECRET, "77ef60831ece4c2491eacd5deb487f9a");
+        String keyId = getEnv(KEY_ID, "192dce2b057");
+        String keySecret = getEnv(KEY_SECRET, "57cc296d31e94b82a014327f8d8d03ae");
         apiClient = new ApiClient(basePath, keyId, keySecret);
         apiClient.setWriteTimeout(30_000);
         apiClient.setReadTimeout(30_000);
