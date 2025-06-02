@@ -15,12 +15,12 @@
     <url>https://github.com/kevinLuan/taskflow-integrations</url>
     <description>taskflow platform integration</description>
     <properties>
-        <revision>0.0.10-beta</revision>
+        <revision>0.1.0-beta</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <slf4j.version>1.7.36</slf4j.version>
         <lombok.version>1.18.24</lombok.version>
         <okhttp.version>2.7.5</okhttp.version>
@@ -176,7 +176,7 @@
             <name>kevin.luan</name>
             <email>kevin_luan@126.com</email>
             <organization>taskflow technologies inc.</organization>
-            <organizationUrl>http://www.taskflow.cn/</organizationUrl>
+            <organizationUrl>https://www.taskflow.cn/</organizationUrl>
         </developer>
     </developers>
     <scm>
