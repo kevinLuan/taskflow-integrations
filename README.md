@@ -20,9 +20,9 @@ Taskflow 是一个强大而灵活的基于任务编排的工作流/任务流管�
 
 ## 文档
 
-有关详细文档，请参阅我们的[官方文档](http://www.taskflow.cn)。
+有关详细文档，请参阅我们的[官方文档](https://docs.taskflow.cn)。
 
-本 SDK 为 [Task Cloud](http://www.taskflow.cn/) 提供了便捷的 Java 客户端接口。通过它，您可以轻松访问我们的云服务 API，实现资源和服务的自动化管理等功能。
+本 SDK 为 [飞流云](https://www.taskflow.cn/) 提供了便捷的 Java 客户端接口。通过它，您可以轻松访问我们的云服务 API，实现资源和服务的自动化管理等功能。
 
 ## 安装
 
@@ -43,7 +43,7 @@ Gradle 项目添加以下依赖：
     }
 ```
 ## 问题
-如有问题和支持需求，请访问 [任务云平台](http://www.taskflow.cn/)。
+如有问题和支持需求，请访问 [飞流云](https://www.taskflow.cn/)。
 
 ## 许可证
 
