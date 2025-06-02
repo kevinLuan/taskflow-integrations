@@ -15,7 +15,7 @@
 package cn.feiliu.taskflow.client.spring;
 
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.client.core.TaskEngine;
+import cn.feiliu.taskflow.core.TaskEngine;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.SneakyThrows;

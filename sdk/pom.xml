@@ -15,10 +15,6 @@
     <description>taskflow platform integration sdk</description>
     <dependencies>
         <dependency>
-            <groupId>cn.taskflow</groupId>
-            <artifactId>taskflow-open-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <version>1.3.2</version>
@@ -62,7 +58,12 @@
         <dependency>
             <groupId>cn.taskflow</groupId>
             <artifactId>feiliu-common-api</artifactId>
-            <version>0.0.7</version>
+            <version>${feiliu.common-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.taskflow</groupId>
+            <artifactId>taskflow-common</artifactId>
+            <version>${taskflow.version}</version>
         </dependency>
     </dependencies>
     <build>

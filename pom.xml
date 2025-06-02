@@ -28,7 +28,8 @@
         <junit-jupiter.version>5.9.0</junit-jupiter.version>
         <spring.verison>5.3.24</spring.verison>
         <spring-boot.version>2.5.7</spring-boot.version>
-        <taskflow.version>0.0.10-beta</taskflow.version>
+        <taskflow.version>1.0.0-SNAPSHOT</taskflow.version>
+        <feiliu.common-version>0.1.2</feiliu.common-version>
         <main.user.dir>${user.dir}</main.user.dir>
         <!--suppress UnresolvedMavenProperty -->
         <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
@@ -79,16 +80,6 @@
                 <scope>test</scope>
             </dependency>
             <!-- 集成 feiliu common包 -->
-            <dependency>
-                <groupId>cn.taskflow</groupId>
-                <artifactId>taskflow-open-api</artifactId>
-                <version>${taskflow.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>cn.taskflow</groupId>
-                <artifactId>taskflow-sdk</artifactId>
-                <version>${taskflow.version}</version>
-            </dependency>
             <dependency>
                 <groupId>cn.taskflow</groupId>
                 <artifactId>taskflow-common</artifactId>

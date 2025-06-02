@@ -20,6 +20,7 @@
         <dependency>
             <groupId>cn.taskflow</groupId>
             <artifactId>taskflow-sdk</artifactId>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

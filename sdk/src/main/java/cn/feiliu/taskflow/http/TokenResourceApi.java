@@ -12,41 +12,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.client;
+package cn.feiliu.taskflow.http;
 
+import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.common.dto.ApiResponse;
 import cn.feiliu.taskflow.common.dto.TokenResponse;
-import cn.feiliu.taskflow.http.TokenResourceApi;
+import cn.feiliu.taskflow.common.exceptions.ApiException;
+import okhttp3.Call;
 
 /**
- * 认证客户端类
- * 用于处理Token相关的认证操作
- * 
+ * Token资源API类
+ * 提供访问和刷新认证Token的相关功能
+ *
  * @author SHOUSHEN.LUAN
- * @since 2024-06-30
+ * @since 2024-05-20
  */
-public class AuthClient {
-    /**
-     * API客户端实例
-     */
-    private final ApiClient apiClient;
+public class TokenResourceApi {
 
     /**
-     * 构造函数
+     * 使用给定的访问密钥生成JWT Token
+     *
      * @param apiClient API客户端实例
+     * @return ApiResponse<TokenResponse> 包含Token信息的API响应对象
+     * @throws ApiException 如果调用API失败，例如服务器错误或无法反序列化响应体
      */
-    public AuthClient(ApiClient apiClient) {
-        this.apiClient = apiClient;
-    }
-
-    /**
-     * 刷新Token
-     * 通过调用TokenResourceApi刷新当前的访问令牌
-     * 
-     * @return TokenResponse 包含新的Token信息的响应对象
-     */
-    public TokenResponse refreshToken() {
-        ApiResponse<TokenResponse> response = TokenResourceApi.refreshTokenWithHttpInfo(apiClient);
-        return response.getData();
+    public static ApiResponse<TokenResponse> refreshTokenWithHttpInfo(ApiClient apiClient) throws ApiException {
+        Call call = apiClient.buildPostCall("/auth/token", null);
+        return apiClient.execute(call, TokenResponse.class);
     }
 }

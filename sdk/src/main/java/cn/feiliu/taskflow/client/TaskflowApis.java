@@ -14,37 +14,23 @@
  */
 package cn.feiliu.taskflow.client;
 
-import cn.feiliu.taskflow.client.api.*;
-import cn.feiliu.taskflow.client.core.TaskEngine;
-import cn.feiliu.taskflow.client.core.WorkflowEngine;
-import cn.feiliu.taskflow.client.http.WebhookClient;
-import cn.feiliu.taskflow.client.http.WorkflowClient;
+import cn.feiliu.taskflow.core.TaskEngine;
 
 /**
  * @author SHOUSHEN.LUAN
  * @since 2024-10-04
  */
 public final class TaskflowApis {
-    final ApiClient                  client;
-    private IAuthClient              authClient;
-    private TaskEngine               taskEngine;
-    private WorkflowEngine           workflowEngine;
-    private final IWebhookClient     triggerClient;
-    private final IWorkflowClient    workflowClient;
-    private final ITaskClient        taskClient;
-    private final ISchedulerClient   schedulerClient;
-    private final IWorkflowDefClient workflowDefClient;
+    final ApiClient          client;
+    private AuthClient       authClient;
+    private TaskEngine       taskEngine;
+    private final TaskClient taskClient;
 
     TaskflowApis(ApiClient client) {
         this.client = client;
         this.authClient = new AuthClient(client);
         this.taskEngine = new TaskEngine(client);
-        this.workflowDefClient = new WorkflowDefClient(client);
-        this.triggerClient = new WebhookClient(client);
-        this.workflowClient = new WorkflowClient(client);
         this.taskClient = new TaskClient(client);
-        this.schedulerClient = new SchedulerClient(client);
-        this.workflowEngine = new WorkflowEngine(workflowDefClient, workflowClient, taskEngine);
     }
 
     /**
@@ -52,7 +38,7 @@ public final class TaskflowApis {
      *
      * @return
      */
-    public IAuthClient getAuthClient() {
+    public AuthClient getAuthClient() {
         return this.authClient;
     }
 
@@ -66,62 +52,15 @@ public final class TaskflowApis {
     }
 
     /**
-     * 获取工作流引擎API
-     *
-     * @return
-     */
-    public WorkflowEngine getWorkflowEngine() {
-        return workflowEngine;
-    }
-
-    /**
-     * 获取工作流定义客户端
-     *
-     * @return
-     */
-    public IWorkflowDefClient getWorkflowDefClient() {
-        return workflowDefClient;
-    }
-
-    /**
-     * 获取工作流客户端
-     *
-     * @return
-     */
-    public IWorkflowClient getWorkflowClient() {
-        return workflowClient;
-    }
-
-    /**
      * 获取任务客户端
      *
      * @return
      */
-    public ITaskClient getTaskClient() {
+    public TaskClient getTaskClient() {
         return taskClient;
     }
 
-    /**
-     * 获取调度客户端
-     *
-     * @return
-     */
-
-    public ISchedulerClient getSchedulerClient() {
-        return schedulerClient;
-    }
-
-    /**
-     * 触发操作客户端
-     *
-     * @return
-     */
-    public IWebhookClient getWebhookClient() {
-        return triggerClient;
-    }
-
     public void shutdown() {
-        workflowClient.shutdown();
         taskEngine.shutdown();
     }
 }

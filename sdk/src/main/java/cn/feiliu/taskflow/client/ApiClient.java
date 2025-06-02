@@ -14,58 +14,69 @@
  */
 package cn.feiliu.taskflow.client;
 
+import cn.feiliu.taskflow.common.dto.ApiResponse;
+import cn.feiliu.taskflow.common.exceptions.ApiException;
+import cn.feiliu.taskflow.core.TokenManager;
+import cn.feiliu.taskflow.executor.extension.TaskHandlerManager;
+import cn.feiliu.taskflow.http.ApiCallback;
+import cn.feiliu.taskflow.http.Pair;
+import cn.feiliu.taskflow.http.RequestBuilder;
+import cn.feiliu.taskflow.http.types.ResponseTypeHandler;
+import cn.feiliu.taskflow.http.types.TypeFactory;
+import cn.feiliu.taskflow.utils.ClientHelper;
+import lombok.Getter;
+import lombok.SneakyThrows;
+import okhttp3.*;
+
+import javax.net.ssl.KeyManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import javax.net.ssl.*;
 
-import cn.feiliu.taskflow.client.core.TokenManager;
-import cn.feiliu.taskflow.client.http.*;
-import cn.feiliu.taskflow.client.http.types.TypeFactory;
-import cn.feiliu.taskflow.client.http.types.ResponseTypeHandler;
-import cn.feiliu.taskflow.client.utils.HttpHelper;
-import cn.feiliu.taskflow.client.utils.SecurityHelper;
-import cn.feiliu.taskflow.core.executor.extension.TaskHandlerManager;
-import cn.feiliu.taskflow.dto.ApiResponse;
-import cn.feiliu.taskflow.exceptions.ApiException;
-import com.squareup.okhttp.*;
-import lombok.Getter;
-import lombok.SneakyThrows;
-
+/**
+ * API客户端类，用于处理HTTP请求和响应
+ */
 public final class ApiClient {
+    // API基础路径
     private final String              basePath;
+    // 默认请求头映射
     private final Map<String, String> defaultHeaderMap    = new HashMap();
 
+    // 临时文件夹路径
     private String                    tempFolderPath;
 
+    // SSL证书相关配置
     private InputStream               sslCaCert;
     private boolean                   verifyingSsl;
     private KeyManager[]              keyManagers;
 
+    // HTTP客户端实例
     private OkHttpClient              httpClient;
 
+    // 是否使用SSL连接
     private boolean                   useSSL;
 
+    // 执行器线程数
     private int                       executorThreadCount = 0;
 
+    // 令牌管理器
     private final TokenManager        tokenManager;
+    // API集合
     private final TaskflowApis        apis;
+    // 任务处理器管理器
     @Getter
     private final TaskHandlerManager  taskHandlerManager  = new TaskHandlerManager();
 
+    /**
+     * 构造函数
+     * @param basePath API基础路径
+     * @param keyId 密钥ID
+     * @param keySecret 密钥
+     */
     public ApiClient(String basePath, String keyId, String keySecret) {
         this.basePath = normalizePath(basePath);
-        this.httpClient = new OkHttpClient();
-        this.httpClient.setRetryOnConnectionFailure(true);
+        this.httpClient = new OkHttpClient().newBuilder().retryOnConnectionFailure(true).build();
         this.verifyingSsl = true;
         this.apis = new TaskflowApis(this);
         this.tokenManager = new TokenManager(this.apis.getAuthClient(), keyId, keySecret);
@@ -73,6 +84,11 @@ public final class ApiClient {
         this.tokenManager.shouldStartSchedulerAndInitializeToken();
     }
 
+    /**
+     * 规范化基础路径
+     * @param basePath 原始基础路径
+     * @return 规范化后的基础路径
+     */
     private String normalizePath(String basePath) {
         Objects.requireNonNull(basePath, "basePath is required");
         if (basePath.endsWith("/")) {
@@ -83,119 +99,102 @@ public final class ApiClient {
     }
 
     /**
-     * Used for GRPC
+     * 设置是否使用SSL连接(用于GRPC)
      *
-     * @param useSSL set f using SSL connection for gRPC
+     * @param useSSL 是否使用SSL连接
      */
     public void setUseSSL(boolean useSSL) {
         this.useSSL = useSSL;
     }
 
     /**
-     * Get base path
+     * 获取基础路径
      *
-     * @return Base path
+     * @return 基础路径
      */
     public String getBasePath() {
         return basePath;
     }
 
+    /**
+     * 获取执行器线程数
+     *
+     * @return 执行器线程数
+     */
     public int getExecutorThreadCount() {
         return executorThreadCount;
     }
 
+    /**
+     * 设置执行器线程数
+     *
+     * @param executorThreadCount 执行器线程数
+     */
     public void setExecutorThreadCount(int executorThreadCount) {
         this.executorThreadCount = executorThreadCount;
     }
 
     /**
-     * Get HTTP client
+     * 获取HTTP客户端实例
      *
-     * @return An instance of OkHttpClient
+     * @return OkHttpClient实例
      */
     public OkHttpClient getHttpClient() {
         return httpClient;
     }
 
     /**
-     * Set HTTP client
+     * 设置HTTP客户端
      *
-     * @param httpClient An instance of OkHttpClient
-     * @return Api Client
+     * @param httpClient OkHttpClient实例
+     * @return ApiClient实例
      */
     public ApiClient setHttpClient(OkHttpClient httpClient) {
         this.httpClient = httpClient;
         return this;
     }
 
+    /**
+     * 关闭客户端，释放资源
+     */
     @SneakyThrows
     public void shutdown() {
-        this.httpClient.getDispatcher().getExecutorService().shutdown();
         tokenManager.close();
         apis.shutdown();
     }
 
     /**
-     * 如果isVerifyingSsl标志打开，则为True
+     * 检查是否启用SSL验证
+     * 
+     * @return 如果启用SSL验证返回true，否则返回false
      */
     public boolean isVerifyingSsl() {
         return verifyingSsl;
     }
 
     /**
-     * 配置https请求时是否验证证书和主机名。默认为true。注意:不要在产品代码中设置为false，否则您将面临多种类型的加密攻击。
-     *
-     * @param verifyingSsl True to verify TLS/SSL connection
-     * @return ApiClient
-     */
-    public ApiClient setVerifyingSsl(boolean verifyingSsl) {
-        this.verifyingSsl = verifyingSsl;
-        applySslSettings();
-        return this;
-    }
-
-    /**
      * 获取SSL CA证书
      *
-     * @return Input stream to the SSL CA cert
+     * @return SSL CA证书输入流
      */
     public InputStream getSslCaCert() {
         return sslCaCert;
     }
 
     /**
-     * 在发起https请求时，配置CA证书为受信任证书。使用null重置为默认值。
+     * 获取密钥管理器数组
      *
-     * @param sslCaCert input stream for SSL CA cert
-     * @return ApiClient
+     * @return 密钥管理器数组
      */
-    public ApiClient setSslCaCert(InputStream sslCaCert) {
-        this.sslCaCert = sslCaCert;
-        applySslSettings();
-        return this;
-    }
-
     public KeyManager[] getKeyManagers() {
         return keyManagers;
     }
 
     /**
-     * 配置在SSL会话中用于授权的客户端密钥。使用null重置为默认值。
+     * 设置User-Agent请求头
      *
-     * @param managers The KeyManagers to use
-     * @return ApiClient
-     */
-    public ApiClient setKeyManagers(KeyManager[] managers) {
-        this.keyManagers = managers;
-        applySslSettings();
-        return this;
-    }
-
-    /**
-     * Set the User-Agent header's value (by adding to the default header map).
-     *
-     * @param userAgent HTTP request's user agent
-     * @return ApiClient
+     * @param userAgent HTTP请求的user agent
+     * @return ApiClient实例
      */
     public ApiClient setUserAgent(String userAgent) {
         addDefaultHeader("User-Agent", userAgent);
@@ -203,11 +202,11 @@ public final class ApiClient {
     }
 
     /**
-     * 添加默认标头
+     * 添加默认请求头
      *
-     * @param key   The header's key
-     * @param value The header's value
-     * @return ApiClient
+     * @param key 请求头的键
+     * @param value 请求头的值
+     * @return ApiClient实例
      */
     public ApiClient addDefaultHeader(String key, String value) {
         defaultHeaderMap.put(key, value);
@@ -215,21 +214,22 @@ public final class ApiClient {
     }
 
     /**
-     * 用于存储从具有文件响应的端点下载的文件的临时文件夹的路径。默认值是<code>null<code>，即使用系统默认的临时文件夹。
+     * 获取临时文件夹路径
+     * 用于存储从具有文件响应的端点下载的文件的临时文件夹的路径。
+     * 默认值是null，即使用系统默认的临时文件夹。
      *
      * @return 临时文件夹路径
-     * @see <a href=
-     * "https://docs.oracle.com/javase/7/docs/api/java/io/File.html#createTempFile">createTempFile</a>
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/io/File.html#createTempFile">createTempFile</a>
      */
     public String getTempFolderPath() {
         return tempFolderPath;
     }
 
     /**
-     * 设置临时文件夹路径(用于下载文件)
+     * 设置临时文件夹路径
      *
      * @param tempFolderPath 临时文件夹路径
-     * @return ApiClient
+     * @return ApiClient实例
      */
     public ApiClient setTempFolderPath(String tempFolderPath) {
         this.tempFolderPath = tempFolderPath;
@@ -237,93 +237,39 @@ public final class ApiClient {
     }
 
     /**
-     * 获取连接超时(以毫秒为单位)。
-     *
-     * @return Timeout in milliseconds
-     */
-    public int getConnectTimeout() {
-        return httpClient.getConnectTimeout();
-    }
-
-    /**
-     * 设置连接超时(以毫秒为单位)。值为0表示没有超时，否则值必须在1到之间
-     *
-     * @param connectionTimeout 连接超时(毫秒)
-     * @return Api client
-     */
-    public ApiClient setConnectTimeout(int connectionTimeout) {
-        httpClient.setConnectTimeout(connectionTimeout, TimeUnit.MILLISECONDS);
-        return this;
-    }
-
-    /**
-     * 获取读取超时(以毫秒为单位)。
-     *
-     * @return Timeout in milliseconds
-     */
-    public int getReadTimeout() {
-        return httpClient.getReadTimeout();
-    }
-
-    /**
-     * Sets the read timeout (in milliseconds). A value of 0 means no timeout, otherwise values must
-     * be between 1 and {@link Integer#MAX_VALUE}.
-     *
-     * @param readTimeout read timeout in milliseconds
-     * @return Api client
-     */
-    public ApiClient setReadTimeout(int readTimeout) {
-        httpClient.setReadTimeout(readTimeout, TimeUnit.MILLISECONDS);
-        return this;
-    }
-
-    /**
-     * Get write timeout (in milliseconds).
-     *
-     * @return Timeout in milliseconds
-     */
-    public int getWriteTimeout() {
-        return httpClient.getWriteTimeout();
-    }
-
-    /**
-     * Sets the write timeout (in milliseconds). A value of 0 means no timeout, otherwise values
-     * must be between 1 and {@link Integer#MAX_VALUE}.
-     *
-     * @param writeTimeout connection timeout in milliseconds
-     * @return Api client
-     */
-    public ApiClient setWriteTimeout(int writeTimeout) {
-        httpClient.setWriteTimeout(writeTimeout, TimeUnit.MILLISECONDS);
-        return this;
-    }
-
-    /**
-     * {@link #execute(Call, Type)}
-     *
-     * @param <T>  Type
-     * @param call An instance of the Call object
+     * 执行HTTP调用
+     * 
+     * @param <T> 返回类型
+     * @param call Call对象实例
      * @return ApiResponse&lt;T&gt;
-     * @throws ApiException If fail to execute the call
+     * @throws ApiException 如果执行调用失败
      */
     public <T> ApiResponse<T> execute(Call call) throws ApiException {
         return execute(call, null);
     }
 
     /**
-     * Execute HTTP call and deserialize the HTTP response body into the given return type.
+     * 执行HTTP调用并将响应体反序列化为指定的返回类型
      *
-     * @param returnType The return type used to deserialize HTTP response body
-     * @param <T>        The return type corresponding to (same with) returnType
-     * @param call       Call
-     * @return ApiResponse object containing response status, headers and data, which is a Java
-     * object deserialized from response body and would be null when returnType is null.
-     * @throws ApiException If fail to execute the call
+     * @param returnType 用于反序列化HTTP响应体的返回类型
+     * @param <T> 与returnType对应的返回类型
+     * @param call Call对象
+     * @return 包含响应状态、头部和数据的ApiResponse对象
+     * @throws ApiException 如果执行调用失败
      */
     public <T> ApiResponse<T> execute(Call call, Type returnType) throws ApiException {
         return doExecute(call, TypeFactory.of(returnType));
     }
 
+    /**
+     * 执行HTTP调用并处理响应
+     *
+     * @param <T> 返回类型
+     * @param call Call对象
+     * @param responseType 响应类型处理器
+     * @return ApiResponse对象
+     * @throws ApiException 如果执行调用失败
+     */
     public <T> ApiResponse<T> doExecute(Call call, ResponseTypeHandler responseType) throws ApiException {
         try {
             Response response = call.execute();
@@ -335,11 +281,11 @@ public final class ApiClient {
     }
 
     /**
-     * {@link #executeAsync(Call, Type, ApiCallback)}
+     * 异步执行HTTP调用
      *
-     * @param <T>      Type
-     * @param call     An instance of the Call object
-     * @param callback ApiCallback&lt;T&gt;
+     * @param <T> 返回类型
+     * @param call Call对象
+     * @param callback 回调接口
      */
     public <T> void executeAsync(Call call, ApiCallback<T> callback) {
         executeAsync(call, null, callback);
@@ -348,25 +294,24 @@ public final class ApiClient {
     /**
      * 异步执行HTTP调用
      *
-     * @param <T>        Type
-     * @param call       当API调用结束时执行的回调
-     * @param returnType Return type
-     * @param callback   ApiCallback
-     * @see #execute(Call, Type)
+     * @param <T> 返回类型
+     * @param call Call对象
+     * @param returnType 返回类型
+     * @param callback 回调接口
      */
     @SuppressWarnings("unchecked")
     public <T> void executeAsync(Call call, final Type returnType, final ApiCallback<T> callback) {
         call.enqueue(new Callback() {
             @Override
-            public void onFailure(Request request, IOException e) {
+            public void onFailure(Call call, IOException e) {
                 callback.onFailure(new ApiException(e), 0, null);
             }
 
             @Override
-            public void onResponse(Response response) throws IOException {
+            public void onResponse(Call call, Response response) throws IOException {
                 T result;
                 try {
-                    result = (T) HttpHelper.handleResponse(ApiClient.this, response, returnType);
+                    result = (T) ClientHelper.handleResponse(ApiClient.this, response, returnType);
                 } catch (ApiException e) {
                     callback.onFailure(e, response.code(), response.headers().toMultimap());
                     return;
@@ -379,13 +324,13 @@ public final class ApiClient {
     /**
      * 根据给定参数构建HTTP请求
      *
-     * @param path                  HTTP 请求的子路径(uri)
-     * @param method                请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
-     * @param queryParams           查询参数
-     * @param collectionQueryParams 收集查询参数
-     * @param body                  请求Body参数
-     * @param formParams            请求Form参数
-     * @return The HTTP call
+     * @param path HTTP请求的子路径(uri)
+     * @param method 请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+     * @param queryParams 查询参数
+     * @param collectionQueryParams 集合查询参数
+     * @param body 请求体参数
+     * @param formParams 表单参数
+     * @return HTTP调用对象
      * @throws ApiException 当序列化请求对象失败时抛出该异常
      */
     public Call buildCall(String path, String method, List<Pair> queryParams, List<Pair> collectionQueryParams,
@@ -397,9 +342,10 @@ public final class ApiClient {
     }
 
     /**
-     * 根据身份验证设置更新查询和报头参数
+     * 根据身份验证设置更新请求头参数
      *
-     * @param headerParams Header参数映射
+     * @param path 请求路径
+     * @param headerParams 请求头参数映射
      */
     public void updateParamsForAuth(String path, Map<String, String> headerParams) {
         if ("/auth/token".equalsIgnoreCase(path)) {
@@ -410,80 +356,31 @@ public final class ApiClient {
     }
 
     /**
-     * 根据“verifyingSsl”和“sslCaCert”的当前值，对httpClient应用SSL相关设置。
+     * 获取默认请求头映射
+     *
+     * @return 默认请求头映射的不可修改视图
      */
-    private void applySslSettings() {
-        try {
-            TrustManager[] trustManagers = null;
-            HostnameVerifier hostnameVerifier = null;
-            if (!verifyingSsl) {
-                TrustManager trustAll = new X509TrustManager() {
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] chain, String authType)
-                                                                                            throws CertificateException {
-                    }
-
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] chain, String authType)
-                                                                                            throws CertificateException {
-                    }
-
-                    @Override
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
-                };
-                trustManagers = new TrustManager[] { trustAll };
-                hostnameVerifier = new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String hostname, SSLSession session) {
-                        return true;
-                    }
-                };
-            } else if (sslCaCert != null) {
-                char[] password = null; // Any password will work.
-                CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-                Collection<? extends Certificate> certificates = certificateFactory.generateCertificates(sslCaCert);
-                if (certificates.isEmpty()) {
-                    throw new IllegalArgumentException("expected non-empty set of trusted certificates");
-                }
-                KeyStore caKeyStore = SecurityHelper.newEmptyKeyStore(password);
-                int index = 0;
-                for (Certificate certificate : certificates) {
-                    String certificateAlias = "ca" + Integer.toString(index++);
-                    caKeyStore.setCertificateEntry(certificateAlias, certificate);
-                }
-                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory
-                    .getDefaultAlgorithm());
-                trustManagerFactory.init(caKeyStore);
-                trustManagers = trustManagerFactory.getTrustManagers();
-            }
-
-            if (keyManagers != null || trustManagers != null) {
-                SSLContext sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(keyManagers, trustManagers, new SecureRandom());
-                httpClient.setSslSocketFactory(sslContext.getSocketFactory());
-            } else {
-                httpClient.setSslSocketFactory(null);
-            }
-            httpClient.setHostnameVerifier(hostnameVerifier);
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public Map<String, String> getDefaultHeaderMap() {
         return Collections.unmodifiableMap(defaultHeaderMap);
     }
 
+    /**
+     * 获取访问令牌
+     *
+     * @return Bearer令牌
+     */
     public String getToken() {
         return tokenManager.getBearerToken();
     }
 
+    /**
+     * 刷新访问令牌
+     */
     public void shouldRefreshToken() {
         tokenManager.tryFlushToken();
     }
 
+    // 请求头参数映射
     private final Map<String, String> headerParams = new HashMap<>();
 
     {
@@ -491,37 +388,72 @@ public final class ApiClient {
         headerParams.put("Content-Type", "application/json");
     }
 
+    /**
+     * 构建POST请求
+     *
+     * @param localVarPath 请求路径
+     * @param body 请求体
+     * @return Call对象
+     */
     public Call buildPostCall(String localVarPath, Object body) {
         Request request = RequestBuilder.post(this, localVarPath).body(body).headers(headerParams).build();
         return httpClient.newCall(request);
     }
 
+    /**
+     * 构建带查询参数的POST请求
+     *
+     * @param localVarPath 请求路径
+     * @param body 请求体
+     * @param queryParams 查询参数
+     * @return Call对象
+     */
     public Call buildPostCall(String localVarPath, Object body, List<Pair> queryParams) {
         Request request = RequestBuilder.post(this, localVarPath).body(body).headers(headerParams)
             .queryParams(queryParams).build();
         return httpClient.newCall(request);
     }
 
+    /**
+     * 构建GET请求
+     *
+     * @param localVarPath 请求路径
+     * @param collectionQueryParams 集合查询参数
+     * @return Call对象
+     */
     public Call buildGetCall(String localVarPath, List<Pair> collectionQueryParams) {
         Request request = RequestBuilder.get(this, localVarPath).collectionQueryParams(collectionQueryParams)
             .headers(headerParams).build();
         return httpClient.newCall(request);
     }
 
+    /**
+     * 构建DELETE请求
+     *
+     * @param path 请求路径
+     * @return Call对象
+     */
     public Call buildDeleteCall(String path) {
         Request request = RequestBuilder.delete(this, path).build();
         return httpClient.newCall(request);
     }
 
+    /**
+     * 构建带参数的DELETE请求
+     *
+     * @param path 请求路径
+     * @param params 请求参数
+     * @return Call对象
+     */
     public Call buildDeleteCall(String path, List<Pair> params) {
         Request request = RequestBuilder.delete(this, path).collectionQueryParams(params).headers(headerParams).build();
         return httpClient.newCall(request);
     }
 
     /**
-     * 获取平台多客户端
+     * 获取平台多客户端API集合
      *
-     * @return
+     * @return TaskflowApis实例
      */
     public TaskflowApis getApis() {
         return Objects.requireNonNull(apis);
