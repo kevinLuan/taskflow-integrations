@@ -25,6 +25,7 @@ import cn.feiliu.taskflow.common.def.tasks.Task;
 import cn.feiliu.taskflow.common.dto.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.dto.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public class AnnotatedWorker implements Worker {
 
     private int                   pollingInterval = 100;
 
-    private Set<TaskUpdateStatus> failedStatuses  = Set.of(TaskUpdateStatus.FAILED,
+    private Set<TaskUpdateStatus> failedStatuses  = Sets.newHashSet(TaskUpdateStatus.FAILED,
                                                       TaskUpdateStatus.FAILED_WITH_TERMINAL_ERROR);
 
     public AnnotatedWorker(String name, Method workerMethod, Object obj) {
@@ -103,7 +104,7 @@ public class AnnotatedWorker implements Worker {
         } else if (parameterTypes.length == 1 && parameterTypes[0].equals(Map.class)) {
             //工作节点参数定义只接收一个Map参数的情况下，尝试检查是否包含@InputParam注解，若包含应该根据注解名称来提取数据
             Optional<InputParam> optional = findInputParamAnnotation(workerMethod.getParameterAnnotations()[0]);
-            if (optional.isEmpty()) {
+            if (!optional.isPresent()) {
                 return new Object[] { task.getInputData() };
             }
         }
@@ -129,7 +130,7 @@ public class AnnotatedWorker implements Worker {
 
     private Object getInputValue(ExecutingTask task, Class<?> parameterType, Type type, Annotation[] paramAnnotation) {
         Optional<InputParam> optional = findInputParamAnnotation(paramAnnotation);
-        if (optional.isEmpty()) {
+        if (!optional.isPresent()) {
             return EncoderFactory.getJsonEncoder().convert(task.getInputData(), parameterType);
         }
         InputParam inputParam = optional.get();

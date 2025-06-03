@@ -25,12 +25,14 @@ public final class TaskflowApis {
     private AuthClient       authClient;
     private TaskEngine       taskEngine;
     private final TaskClient taskClient;
+    private TaskDefClient    taskDefClient;
 
     TaskflowApis(ApiClient client) {
         this.client = client;
         this.authClient = new AuthClient(client);
         this.taskEngine = new TaskEngine(client);
         this.taskClient = new TaskClient(client);
+        this.taskDefClient = new TaskDefClient(client);
     }
 
     /**
@@ -58,6 +60,15 @@ public final class TaskflowApis {
      */
     public TaskClient getTaskClient() {
         return taskClient;
+    }
+
+    /**
+     * 获取任务定义客户端
+     *
+     * @return
+     */
+    public TaskDefClient getTaskDefClient() {
+        return taskDefClient;
     }
 
     public void shutdown() {

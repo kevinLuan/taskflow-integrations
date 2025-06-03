@@ -17,6 +17,7 @@ package cn.feiliu.taskflow.core;
 import cn.feiliu.taskflow.annotations.WorkerTask;
 import cn.feiliu.taskflow.automator.TaskRunnerConfigurer;
 import cn.feiliu.taskflow.client.ApiClient;
+import cn.feiliu.taskflow.common.exceptions.ApiException;
 import cn.feiliu.taskflow.executor.task.AnnotatedWorker;
 import cn.feiliu.taskflow.executor.task.Worker;
 import com.google.common.annotations.VisibleForTesting;
@@ -26,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.*;
+
+import static cn.feiliu.common.api.utils.CommonUtils.f;
 
 /**
  * taskflow 工作节点执行器
@@ -137,6 +140,25 @@ public class TaskEngine {
             .withTaskToDomain(workerDomains)//
             .build();
         this.taskRunner.init();
+        if (workers.size() > 0) {
+            Set<String> taskDefNames = getClient().getApis().getTaskDefClient().getTaskNames();
+            List<String> workerNames = new ArrayList<>();
+            for (Worker worker : this.workers) {
+                if (worker.getTaskDefName().matches("^[a-zA-Z][a-zA-Z0-9_]{0,29}$")) {
+                    if (!taskDefNames.contains(worker.getTaskDefName())) {
+                        workerNames.add(worker.getTaskDefName());
+                    }
+                } else {
+                    throw new IllegalStateException(f("工作任务名称:'%s'不合法，格式要求：字母开头，限制包含字母数字下划线，最大30字符",
+                        worker.getTaskDefName()));
+                }
+            }
+            if (workerNames.size() > 0) {
+                String names = String.join(",", workerNames);
+                String msg = f("任务 [%s] 未注册，请访问平台注册：%s", names, "https://console.taskflow.cn/taskDef");
+                throw new ApiException(msg);
+            }
+        }
         return this;
     }
 

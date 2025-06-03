@@ -64,12 +64,13 @@ class TaskPollExecutor {
 
     /**
      * 构造函数
-     * @param apiClient API客户端
-     * @param threadCount 线程数
+     *
+     * @param apiClient        API客户端
+     * @param threadCount      线程数
      * @param updateRetryCount 更新重试次数
-     * @param taskToDomain 任务类型到域的映射
+     * @param taskToDomain     任务类型到域的映射
      * @param workerNamePrefix 工作线程名称前缀
-     * @param taskThreadCount 每个任务类型的线程数配置
+     * @param taskThreadCount  每个任务类型的线程数配置
      */
     TaskPollExecutor(
             ApiClient apiClient,
@@ -127,8 +128,9 @@ class TaskPollExecutor {
 
     /**
      * 执行具体任务
+     *
      * @param worker 工作节点
-     * @param task 待执行的任务
+     * @param task   待执行的任务
      */
     private void doExecuteTask(Worker worker, ExecutingTask task) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -154,7 +156,8 @@ class TaskPollExecutor {
 
     /**
      * 完成任务的最终处理
-     * @param task 执行的任务
+     *
+     * @param task      执行的任务
      * @param throwable 执行过程中的异常(如果有)
      */
     private void finalizeTask(ExecutingTask task, Throwable throwable) {
@@ -175,8 +178,9 @@ class TaskPollExecutor {
 
     /**
      * 更新任务执行结果
-     * @param count 重试次数
-     * @param task 执行的任务
+     *
+     * @param count  重试次数
+     * @param task   执行的任务
      * @param result 执行结果
      * @param worker 工作节点
      */
@@ -195,10 +199,11 @@ class TaskPollExecutor {
 
     /**
      * 处理任务执行过程中的异常
-     * @param t 异常
+     *
+     * @param t      异常
      * @param result 执行结果
      * @param worker 工作节点
-     * @param task 执行的任务
+     * @param task   执行的任务
      */
     private void handleException(Throwable t, TaskExecResult result, Worker worker, ExecutingTask task) {
         LOGGER.error(String.format("Error while executing task %s", task.toString()), t);
@@ -210,6 +215,7 @@ class TaskPollExecutor {
 
     /**
      * 获取工作节点对应的轮询信号量
+     *
      * @param worker 工作节点
      * @return 轮询信号量
      */
@@ -225,6 +231,7 @@ class TaskPollExecutor {
 
     /**
      * 获取可用线程数
+     *
      * @param worker 工作节点
      * @return 可用线程数
      */
@@ -235,8 +242,9 @@ class TaskPollExecutor {
 
     /**
      * 判断工作节点是否处于繁忙状态
+     *
      * @param worker 工作节点
-     * @return true表示繁忙,false表示空闲
+     * @return true表示繁忙, false表示空闲
      */
     boolean isBusy(Worker worker) {
         return getAvailableThreads(worker) <= 0;
@@ -244,6 +252,7 @@ class TaskPollExecutor {
 
     /**
      * 批量拉取任务并执行
+     *
      * @param worker 工作节点
      * @return 多任务执行结果的Future
      */
@@ -282,8 +291,9 @@ class TaskPollExecutor {
 
     /**
      * 批量获取任务
-     * @param worker 工作节点
-     * @param domain 域
+     *
+     * @param worker    工作节点
+     * @param domain    域
      * @param maxAmount 最大获取数量
      * @return 任务列表
      * @throws Exception 获取失败时抛出异常
@@ -299,9 +309,10 @@ class TaskPollExecutor {
 
     /**
      * 提交任务到线程池执行
-     * @param worker 工作节点
-     * @param tasks 任务列表
-     * @param domain 域
+     *
+     * @param worker           工作节点
+     * @param tasks            任务列表
+     * @param domain           域
      * @param pollingSemaphore 轮询信号量
      * @return 任务执行Future列表
      */
@@ -318,11 +329,8 @@ class TaskPollExecutor {
                     pollingSemaphore.complete();
                     futures.add(CompletableFuture.completedFuture(null));
                 }
-            } catch (Throwable e) {
-                // 轮询过程中发生异常,释放许可因为线程不会被占用
+            } finally {
                 pollingSemaphore.complete();
-                LOGGER.error("Error when polling for tasks", e);
-                futures.add(CompletableFuture.failedFuture(e));
             }
         }
         return futures;
@@ -330,8 +338,9 @@ class TaskPollExecutor {
 
     /**
      * 执行单个任务
-     * @param worker 工作节点
-     * @param task 待执行的任务
+     *
+     * @param worker           工作节点
+     * @param task             待执行的任务
      * @param pollingSemaphore 轮询信号量
      * @return 任务执行Future
      */
