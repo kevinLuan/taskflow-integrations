@@ -25,6 +25,7 @@ import cn.feiliu.taskflow.common.def.tasks.Task;
 import cn.feiliu.taskflow.common.dto.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.dto.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
+import cn.feiliu.taskflow.utils.FieldUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
@@ -37,17 +38,17 @@ import java.util.*;
 import static cn.feiliu.common.api.utils.CommonUtils.f;
 
 public class AnnotatedWorker implements Worker {
-    private static Logger         log             = LoggerFactory.getLogger(AnnotatedWorker.class);
-    private String                name;
+    private static Logger log = LoggerFactory.getLogger(AnnotatedWorker.class);
+    private String name;
 
-    private Method                workerMethod;
+    private Method workerMethod;
 
-    private Object                obj;
+    private Object obj;
 
-    private int                   pollingInterval = 100;
+    private int pollingInterval = 100;
 
-    private Set<TaskUpdateStatus> failedStatuses  = Sets.newHashSet(TaskUpdateStatus.FAILED,
-                                                      TaskUpdateStatus.FAILED_WITH_TERMINAL_ERROR);
+    private Set<TaskUpdateStatus> failedStatuses = Sets.newHashSet(TaskUpdateStatus.FAILED,
+            TaskUpdateStatus.FAILED_WITH_TERMINAL_ERROR);
 
     public AnnotatedWorker(String name, Method workerMethod, Object obj) {
         this.name = name;
@@ -88,9 +89,18 @@ public class AnnotatedWorker implements Worker {
             opAnnotation = workerMethod.getAnnotation(OutputParam.class);
         }
         if (opAnnotation != null) {
-            return new String[] { opAnnotation.value() };
+            return new String[]{opAnnotation.value()};
         } else {
-            return new String[] { "result" };
+            if (TaskHelper.isJavaType(workerMethod.getReturnType())) {
+                return new String[]{"result"};
+            } else {
+                String[] array = FieldUtils.getJavaFieldNames(workerMethod.getReturnType());
+                if (array != null && array.length > 0) {
+                    return array;
+                } else {
+                    return new String[]{"result"};
+                }
+            }
         }
     }
 
@@ -139,12 +149,12 @@ public class AnnotatedWorker implements Worker {
         Class<?>[] parameterTypes = workerMethod.getParameterTypes();
         Parameter[] parameters = workerMethod.getParameters();
         if (parameterTypes.length == 1 && parameterTypes[0].equals(ExecutingTask.class)) {
-            return new Object[] { task };
+            return new Object[]{task};
         } else if (parameterTypes.length == 1 && parameterTypes[0].equals(Map.class)) {
             //工作节点参数定义只接收一个Map参数的情况下，尝试检查是否包含@InputParam注解，若包含应该根据注解名称来提取数据
             Optional<InputParam> optional = findInputParamAnnotation(workerMethod.getParameterAnnotations()[0]);
             if (!optional.isPresent()) {
-                return new Object[] { task.getInputData() };
+                return new Object[]{task.getInputData()};
             }
         }
         return getParameters(task, parameterTypes, parameters);
@@ -177,7 +187,7 @@ public class AnnotatedWorker implements Worker {
         if (value == null) {
             if (inputParam.required()) {
                 throw new IllegalArgumentException(f("The required %s('%s') parameter is missing", name,
-                    inputParam.value()));
+                        inputParam.value()));
             }
             return null;
         }
@@ -249,7 +259,7 @@ public class AnnotatedWorker implements Worker {
             result.setStatus(TaskUpdateStatus.COMPLETED);
             return result;
         } else if (invocationResult instanceof String || invocationResult instanceof Number
-                   || invocationResult instanceof Boolean) {
+                || invocationResult instanceof Boolean) {
             result.getOutputData().put("result", invocationResult);
             result.setStatus(TaskUpdateStatus.COMPLETED);
             return result;
