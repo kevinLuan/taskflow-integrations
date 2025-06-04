@@ -25,6 +25,7 @@ import cn.feiliu.taskflow.common.def.tasks.Task;
 import cn.feiliu.taskflow.common.dto.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.dto.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,45 @@ public class AnnotatedWorker implements Worker {
         this.name = name;
         this.workerMethod = workerMethod;
         this.obj = obj;
+    }
+
+    /**
+     * 获取输入参数名称
+     *
+     * @return
+     */
+    public String[] getInputNames() {
+        List<String> names = Lists.newArrayList();
+        for (Parameter parameter : workerMethod.getParameters()) {
+            if (parameter.isAnnotationPresent(InputParam.class)) {
+                names.add(parameter.getAnnotation(InputParam.class).value());
+            } else {
+                if (!Map.class.isAssignableFrom(parameter.getType()) && parameter.getType() != ExecutingTask.class) {
+                    names.add(parameter.getName());
+                }
+            }
+        }
+        return names.toArray(new String[names.size()]);
+    }
+
+    /**
+     * 获取输出名称
+     *
+     * @return
+     */
+    public String[] getOutputNames() {
+        if (workerMethod.getReturnType() == void.class) {
+            return new String[0];
+        }
+        OutputParam opAnnotation = workerMethod.getAnnotatedReturnType().getAnnotation(OutputParam.class);
+        if (opAnnotation == null) {
+            opAnnotation = workerMethod.getAnnotation(OutputParam.class);
+        }
+        if (opAnnotation != null) {
+            return new String[] { opAnnotation.value() };
+        } else {
+            return new String[] { "result" };
+        }
     }
 
     @Override
@@ -98,7 +138,6 @@ public class AnnotatedWorker implements Worker {
     private Object[] getInvocationParameters(ExecutingTask task) {
         Class<?>[] parameterTypes = workerMethod.getParameterTypes();
         Parameter[] parameters = workerMethod.getParameters();
-
         if (parameterTypes.length == 1 && parameterTypes[0].equals(ExecutingTask.class)) {
             return new Object[] { task };
         } else if (parameterTypes.length == 1 && parameterTypes[0].equals(Map.class)) {

@@ -176,4 +176,14 @@ public class PropertiesReader {
     public Properties getAllProperties() {
         return new Properties(properties);
     }
+
+    public TaskflowConfig toConfig() {
+        TaskflowConfig config = new TaskflowConfig();
+        config.setBaseUrl(getProperty("taskflow.base-url"));
+        config.setClientKey(getProperty("taskflow.client-key"));
+        config.setClientSecret(getProperty("taskflow.client-secret"));
+        config.setAutoRegister(getBoolean("taskflow.auto-register"));
+        config.setUpdateExisting(getBoolean("taskflow.update-existing"));
+        return config;
+    }
 }

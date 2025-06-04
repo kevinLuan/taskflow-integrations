@@ -16,11 +16,14 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.common.def.TaskDefinition;
 import cn.feiliu.taskflow.common.dto.tasks.TaskBasicInfo;
+import cn.feiliu.taskflow.executor.task.Worker;
 import cn.feiliu.taskflow.http.TaskDefResourceApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,17 +68,42 @@ public class TaskDefClient {
         return list.stream().map((t) -> t.getName()).collect(Collectors.toSet());
     }
 
-    public void createTaskDef(String taskDefName) {
-        TaskDefinition taskDef = new TaskDefinition();
-        taskDef.setName(taskDefName);
+    /**
+     * 创建任务定义
+     *
+     * @param worker
+     */
+    public void createTaskDef(Worker worker) {
+        TaskDefinition taskDef = createTaskDefinition(worker);
         taskDefResourceApi.createTaskDef(taskDef);
-        log.info("create task def {} success", taskDefName);
+        log.info("create task def {} success", worker.getTaskDefName());
     }
 
-    public void updateTaskDef(String taskDefName) {
-        TaskDefinition taskDef = new TaskDefinition();
-        taskDef.setName(taskDefName);
+    /**
+     * 更新任务定义
+     *
+     * @param worker
+     */
+    public void updateTaskDef(Worker worker) {
+        TaskDefinition taskDef = createTaskDefinition(worker);
         taskDefResourceApi.updateTaskDef(taskDef);
-        log.info("update task def {} success", taskDefName);
+        log.info("update task def {} success", worker.getTaskDefName());
+    }
+
+    private TaskDefinition createTaskDefinition(Worker worker) {
+        TaskDefinition taskDef = new TaskDefinition();
+        taskDef.setName(worker.getTaskDefName());
+        taskDef.setRetryDelaySeconds(1);
+        taskDef.setConcurrentExecLimit(10);
+        Map<String, Object> template = new HashMap<>();
+        for (String inputName : worker.getInputNames()) {
+            taskDef.addInputKey(inputName);
+            template.put(inputName, "");
+        }
+        taskDef.getInputTemplate().putAll(template);
+        for (String outputName : worker.getOutputNames()) {
+            taskDef.addOutputKey(outputName);
+        }
+        return taskDef;
     }
 }

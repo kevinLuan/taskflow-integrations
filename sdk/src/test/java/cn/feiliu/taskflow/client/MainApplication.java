@@ -15,6 +15,7 @@
 package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.utils.PropertiesReader;
+import cn.feiliu.taskflow.utils.TaskflowConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,13 +30,8 @@ public class MainApplication {
 
     private static ApiClient getClient() throws IOException {
         logger.info("Initializing ApiClient...");
-        PropertiesReader reader = new PropertiesReader("taskflow_config.properties");
-        String url = reader.getProperty("taskflow.base-url");
-        String keyId = reader.getProperty("taskflow.client.key-id");
-        String keySecret = reader.getProperty("taskflow.client.secret");
-        logger.info("Connecting to TaskFlow server at: {}", url);
-        ApiClient apiClient = new ApiClient(url, keyId, keySecret);
-        apiClient.autoRegisterTask(reader.getBoolean("taskflow.client.auto-register-task"));
+        TaskflowConfig config = new PropertiesReader("prod_config.properties").toConfig();
+        ApiClient apiClient = new ApiClient(config);
         apiClient.getApis().getTaskEngine().addWorkers(new MyWorker()).initWorkerTasks().startRunningTasks();
         logger.info("ApiClient initialized successfully");
         return apiClient;

@@ -24,6 +24,7 @@ import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class DynamicForkWorker implements Worker {
@@ -59,6 +60,16 @@ public class DynamicForkWorker implements Worker {
     @Override
     public int getPollingInterval() {
         return pollingInterval;
+    }
+
+    @Override
+    public String[] getInputNames() {
+        return new String[0];//TODO
+    }
+
+    @Override
+    public String[] getOutputNames() {
+        return new String[] { DynamicFork.FORK_TASK_PARAM, DynamicFork.FORK_TASK_INPUT_PARAM };
     }
 
     private Object getInvocationParameters(Function<?, DynamicForkInput> function, ExecutingTask task) {

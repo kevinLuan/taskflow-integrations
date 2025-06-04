@@ -24,6 +24,7 @@ import cn.feiliu.taskflow.http.RequestBuilder;
 import cn.feiliu.taskflow.http.types.ResponseTypeHandler;
 import cn.feiliu.taskflow.http.types.TypeFactory;
 import cn.feiliu.taskflow.utils.ClientHelper;
+import cn.feiliu.taskflow.utils.TaskflowConfig;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import okhttp3.*;
@@ -68,7 +69,9 @@ public final class ApiClient {
     @Getter
     private final TaskHandlerManager  taskHandlerManager  = new TaskHandlerManager();
     /*自动注册任务节点*/
-    private Boolean                   autoRegisterTask    = false;
+    private Boolean                   autoRegister        = false;
+    /*如果存在则更新任务*/
+    private Boolean                   updateExisting      = false;
 
     /**
      * 构造函数
@@ -87,19 +90,34 @@ public final class ApiClient {
         this.tokenManager.shouldStartSchedulerAndInitializeToken();
     }
 
+    public ApiClient(TaskflowConfig config) {
+        this(config.getBaseUrl(), config.getClientKey(), config.getClientSecret());
+        autoRegister(config.getAutoRegister());
+        updateExisting(config.getUpdateExisting());
+    }
+
     /**
      * 控制是否自动注册任务节点
      *
-     * @param autoRegisterTask
+     * @param autoRegister
      * @return
      */
-    public ApiClient autoRegisterTask(Boolean autoRegisterTask) {
-        this.autoRegisterTask = autoRegisterTask;
+    public ApiClient autoRegister(Boolean autoRegister) {
+        this.autoRegister = autoRegister;
         return this;
     }
 
-    public boolean isAutoRegisterTask() {
-        return autoRegisterTask != null && autoRegisterTask;
+    public ApiClient updateExisting(Boolean updateExisting) {
+        this.updateExisting = updateExisting;
+        return this;
+    }
+
+    public boolean isAutoRegister() {
+        return autoRegister != null && autoRegister;
+    }
+
+    public boolean isUpdateExisting() {
+        return updateExisting != null && updateExisting;
     }
 
     /**

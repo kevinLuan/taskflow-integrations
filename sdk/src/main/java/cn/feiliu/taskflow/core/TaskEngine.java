@@ -140,16 +140,28 @@ public class TaskEngine {
             .withTaskToDomain(workerDomains)//
             .build();
         this.taskRunner.init();
+        registerAndUpdateTasks();
+        return this;
+    }
+
+    /**
+     * 注册和更新任务定义
+     */
+    private void registerAndUpdateTasks() {
         if (workers.size() > 0) {
             Set<String> taskDefNames = getClient().getApis().getTaskDefClient().getTaskNames();
-            List<String> workerNames = new ArrayList<>();
+            List<String> missingNames = new ArrayList<>();
             for (Worker worker : this.workers) {
                 if (worker.getTaskDefName().matches("^[a-zA-Z][a-zA-Z0-9_]{0,29}$")) {
-                    if (!taskDefNames.contains(worker.getTaskDefName())) {
-                        if (getClient().isAutoRegisterTask()) {
-                            getClient().getApis().getTaskDefClient().createTaskDef(worker.getTaskDefName());
+                    if (taskDefNames.contains(worker.getTaskDefName())) {
+                        if (getClient().isUpdateExisting()) {
+                            getClient().getApis().getTaskDefClient().updateTaskDef(worker);
+                        }
+                    } else {
+                        if (getClient().isAutoRegister()) {
+                            getClient().getApis().getTaskDefClient().createTaskDef(worker);
                         } else {
-                            workerNames.add(worker.getTaskDefName());
+                            missingNames.add(worker.getTaskDefName());
                         }
                     }
                 } else {
@@ -157,13 +169,12 @@ public class TaskEngine {
                         worker.getTaskDefName()));
                 }
             }
-            if (workerNames.size() > 0) {
-                String names = String.join(",", workerNames);
+            if (missingNames.size() > 0) {
+                String names = String.join(",", missingNames);
                 String msg = f("任务 [%s] 未注册，请访问平台注册：%s", names, "https://console.taskflow.cn/taskDef");
                 throw new ApiException(msg);
             }
         }
-        return this;
     }
 
     /**

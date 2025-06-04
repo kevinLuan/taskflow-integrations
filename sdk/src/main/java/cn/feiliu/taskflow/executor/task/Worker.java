@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.function.Function;
 
 public interface Worker {
     Logger logger = LoggerFactory.getLogger(Worker.class);
@@ -80,24 +79,14 @@ public interface Worker {
     }
 
     /**
-     * 创建一个工作者实例
-     *
-     * @param taskType 任务类型
-     * @param executor 执行器函数
-     * @return 工作者实例
+     * 获取输入参数名称
+     * @return
      */
-    static Worker create(String taskType, Function<ExecutingTask, TaskExecResult> executor) {
-        return new Worker() {
+    String[] getInputNames();
 
-            @Override
-            public String getTaskDefName() {
-                return taskType;
-            }
-
-            @Override
-            public TaskExecResult execute(ExecutingTask task) throws Throwable{
-                return executor.apply(task);
-            }
-        };
-    }
+    /**
+     * 获取输出名称
+     * @return
+     */
+    String[] getOutputNames();
 }
