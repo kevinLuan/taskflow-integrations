@@ -15,6 +15,7 @@
 package cn.feiliu.taskflow.http;
 
 import cn.feiliu.taskflow.client.ApiClient;
+import cn.feiliu.taskflow.common.def.TaskDefinition;
 import cn.feiliu.taskflow.common.dto.ApiResponse;
 import cn.feiliu.taskflow.common.dto.tasks.*;
 import cn.feiliu.taskflow.http.types.TypeFactory;
@@ -50,6 +51,32 @@ public class TaskDefResourceApi {
         String path = "/taskdef/list";
         Call call = apiClient.buildGetCall(path, new ArrayList<>());
         ApiResponse<List<TaskBasicInfo>> resp = apiClient.doExecute(call, TypeFactory.ofList(TaskBasicInfo.class));
+        return resp.getData();
+    }
+
+    /**
+     * 创建任务节点
+     *
+     * @param taskDefinition
+     * @return
+     */
+    public TaskDefinition createTaskDef(TaskDefinition taskDefinition) {
+        String path = "/taskdef/create";
+        Call call = apiClient.buildPostCall(path, taskDefinition, new ArrayList<>());
+        ApiResponse<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
+        return resp.getData();
+    }
+
+    /**
+     * 更新任务节点定义
+     *
+     * @param taskDefinition
+     * @return
+     */
+    public TaskDefinition updateTaskDef(TaskDefinition taskDefinition) {
+        String path = "/taskdef/update";
+        Call call = apiClient.buildPostCall(path, taskDefinition, new ArrayList<>());
+        ApiResponse<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
         return resp.getData();
     }
 }

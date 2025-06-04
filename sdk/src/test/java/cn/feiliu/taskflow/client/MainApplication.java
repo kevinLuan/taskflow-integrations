@@ -35,6 +35,7 @@ public class MainApplication {
         String keySecret = reader.getProperty("taskflow.client.secret");
         logger.info("Connecting to TaskFlow server at: {}", url);
         ApiClient apiClient = new ApiClient(url, keyId, keySecret);
+        apiClient.autoRegisterTask(reader.getBoolean("taskflow.client.auto-register-task"));
         apiClient.getApis().getTaskEngine().addWorkers(new MyWorker()).initWorkerTasks().startRunningTasks();
         logger.info("ApiClient initialized successfully");
         return apiClient;

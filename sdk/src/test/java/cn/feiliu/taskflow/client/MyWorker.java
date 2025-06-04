@@ -33,7 +33,7 @@ public class MyWorker {
      * @return 两个整数相加的结果
      */
     @OutputParam("result")
-    @WorkerTask(value = "add", pollingInterval = 2000)
+    @WorkerTask(value = "add")
     public int add(@InputParam("a") int a, @InputParam("b") int b) {
         System.out.println("add( " + a + " + " + b + " )");
         return a + b;
@@ -46,7 +46,7 @@ public class MyWorker {
      * @param b 第二个整数
      * @return 两个整数相减的结果
      */
-    @WorkerTask(value = "subtract", pollingInterval = 2000)
+    @WorkerTask(value = "subtract")
     public int subtract(@InputParam("a") int a, @InputParam("b") int b) {
         System.out.println("subtract( " + a + " - " + b + " )");
         return a - b;
@@ -59,7 +59,7 @@ public class MyWorker {
      * @param b 第二个整数
      * @return 两个整数相乘的结果
      */
-    @WorkerTask(value = "multiply", pollingInterval = 2000)
+    @WorkerTask(value = "multiply")
     public int multiply(@InputParam("a") int a, @InputParam("b") int b) {
         System.out.println("multiply( " + a + " x " + b + " )");
         return a * b;
@@ -73,7 +73,7 @@ public class MyWorker {
      * @return 两个整数相除的结果
      * @throws ArithmeticException 如果第二个整数为0
      */
-    @WorkerTask(value = "divide", pollingInterval = 2000)
+    @WorkerTask(value = "divide")
     public double divide(@InputParam("a") int a, @InputParam("b") int b) throws ArithmeticException {
         System.out.println("divide( " + a + " / " + b + " )");
         if (b == 0) {

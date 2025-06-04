@@ -14,9 +14,11 @@
  */
 package cn.feiliu.taskflow.client;
 
+import cn.feiliu.taskflow.common.def.TaskDefinition;
 import cn.feiliu.taskflow.common.dto.tasks.TaskBasicInfo;
 import cn.feiliu.taskflow.http.TaskDefResourceApi;
-import cn.feiliu.taskflow.http.TaskResourceApi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
  * @since 2025-06-02
  */
 public class TaskDefClient {
+    static final Logger              log = LoggerFactory.getLogger(TaskDefClient.class);
     // API客户端实例
     protected ApiClient              apiClient;
 
@@ -60,5 +63,19 @@ public class TaskDefClient {
     public Set<String> getTaskNames() {
         List<TaskBasicInfo> list = taskDefResourceApi.getTaskDefs();
         return list.stream().map((t) -> t.getName()).collect(Collectors.toSet());
+    }
+
+    public void createTaskDef(String taskDefName) {
+        TaskDefinition taskDef = new TaskDefinition();
+        taskDef.setName(taskDefName);
+        taskDefResourceApi.createTaskDef(taskDef);
+        log.info("create task def {} success", taskDefName);
+    }
+
+    public void updateTaskDef(String taskDefName) {
+        TaskDefinition taskDef = new TaskDefinition();
+        taskDef.setName(taskDefName);
+        taskDefResourceApi.updateTaskDef(taskDef);
+        log.info("update task def {} success", taskDefName);
     }
 }

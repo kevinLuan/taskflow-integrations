@@ -67,11 +67,14 @@ public final class ApiClient {
     // 任务处理器管理器
     @Getter
     private final TaskHandlerManager  taskHandlerManager  = new TaskHandlerManager();
+    /*自动注册任务节点*/
+    private Boolean                   autoRegisterTask    = false;
 
     /**
      * 构造函数
-     * @param basePath API基础路径
-     * @param keyId 密钥ID
+     *
+     * @param basePath  API基础路径
+     * @param keyId     密钥ID
      * @param keySecret 密钥
      */
     public ApiClient(String basePath, String keyId, String keySecret) {
@@ -85,7 +88,23 @@ public final class ApiClient {
     }
 
     /**
+     * 控制是否自动注册任务节点
+     *
+     * @param autoRegisterTask
+     * @return
+     */
+    public ApiClient autoRegisterTask(Boolean autoRegisterTask) {
+        this.autoRegisterTask = autoRegisterTask;
+        return this;
+    }
+
+    public boolean isAutoRegisterTask() {
+        return autoRegisterTask != null && autoRegisterTask;
+    }
+
+    /**
      * 规范化基础路径
+     *
      * @param basePath 原始基础路径
      * @return 规范化后的基础路径
      */
@@ -165,7 +184,7 @@ public final class ApiClient {
 
     /**
      * 检查是否启用SSL验证
-     * 
+     *
      * @return 如果启用SSL验证返回true，否则返回false
      */
     public boolean isVerifyingSsl() {
@@ -204,7 +223,7 @@ public final class ApiClient {
     /**
      * 添加默认请求头
      *
-     * @param key 请求头的键
+     * @param key   请求头的键
      * @param value 请求头的值
      * @return ApiClient实例
      */
@@ -238,8 +257,8 @@ public final class ApiClient {
 
     /**
      * 执行HTTP调用
-     * 
-     * @param <T> 返回类型
+     *
+     * @param <T>  返回类型
      * @param call Call对象实例
      * @return ApiResponse&lt;T&gt;
      * @throws ApiException 如果执行调用失败
@@ -252,8 +271,8 @@ public final class ApiClient {
      * 执行HTTP调用并将响应体反序列化为指定的返回类型
      *
      * @param returnType 用于反序列化HTTP响应体的返回类型
-     * @param <T> 与returnType对应的返回类型
-     * @param call Call对象
+     * @param <T>        与returnType对应的返回类型
+     * @param call       Call对象
      * @return 包含响应状态、头部和数据的ApiResponse对象
      * @throws ApiException 如果执行调用失败
      */
@@ -264,8 +283,8 @@ public final class ApiClient {
     /**
      * 执行HTTP调用并处理响应
      *
-     * @param <T> 返回类型
-     * @param call Call对象
+     * @param <T>          返回类型
+     * @param call         Call对象
      * @param responseType 响应类型处理器
      * @return ApiResponse对象
      * @throws ApiException 如果执行调用失败
@@ -283,8 +302,8 @@ public final class ApiClient {
     /**
      * 异步执行HTTP调用
      *
-     * @param <T> 返回类型
-     * @param call Call对象
+     * @param <T>      返回类型
+     * @param call     Call对象
      * @param callback 回调接口
      */
     public <T> void executeAsync(Call call, ApiCallback<T> callback) {
@@ -294,10 +313,10 @@ public final class ApiClient {
     /**
      * 异步执行HTTP调用
      *
-     * @param <T> 返回类型
-     * @param call Call对象
+     * @param <T>        返回类型
+     * @param call       Call对象
      * @param returnType 返回类型
-     * @param callback 回调接口
+     * @param callback   回调接口
      */
     @SuppressWarnings("unchecked")
     public <T> void executeAsync(Call call, final Type returnType, final ApiCallback<T> callback) {
@@ -324,12 +343,12 @@ public final class ApiClient {
     /**
      * 根据给定参数构建HTTP请求
      *
-     * @param path HTTP请求的子路径(uri)
-     * @param method 请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
-     * @param queryParams 查询参数
+     * @param path                  HTTP请求的子路径(uri)
+     * @param method                请求方法 ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+     * @param queryParams           查询参数
      * @param collectionQueryParams 集合查询参数
-     * @param body 请求体参数
-     * @param formParams 表单参数
+     * @param body                  请求体参数
+     * @param formParams            表单参数
      * @return HTTP调用对象
      * @throws ApiException 当序列化请求对象失败时抛出该异常
      */
@@ -344,7 +363,7 @@ public final class ApiClient {
     /**
      * 根据身份验证设置更新请求头参数
      *
-     * @param path 请求路径
+     * @param path         请求路径
      * @param headerParams 请求头参数映射
      */
     public void updateParamsForAuth(String path, Map<String, String> headerParams) {
@@ -392,7 +411,7 @@ public final class ApiClient {
      * 构建POST请求
      *
      * @param localVarPath 请求路径
-     * @param body 请求体
+     * @param body         请求体
      * @return Call对象
      */
     public Call buildPostCall(String localVarPath, Object body) {
@@ -404,8 +423,8 @@ public final class ApiClient {
      * 构建带查询参数的POST请求
      *
      * @param localVarPath 请求路径
-     * @param body 请求体
-     * @param queryParams 查询参数
+     * @param body         请求体
+     * @param queryParams  查询参数
      * @return Call对象
      */
     public Call buildPostCall(String localVarPath, Object body, List<Pair> queryParams) {
@@ -417,7 +436,7 @@ public final class ApiClient {
     /**
      * 构建GET请求
      *
-     * @param localVarPath 请求路径
+     * @param localVarPath          请求路径
      * @param collectionQueryParams 集合查询参数
      * @return Call对象
      */
@@ -441,7 +460,7 @@ public final class ApiClient {
     /**
      * 构建带参数的DELETE请求
      *
-     * @param path 请求路径
+     * @param path   请求路径
      * @param params 请求参数
      * @return Call对象
      */

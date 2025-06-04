@@ -44,7 +44,7 @@ public @interface WorkerTask {
      *
      * @return polling interval
      */
-    int pollingInterval() default 100;
+    int pollingInterval() default 1000;
 
     /**
      * Task execution domain

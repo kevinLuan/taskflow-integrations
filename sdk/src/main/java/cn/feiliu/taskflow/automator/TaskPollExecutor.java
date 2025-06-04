@@ -299,7 +299,7 @@ class TaskPollExecutor {
      * @throws Exception 获取失败时抛出异常
      */
     private List<ExecutingTask> getBatchTasks(Worker worker, String domain, int maxAmount) throws Exception {
-        LOGGER.debug("Polling tasks of type: {}", worker.getTaskDefName());
+        LOGGER.info("Polling tasks of type: {}", worker.getTaskDefName());
         String workerId = worker.getIdentity();
         int timeout = 100;
         String taskName = worker.getTaskDefName();
@@ -322,7 +322,7 @@ class TaskPollExecutor {
         for (ExecutingTask task : tasks) {
             try {
                 if (Objects.nonNull(task) && StringUtils.isNotBlank(task.getTaskId())) {
-                    LOGGER.debug("Polled task: {} of type: {}, from worker: {}", task.getTaskId(), taskType, worker.getIdentity());
+                    LOGGER.info("Polled task: {} of type: {}, from worker: {}", task.getTaskId(), taskType, worker.getIdentity());
                     futures.add(executingTask(worker, task, pollingSemaphore));
                 } else {
                     // 没有获取到任务,释放许可

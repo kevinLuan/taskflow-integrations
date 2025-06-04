@@ -29,8 +29,8 @@
         <junit-jupiter.version>5.9.0</junit-jupiter.version>
         <spring.verison>5.3.24</spring.verison>
         <spring-boot.version>2.5.7</spring-boot.version>
-        <taskflow.version>1.0.0-SNAPSHOT</taskflow.version>
-        <feiliu.common-version>0.1.2</feiliu.common-version>
+        <taskflow.version>0.0.1</taskflow.version>
+        <feiliu.common-version>0.1.6</feiliu.common-version>
         <main.user.dir>${user.dir}</main.user.dir>
         <!--suppress UnresolvedMavenProperty -->
         <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
