@@ -33,14 +33,28 @@ public @interface WorkerTask {
     String value();
 
     /**
-     * Number of threads used to execute tasks
+     * 节点标签名称(限制10个字符)
+     *
+     * @return
+     */
+    String tag();
+
+    /**
+     * 节点描述
+     *
+     * @return
+     */
+    String description() default "";
+
+    /**
+     * 用于执行任务的线程数量
      *
      * @return thread count
      */
     int threadCount() default 1;
 
     /**
-     * Task polling interval (in milliseconds)
+     * 任务拉取间隔时间(单位：毫秒)
      *
      * @return polling interval
      */

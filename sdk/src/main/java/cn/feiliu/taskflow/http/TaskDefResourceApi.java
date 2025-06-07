@@ -23,6 +23,7 @@ import okhttp3.Call;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 任务资源API类
@@ -63,6 +64,20 @@ public class TaskDefResourceApi {
     public TaskDefinition createTaskDef(TaskDefinition taskDefinition) {
         String path = "/taskdef/create";
         Call call = apiClient.buildPostCall(path, taskDefinition, new ArrayList<>());
+        ApiResponse<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
+        return resp.getData();
+    }
+
+    /**
+     * 获取任务自定义详情
+     *
+     * @param taskDefName
+     * @return
+     */
+    public TaskDefinition getTaskDef(String taskDefName) {
+        Objects.requireNonNull(taskDefName, "taskDefName can't be null");
+        String path = "/taskdef/" + taskDefName;
+        Call call = apiClient.buildGetCall(path, new ArrayList<>());
         ApiResponse<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
         return resp.getData();
     }

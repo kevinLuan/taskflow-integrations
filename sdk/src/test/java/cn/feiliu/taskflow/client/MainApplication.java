@@ -29,7 +29,7 @@ public class MainApplication {
     private static final Logger logger = LoggerFactory.getLogger(MainApplication.class);
 
     private static ApiClient getClient() throws IOException {
-        TaskflowConfig config = new PropertiesReader("local_config.properties").toConfig();
+        TaskflowConfig config = new PropertiesReader("prod_config.properties").toConfig();
         ApiClient apiClient = new ApiClient(config);
         apiClient.getApis().getTaskEngine().addWorkers(new MyWorker()).start();
         return apiClient;

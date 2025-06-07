@@ -16,15 +16,14 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.common.def.TaskDefinition;
 import cn.feiliu.taskflow.common.dto.tasks.TaskBasicInfo;
+import cn.feiliu.taskflow.executor.extension.TaskHandler;
 import cn.feiliu.taskflow.executor.task.Worker;
 import cn.feiliu.taskflow.http.TaskDefResourceApi;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -85,9 +84,43 @@ public class TaskDefClient {
      * @param worker
      */
     public void updateTaskDef(Worker worker) {
-        TaskDefinition taskDef = createTaskDefinition(worker);
-        taskDefResourceApi.updateTaskDef(taskDef);
+        TaskDefinition taskDefinition = taskDefResourceApi.getTaskDef(worker.getTaskDefName());
+        Map<String, Object> template = new HashMap<>();
+        for (String inputName : worker.getInputNames()) {
+            template.put(inputName, "");
+        }
+        getTag(worker).ifPresent(taskDefinition::setTag);
+        getDescription(worker).ifPresent(taskDefinition::setDescription);
+        taskDefinition.getInputTemplate().putAll(template);
+        taskDefinition.setInputKeys(Lists.newArrayList(template.keySet()));
+        taskDefinition.setOutputKeys(Lists.newArrayList(worker.getOutputNames()));
+        taskDefResourceApi.updateTaskDef(taskDefinition);
         log.info("update task def {} success", worker.getTaskDefName());
+    }
+
+    private Optional<String> getTag(Worker worker) {
+        Optional<TaskHandler> optional = apiClient.getTaskHandlerManager().getTaskHandler(worker.getTaskDefName());
+        if (optional.isPresent()) {
+            TaskHandler taskHandler = optional.get();
+            String tag = taskHandler.getWorker().tag();
+            if (tag != null) {
+                tag = tag.trim();
+                if (tag.length() > 10) {
+                    tag = tag.substring(0, 10);
+                }
+            }
+            return Optional.of(tag);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<String> getDescription(Worker worker) {
+        Optional<TaskHandler> optional = apiClient.getTaskHandlerManager().getTaskHandler(worker.getTaskDefName());
+        if (optional.isPresent()) {
+            TaskHandler taskHandler = optional.get();
+            return Optional.ofNullable(taskHandler.getWorker().description());
+        }
+        return Optional.empty();
     }
 
     private TaskDefinition createTaskDefinition(Worker worker) {
@@ -95,6 +128,8 @@ public class TaskDefClient {
         taskDef.setName(worker.getTaskDefName());
         taskDef.setRetryDelaySeconds(1);
         taskDef.setConcurrentExecLimit(10);
+        getTag(worker).ifPresent(taskDef::setTag);
+        getDescription(worker).ifPresent(taskDef::setDescription);
         Map<String, Object> template = new HashMap<>();
         for (String inputName : worker.getInputNames()) {
             taskDef.addInputKey(inputName);
