@@ -12,19 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.ws.handler;
-
-import cn.feiliu.taskflow.ws.msg.WebSocketMessage;
+package cn.feiliu.taskflow.automator.scheduling;
 
 /**
- * @author kevin.luan
- * @since 2025-06-06
+ * @author SHOUSHEN.LUAN
+ * @since 2024-03-12
  */
-public abstract class MessageProcessHandler extends SimpleMessageHandler {
-    /**
-     * 处理业务消息
-     *
-     * @param message
-     */
-    public abstract void onMessage(WebSocketMessage message);
+public enum PollStatus {
+    FAIL, NO_TASK, HAS_TASK;
 }

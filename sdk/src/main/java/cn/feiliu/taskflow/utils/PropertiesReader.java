@@ -180,10 +180,11 @@ public class PropertiesReader {
     public TaskflowConfig toConfig() {
         TaskflowConfig config = new TaskflowConfig();
         config.setBaseUrl(getProperty("taskflow.base-url"));
-        config.setClientKey(getProperty("taskflow.client-key"));
-        config.setClientSecret(getProperty("taskflow.client-secret"));
+        config.setKeyId(getProperty("taskflow.key-id"));
+        config.setKeySecret(getProperty("taskflow.key-secret"));
         config.setAutoRegister(getBoolean("taskflow.auto-register"));
         config.setUpdateExisting(getBoolean("taskflow.update-existing"));
+        config.setWebSocketUrl(getProperty("taskflow.web-socket-url"));
         return config;
     }
 }

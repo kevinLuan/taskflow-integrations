@@ -14,9 +14,7 @@
  */
 package cn.feiliu.taskflow.ws;
 
-import cn.feiliu.taskflow.ws.handler.MessageProcessHandler;
 import cn.feiliu.taskflow.ws.msg.SubTaskPayload;
-import cn.feiliu.taskflow.ws.msg.WebSocketMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,32 +38,28 @@ public class ReconnectTest {
         String serverUrl = "ws://localhost:8082";
         String keyId = "197300d502f";
         String keySecret = "0c0fb021b6f04bbeaae4d3d414423b4a";
+//        keyId="19748a08697";//本地
+//        keySecret="625ed138e32f4a639daa0c82567eebb9";
         String userId = WebSocketClient.generateUniqueUserId(keyId);
 
-        // 消息处理器
-        MessageProcessHandler messageHandler = new MessageProcessHandler() {
-            @Override
-            public void onMessage(WebSocketMessage message) {
-                logger.info("收到服务器消息: type={}, message={}, data={}",
-                        message.getType(), message.getDescription(), message.getData());
-                Optional<MessageType> optional = MessageType.fromValue(message.getType());
-                if (optional.isPresent()) {
-                    if (optional.get() == MessageType.CONNECTION) {
-                        logger.info("✅ 连接建立确认: {}", message.getDescription());
-                    } else if (optional.get() == MessageType.PONG) {
-                        logger.debug("❤️ 收到心跳响应");
-                    } else if (optional.get() == MessageType.SUB_TASK) {
-                        SubTaskPayload payload = message.getData(SubTaskPayload.class);
-                        logger.info("您有新的任务待处理:{}", payload.getTaskNames());
-                    }
-                } else {
-                    logger.error("未支持的消息类型:{}", message.getType());
-                }
-            }
-        };
-
         // 创建自动重连客户端
-        AutoReconnectClient client = new AutoReconnectClient(serverUrl, userId, keyId, keySecret, messageHandler);
+        AutoReconnectClient client = new AutoReconnectClient(serverUrl, userId, keyId, keySecret,(message)->{
+            logger.info("收到服务器消息: type={}, message={}, data={}",
+                    message.getType(), message.getDescription(), message.getData());
+            Optional<MessageType> optional = MessageType.fromValue(message.getType());
+            if (optional.isPresent()) {
+                if (optional.get() == MessageType.CONNECTION) {
+                    logger.info("✅ 连接建立确认: {}", message.getDescription());
+                } else if (optional.get() == MessageType.PONG) {
+                    logger.debug("❤️ 收到心跳响应");
+                } else if (optional.get() == MessageType.SUB_TASK) {
+                    SubTaskPayload payload = message.getData(SubTaskPayload.class);
+                    logger.info("您有新的任务待处理:{}", payload.getTaskNames());
+                }
+            } else {
+                logger.error("未支持的消息类型:{}", message.getType());
+            }
+        });
 
         // 设置连接成功回调
         client.setOnConnectedCallback(() -> {

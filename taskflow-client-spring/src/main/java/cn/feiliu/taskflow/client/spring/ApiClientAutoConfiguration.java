@@ -15,6 +15,7 @@
 package cn.feiliu.taskflow.client.spring;
 
 import cn.feiliu.taskflow.client.ApiClient;
+import cn.feiliu.taskflow.utils.TaskflowConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
@@ -24,16 +25,17 @@ import org.springframework.core.env.Environment;
 @Slf4j
 public class ApiClientAutoConfiguration {
 
-    public static final String TASKFLOW_SERVER_URL    = "taskflow.server.url";
-    public static final String TASKFLOW_CLIENT_KEY_ID = "taskflow.security.client.key-id";
-    public static final String TASKFLOW_CLIENT_SECRET = "taskflow.security.client.secret";
-
     @Bean
     public ApiClient getApiClient(Environment env) {
-        String rootUri = env.getProperty(TASKFLOW_SERVER_URL);
-        String keyId = env.getProperty(TASKFLOW_CLIENT_KEY_ID);
-        String secret = env.getProperty(TASKFLOW_CLIENT_SECRET);
-        ApiClient apiClient = new ApiClient(rootUri, keyId, secret);
+        TaskflowConfig config = new TaskflowConfig();
+        config.setBaseUrl(env.getProperty("taskflow.base-url"));
+        config.setKeyId(env.getProperty("taskflow.key-id"));
+        config.setKeySecret(env.getProperty("taskflow.key-secret"));
+        config.setWebSocketUrl(env.getProperty("taskflow.web-socket-url"));
+        config.setAutoRegister(env.getProperty("taskflow.auto-register", Boolean.class));
+        config.setUpdateExisting(env.getProperty("taskflow.update-existing", Boolean.class));
+        config.setWebSocketUrl(env.getProperty("taskflow.web-socket-url"));
+        ApiClient apiClient = new ApiClient(config);
         return apiClient;
     }
 

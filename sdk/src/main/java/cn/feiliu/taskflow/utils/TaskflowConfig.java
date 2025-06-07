@@ -25,12 +25,25 @@ public class TaskflowConfig {
     /*飞流云平台 host */
     private String  baseUrl;
     /*开发者key*/
-    private String  clientKey;
+    private String  keyId;
     /*开发者秘钥*/
-    private String  clientSecret;
+    private String  keySecret;
     /*自动注册*/
     private Boolean autoRegister;
     /*存在则更新*/
     private Boolean updateExisting;
+    /*web socket url*/
+    private String  webSocketUrl;
 
+    public boolean isSupportWebsocket() {
+        return webSocketUrl != null;
+    }
+
+    public boolean isAutoRegister() {
+        return autoRegister != null && autoRegister;
+    }
+
+    public boolean isUpdateExisting() {
+        return updateExisting != null && updateExisting;
+    }
 }

@@ -14,11 +14,13 @@
  */
 package cn.feiliu.taskflow.automator;
 
+import cn.feiliu.taskflow.automator.scheduling.PollStatus;
 import cn.feiliu.taskflow.automator.scheduling.WheelTimerWorkerScheduling;
 import cn.feiliu.taskflow.automator.scheduling.WorkerScheduling;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.executor.task.Worker;
 import com.google.common.base.Preconditions;
+import io.netty.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,14 +209,14 @@ public class TaskRunnerConfigurer {
     }
 
     /**
-     * @return 从Taskflow服务器收到错误时,任务更新重试前的休眠毫秒数
+     * @return 从Taskflow服务器收到错误时, 任务更新重试前的休眠毫秒数
      */
     public int getSleepWhenRetry() {
         return sleepWhenRetry;
     }
 
     /**
-     * @return 从Taskflow服务器收到错误时,updateTask应该重试的次数
+     * @return 从Taskflow服务器收到错误时, updateTask应该重试的次数
      */
     public int getUpdateRetryCount() {
         return updateRetryCount;
@@ -234,7 +236,7 @@ public class TaskRunnerConfigurer {
         if (workers.isEmpty()) {
             LOGGER.warn("没有工作线程需要启动");
         } else {
-            workerScheduling.initWorker(workers);
+            workerScheduling.initWorker(apiClient.getConfig(), workers);
         }
     }
 
@@ -242,17 +244,12 @@ public class TaskRunnerConfigurer {
      * 开启拉取任务并运行
      */
     public void startRunningTasks() {
-        workerScheduling.startBatchTask(this::isWorkerIdle, taskPollExecutor::fastPollAndExecute);
-    }
-
-    /**
-     * 如果工作线程忙碌,则不轮询任务
-     *
-     * @param worker 工作线程
-     * @return 工作线程是否空闲
-     */
-    private boolean isWorkerIdle(Worker worker) {
-        return !taskPollExecutor.isBusy(worker);
+        workerScheduling.start(taskPollExecutor, new WorkerProcess() {
+            @Override
+            public PollStatus process(TimerTask timerTask, Worker worker) {
+                return taskPollExecutor.fastPollAndExecute(worker);
+            }
+        });
     }
 
     /**
@@ -260,5 +257,9 @@ public class TaskRunnerConfigurer {
      */
     public void shutdown() {
         workerScheduling.shutdown(shutdownGracePeriodSeconds);
+    }
+
+    public WorkerScheduling getWorkerScheduling() {
+        return workerScheduling;
     }
 }

@@ -51,8 +51,7 @@ class TaskflowReadyListener implements ApplicationListener<ContextRefreshedEvent
                 CACHE.put(entry.getKey(), bean);
             }
         }
-        taskEngine.initWorkerTasks();
-        taskEngine.startRunningTasks();
+        taskEngine.start();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             taskEngine.shutdown();
         }));

@@ -12,12 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.automator.scheduling;
+package cn.feiliu.taskflow.ws.handler;
+
+import cn.feiliu.taskflow.ws.msg.WebSocketMessage;
 
 /**
- * @author SHOUSHEN.LUAN
- * @since 2024-03-12
+ * @author kevin.luan
+ * @since 2025-06-07
  */
-public enum PollExecuteStatus {
-    FAIL, NO_TASK, HAS_TASK;
+public interface MessageHandler {
+    void onMessage(WebSocketMessage message);
 }

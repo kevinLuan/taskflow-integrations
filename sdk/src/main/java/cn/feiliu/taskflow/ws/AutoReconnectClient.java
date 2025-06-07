@@ -15,7 +15,7 @@
 package cn.feiliu.taskflow.ws;
 
 import cn.feiliu.common.api.utils.MapBuilder;
-import cn.feiliu.taskflow.ws.handler.MessageProcessHandler;
+import cn.feiliu.taskflow.ws.handler.MessageHandler;
 import cn.feiliu.taskflow.ws.handler.SimpleMessageHandler;
 import cn.feiliu.taskflow.ws.msg.WebSocketMessage;
 import org.slf4j.Logger;
@@ -49,7 +49,8 @@ public class AutoReconnectClient {
     private String keySecret;
     private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
     private volatile boolean shouldReconnect = true;
-    private MessageProcessHandler messageProcessHandler;
+    private MessageHandler handler;
+
 
     // 同步控制：确保同一时间只有一个重连任务
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
@@ -62,13 +63,12 @@ public class AutoReconnectClient {
     // 连接成功后的回调处理器
     private volatile Runnable onConnectedCallback;
 
-    public AutoReconnectClient(String serverUrl, String userId, String keyId, String keySecret,
-                               MessageProcessHandler handler) {
+    public AutoReconnectClient(String serverUrl, String userId, String keyId, String keySecret, MessageHandler handler) {
         this.serverUrl = serverUrl;
         this.userId = userId;
         this.keyId = keyId;
         this.keySecret = keySecret;
-        this.messageProcessHandler = handler;
+        this.handler = handler;
         this.client = createClient();
     }
 
@@ -81,10 +81,8 @@ public class AutoReconnectClient {
                         reconnectAttempts.set(0);
                         reconnecting.set(false); // 连接成功，重置重连状态
                         shouldReconnect = true;
-
-                        // 执行连接成功回调
                         if (onConnectedCallback != null) {
-                            try {
+                            try {// 执行连接成功回调
                                 onConnectedCallback.run();
                             } catch (Exception e) {
                                 logger.error("执行连接成功回调时发生异常", e);
@@ -100,11 +98,7 @@ public class AutoReconnectClient {
 
                     @Override
                     public void onMessage(WebSocketMessage message) {
-                        if (messageProcessHandler != null) {
-                            messageProcessHandler.onMessage(message);
-                        } else {
-                            super.onMessage(message);
-                        }
+                        handler.onMessage(message);
                     }
 
                     @Override

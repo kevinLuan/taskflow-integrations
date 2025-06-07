@@ -20,6 +20,11 @@ import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.common.exceptions.ApiException;
 import cn.feiliu.taskflow.executor.task.AnnotatedWorker;
 import cn.feiliu.taskflow.executor.task.Worker;
+import cn.feiliu.taskflow.utils.TaskflowConfig;
+import cn.feiliu.taskflow.ws.AutoReconnectClient;
+import cn.feiliu.taskflow.ws.MessageType;
+import cn.feiliu.taskflow.ws.WebSocketClient;
+import cn.feiliu.taskflow.ws.msg.SubTaskPayload;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -27,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static cn.feiliu.common.api.utils.CommonUtils.f;
 
@@ -54,6 +61,7 @@ public class TaskEngine {
     protected Map<String, String>  workerDomains           = new HashMap<>();
 
     private Map<String, Object>    workerClassObjs         = new HashMap<>();
+    private AutoReconnectClient    wcClient;
 
     public TaskEngine(ApiClient client) {
         this.client = client;
@@ -127,7 +135,7 @@ public class TaskEngine {
     /**
      * 初始化工作任务节点
      */
-    public final TaskEngine initWorkerTasks() {
+    private TaskEngine initWorkerTasks() {
         this.initWorkerExecutor();
         if (workers.isEmpty()) {
             LOGGER.warn("No workers to start");
@@ -145,6 +153,14 @@ public class TaskEngine {
     }
 
     /**
+     * 初始化并运行任务
+     */
+    public void start() {
+        this.initWorkerTasks();
+        this.startRunningTasks();
+    }
+
+    /**
      * 注册和更新任务定义
      */
     private void registerAndUpdateTasks() {
@@ -154,11 +170,11 @@ public class TaskEngine {
             for (Worker worker : this.workers) {
                 if (worker.getTaskDefName().matches("^[a-zA-Z][a-zA-Z0-9_]{0,29}$")) {
                     if (taskDefNames.contains(worker.getTaskDefName())) {
-                        if (getClient().isUpdateExisting()) {
+                        if (getClient().getConfig().isUpdateExisting()) {
                             getClient().getApis().getTaskDefClient().updateTaskDef(worker);
                         }
                     } else {
-                        if (getClient().isAutoRegister()) {
+                        if (getClient().getConfig().isAutoRegister()) {
                             getClient().getApis().getTaskDefClient().createTaskDef(worker);
                         } else {
                             missingNames.add(worker.getTaskDefName());
@@ -180,9 +196,51 @@ public class TaskEngine {
     /**
      * 运行工作任务节点
      */
-    public TaskEngine startRunningTasks() {
+    private TaskEngine startRunningTasks() {
         this.taskRunner.startRunningTasks();
+        if (this.client.isSupportWebSocket()) {
+            this.runWebSocket().thenAccept((nil) -> {
+                broadcast();
+            });
+        }
         return this;
+    }
+
+    private CompletableFuture<Void> runWebSocket() {
+        TaskflowConfig config = getClient().getConfig();
+        String wcUrl = config.getWebSocketUrl();
+        String userId = WebSocketClient.generateUniqueUserId(config.getKeyId());
+        String keyId = config.getKeyId();
+        String keySecret = config.getKeySecret();
+        wcClient = new AutoReconnectClient(wcUrl, userId, keyId, keySecret, (message) -> {
+            Optional<MessageType> optional = MessageType.fromValue(message.getType());
+            if (optional.isPresent()) {
+                if (optional.get() == MessageType.CONNECTION) {
+                    LOGGER.info("✅ 连接建立确认: {}", message.getDescription());
+                } else if (optional.get() == MessageType.PONG) {
+                    LOGGER.debug("❤️ 收到心跳响应");
+                } else if (optional.get() == MessageType.SUB_TASK) {
+                    LOGGER.debug("任务通知: `{}`, data: `{}`", message.getDescription(), message.getData());
+                    SubTaskPayload payload = message.getData(SubTaskPayload.class);
+                    if (payload.getTaskNames().isEmpty()) {
+                        this.broadcast();
+                    } else {
+                        taskRunner.getWorkerScheduling().triggerTask(payload);
+                    }
+                } else {
+                    LOGGER.info("通知 type:`{}`, description:`{}`", message.getType(), message.getDescription());
+                }
+            } else {
+                LOGGER.error("未支持的消息类型:{}", message.getType());
+            }
+        });
+        wcClient.setOnConnectedCallback(() -> {
+            LOGGER.info("🎉 WebSocket连接成功建立");
+            List<String> names = workers.stream().map((w) -> w.getTaskDefName()).collect(Collectors.toList());
+            wcClient.subTasks(names);
+            wcClient.sendPing();
+        });
+        return wcClient.connect();
     }
 
     /**
@@ -212,4 +270,13 @@ public class TaskEngine {
         return taskRunner;
     }
 
+    /**
+     * 广播全部任务更新一次
+     */
+    private void broadcast() {
+        for (Worker worker : workers) {
+            SubTaskPayload payload = SubTaskPayload.createSimple(worker.getTaskDefName());
+            taskRunner.getWorkerScheduling().triggerTask(payload);
+        }
+    }
 }

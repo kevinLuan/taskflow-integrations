@@ -14,12 +14,13 @@
  */
 package cn.feiliu.taskflow.automator.scheduling;
 
+import cn.feiliu.taskflow.automator.TaskPollExecutor;
+import cn.feiliu.taskflow.automator.WorkerProcess;
 import cn.feiliu.taskflow.executor.task.Worker;
+import cn.feiliu.taskflow.utils.TaskflowConfig;
+import cn.feiliu.taskflow.ws.msg.SubTaskPayload;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * 工作调度器
@@ -33,24 +34,14 @@ public interface WorkerScheduling {
      *
      * @param workers
      */
-    void initWorker(List<Worker> workers);
+    void initWorker(TaskflowConfig config, List<Worker> workers);
 
     /**
      * 启动工作节点调度程序
      *
-     * @param isWorkerIdle     检查工作节点繁忙情况
      * @param workerProcess 消费程序(任务拉取成功后执行的程序)
      */
-    void start(Function<Worker, Boolean> isWorkerIdle, Consumer<Worker> workerProcess);
-
-    /**
-     * 启动工作节点调度程序
-     *
-     * @param isWorkerIdle     检查工作节点繁忙情况
-     * @param workerProcess 消费程序(任务拉取成功后执行的程序)
-     */
-    void startBatchTask(Function<Worker, Boolean> isWorkerIdle,
-                        Function<Worker, CompletableFuture<MultiTaskResult>> workerProcess);
+    void start(TaskPollExecutor taskPollExecutor, WorkerProcess workerProcess);
 
     /**
      * 关闭工作节点调度程序
@@ -58,4 +49,11 @@ public interface WorkerScheduling {
      * @param timeout 超时时间(单位秒)
      */
     void shutdown(int timeout);
+
+    /**
+     * 触发任务更新
+     *
+     * @param payload
+     */
+    void triggerTask(SubTaskPayload payload);
 }

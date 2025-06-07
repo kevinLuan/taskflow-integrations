@@ -106,7 +106,6 @@ public class WebSocketClient {
                     connected = true;
                     disconnectHandled = false; // 连接成功时重置标志
                     future.complete(true);
-
                     if (messageHandler != null) {
                         messageHandler.onConnected();
                     }
@@ -115,7 +114,14 @@ public class WebSocketClient {
                 @Override
                 public void onMessage(WebSocket webSocket, String text) {
                     logger.debug("收到WebSocket文本消息: {}", text);
-                    handleMessage(text);
+                    try {
+                        WebSocketMessage message = jsonEncoder.decode(text, WebSocketMessage.class);
+                        if (messageHandler != null) {
+                            messageHandler.onMessage(message);
+                        }
+                    } catch (Exception e) {
+                        logger.error("解析WebSocket消息失败: {}", text, e);
+                    }
                 }
 
                 @Override
@@ -255,40 +261,6 @@ public class WebSocketClient {
             logger.debug("添加Authorization头: {}", authHeader.substring(0, Math.min(20, authHeader.length())) + "...");
         } else {
             throw new IllegalArgumentException("请配置认证参数");
-        }
-    }
-
-    private void handleMessage(String messageText) {
-        try {
-            WebSocketMessage message = jsonEncoder.decode(messageText, WebSocketMessage.class);
-            if (messageHandler != null) {
-                messageHandler.onMessage(message);
-            }
-            Optional<MessageType> optional = MessageType.fromValue(message.getType());
-            if (optional.isPresent()) {
-                switch (optional.get()) {
-                    case PONG:
-                        logger.debug("收到心跳响应");
-                        break;
-                    case CONNECTION:
-                        logger.info("连接确认: {}", message.getDescription());
-                        break;
-                    case ERROR:
-                        logger.warn("服务器错误: {}", message.getDescription());
-                        break;
-                    case SUB_TASK:
-                        logger.info("任务状态更新: {}", message.getDescription());
-                        break;
-                    default:
-                        logger.debug("暂不支持处理的消息类型: {}", optional.get());
-                        break;
-                }
-            } else {
-                logger.warn("收到未知的消息类型: {}, 已忽略", message.getType());
-            }
-
-        } catch (Exception e) {
-            logger.error("解析WebSocket消息失败: {}", messageText, e);
         }
     }
 

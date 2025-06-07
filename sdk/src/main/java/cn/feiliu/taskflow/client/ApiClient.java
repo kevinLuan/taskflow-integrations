@@ -34,15 +34,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * API客户端类，用于处理HTTP请求和响应
  */
 public final class ApiClient {
-    // API基础路径
-    private final String              basePath;
     // 默认请求头映射
-    private final Map<String, String> defaultHeaderMap    = new HashMap();
+    private final Map<String, String> defaultHeaderMap    = new ConcurrentHashMap<>();
 
     // 临时文件夹路径
     private String                    tempFolderPath;
@@ -68,56 +67,21 @@ public final class ApiClient {
     // 任务处理器管理器
     @Getter
     private final TaskHandlerManager  taskHandlerManager  = new TaskHandlerManager();
-    /*自动注册任务节点*/
-    private Boolean                   autoRegister        = false;
-    /*如果存在则更新任务*/
-    private Boolean                   updateExisting      = false;
+    private final TaskflowConfig      config;
 
     /**
      * 构造函数
-     *
-     * @param basePath  API基础路径
-     * @param keyId     密钥ID
-     * @param keySecret 密钥
      */
-    public ApiClient(String basePath, String keyId, String keySecret) {
-        this.basePath = normalizePath(basePath);
+    public ApiClient(TaskflowConfig config) {
+        this.config = config;
+        config.setBaseUrl(normalizePath(config.getBaseUrl()));
         this.httpClient = new OkHttpClient().newBuilder().retryOnConnectionFailure(true).build();
         this.verifyingSsl = true;
         this.apis = new TaskflowApis(this);
-        this.tokenManager = new TokenManager(this.apis.getAuthClient(), keyId, keySecret);
+        this.tokenManager = new TokenManager(this.apis.getAuthClient(), config.getKeyId(), config.getKeySecret());
         //所有的对象初始化完成后，最后执行初始调度执行
         this.tokenManager.shouldStartSchedulerAndInitializeToken();
-    }
 
-    public ApiClient(TaskflowConfig config) {
-        this(config.getBaseUrl(), config.getClientKey(), config.getClientSecret());
-        autoRegister(config.getAutoRegister());
-        updateExisting(config.getUpdateExisting());
-    }
-
-    /**
-     * 控制是否自动注册任务节点
-     *
-     * @param autoRegister
-     * @return
-     */
-    public ApiClient autoRegister(Boolean autoRegister) {
-        this.autoRegister = autoRegister;
-        return this;
-    }
-
-    public ApiClient updateExisting(Boolean updateExisting) {
-        this.updateExisting = updateExisting;
-        return this;
-    }
-
-    public boolean isAutoRegister() {
-        return autoRegister != null && autoRegister;
-    }
-
-    public boolean isUpdateExisting() {
-        return updateExisting != null && updateExisting;
     }
 
     /**
@@ -150,7 +114,7 @@ public final class ApiClient {
      * @return 基础路径
      */
     public String getBasePath() {
-        return basePath;
+        return config.getBaseUrl();
     }
 
     /**
@@ -495,4 +459,13 @@ public final class ApiClient {
     public TaskflowApis getApis() {
         return Objects.requireNonNull(apis);
     }
+
+    public TaskflowConfig getConfig() {
+        return config;
+    }
+
+    public boolean isSupportWebSocket() {
+        return config.isSupportWebsocket();
+    }
+
 }

@@ -15,8 +15,7 @@
 package cn.feiliu.taskflow.automator;
 
 import cn.feiliu.common.api.utils.CommonUtils;
-import cn.feiliu.taskflow.automator.scheduling.MultiTaskResult;
-import cn.feiliu.taskflow.automator.scheduling.PollExecuteStatus;
+import cn.feiliu.taskflow.automator.scheduling.PollStatus;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.client.TaskClient;
 import cn.feiliu.taskflow.common.dto.tasks.ExecutingTask;
@@ -35,12 +34,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 /**
  * 管理工作节点用于执行任务和服务器通信(轮询和任务更新)的线程池
  */
-class TaskPollExecutor {
+public class TaskPollExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskPollExecutor.class);
     // API客户端
@@ -246,7 +244,7 @@ class TaskPollExecutor {
      * @param worker 工作节点
      * @return true表示繁忙, false表示空闲
      */
-    boolean isBusy(Worker worker) {
+    public boolean isBusy(Worker worker) {
         return getAvailableThreads(worker) <= 0;
     }
 
@@ -256,37 +254,33 @@ class TaskPollExecutor {
      * @param worker 工作节点
      * @return 多任务执行结果的Future
      */
-    CompletableFuture<MultiTaskResult> fastPollAndExecute(Worker worker) {
-        Supplier<MultiTaskResult> supplier = () -> {
-            String taskType = worker.getTaskDefName();
-            PollingSemaphore pollingSemaphore = getPollingSemaphore(worker);
-            String domain = taskToDomain.get(taskType);
-            Optional<Integer> availablePermitsOpt = pollingSemaphore.tryAcquireAvailablePermits();
-            if (availablePermitsOpt.isPresent()) {
-                final int maxAmount = availablePermitsOpt.get();
-                List<ExecutingTask> tasks;
-                try {
-                    tasks = getBatchTasks(worker, domain, maxAmount);
-                    if (tasks.isEmpty()) {
-                        pollingSemaphore.complete(maxAmount);
-                        return MultiTaskResult.of(PollExecuteStatus.NO_TASK, Collections.emptyList());
-                    }
-                } catch (Exception e) {
-                    LOGGER.error("Error when polling for tasks", e);
+    PollStatus fastPollAndExecute(Worker worker) {
+        String taskType = worker.getTaskDefName();
+        PollingSemaphore pollingSemaphore = getPollingSemaphore(worker);
+        String domain = taskToDomain.get(taskType);
+        Optional<Integer> availablePermitsOpt = pollingSemaphore.tryAcquireAvailablePermits();
+        if (availablePermitsOpt.isPresent()) {
+            final int maxAmount = availablePermitsOpt.get();
+            List<ExecutingTask> tasks;
+            try {
+                tasks = getBatchTasks(worker, domain, maxAmount);
+                if (tasks.isEmpty()) {
                     pollingSemaphore.complete(maxAmount);
-                    return MultiTaskResult.of(PollExecuteStatus.FAIL, Collections.emptyList());
+                    return PollStatus.NO_TASK;
                 }
-                if (maxAmount > tasks.size()) {
-                    pollingSemaphore.complete(maxAmount - tasks.size());
-                }
-                List<CompletableFuture<ExecutingTask>> futures = submitTasks(worker, tasks, domain, pollingSemaphore);
-                PollExecuteStatus status = maxAmount > tasks.size() ? PollExecuteStatus.NO_TASK : PollExecuteStatus.HAS_TASK;
-                return MultiTaskResult.of(status, futures);
-            } else {
-                return MultiTaskResult.of(PollExecuteStatus.NO_TASK, Collections.emptyList());
+            } catch (Exception e) {
+                LOGGER.error("Error when polling for tasks", e);
+                pollingSemaphore.complete(maxAmount);
+                return PollStatus.FAIL;
             }
-        };
-        return CompletableFuture.supplyAsync(supplier);
+            if (maxAmount > tasks.size()) {
+                pollingSemaphore.complete(maxAmount - tasks.size());
+            }
+            submitTasks(worker, tasks, domain, pollingSemaphore);
+            return tasks.isEmpty() ? PollStatus.NO_TASK : PollStatus.HAS_TASK;
+        } else {
+            return PollStatus.NO_TASK;
+        }
     }
 
     /**
@@ -299,7 +293,7 @@ class TaskPollExecutor {
      * @throws Exception 获取失败时抛出异常
      */
     private List<ExecutingTask> getBatchTasks(Worker worker, String domain, int maxAmount) throws Exception {
-        LOGGER.info("Polling tasks of type: {}", worker.getTaskDefName());
+        LOGGER.info("Polling tasks of type: '{}'", worker.getTaskDefName());
         String workerId = worker.getIdentity();
         int timeout = 100;
         String taskName = worker.getTaskDefName();
@@ -316,7 +310,7 @@ class TaskPollExecutor {
      * @param pollingSemaphore 轮询信号量
      * @return 任务执行Future列表
      */
-    private List<CompletableFuture<ExecutingTask>> submitTasks(Worker worker, List<ExecutingTask> tasks, String domain, PollingSemaphore pollingSemaphore) {
+    private void submitTasks(Worker worker, List<ExecutingTask> tasks, String domain, PollingSemaphore pollingSemaphore) {
         List<CompletableFuture<ExecutingTask>> futures = new ArrayList<>();
         String taskType = worker.getTaskDefName();
         for (ExecutingTask task : tasks) {
@@ -333,7 +327,7 @@ class TaskPollExecutor {
                 pollingSemaphore.complete();
             }
         }
-        return futures;
+        CompletableFuture.anyOf(futures.toArray(new CompletableFuture[futures.size()])).join();
     }
 
     /**

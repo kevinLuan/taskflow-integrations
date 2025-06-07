@@ -12,25 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.feiliu.taskflow.ws.msg;
+package cn.feiliu.taskflow.automator;
 
-import lombok.Data;
-
-import java.util.Arrays;
-import java.util.List;
+import cn.feiliu.taskflow.automator.scheduling.PollStatus;
+import cn.feiliu.taskflow.executor.task.Worker;
+import io.netty.util.TimerTask;
 
 /**
  * @author kevin.luan
  * @since 2025-06-07
  */
-@Data
-public class SubTaskPayload {
-    /*任务名称*/
-    private List<String> taskNames;
-
-    public static SubTaskPayload createSimple(String taskName) {
-        SubTaskPayload subTaskPayload = new SubTaskPayload();
-        subTaskPayload.setTaskNames(Arrays.asList(taskName));
-        return subTaskPayload;
-    }
+public abstract class WorkerProcess {
+    /**
+     * 任务处理器
+     *
+     * @param timerTask
+     * @param worker
+     * @return
+     */
+    public abstract PollStatus process(TimerTask timerTask, Worker worker);
 }

@@ -14,7 +14,11 @@
  */
 package cn.feiliu.taskflow.automator.scheduling;
 
+import cn.feiliu.taskflow.automator.TaskPollExecutor;
+import cn.feiliu.taskflow.automator.WorkerProcess;
 import cn.feiliu.taskflow.executor.task.Worker;
+import cn.feiliu.taskflow.utils.TaskflowConfig;
+import cn.feiliu.taskflow.ws.msg.SubTaskPayload;
 import com.google.common.collect.Lists;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
@@ -27,27 +31,25 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * 基于时间轮算法的工作者调度器
  * 使用Netty的HashedWheelTimer实现定时任务调度
- * 
+ *
  * @author SHOUSHEN.LUAN
  * @since 2024-03-12
  */
 @Slf4j
 public class WheelTimerWorkerScheduling implements WorkerScheduling {
     // 时间轮定时器实例
-    final Timer                  timer  = new HashedWheelTimer();
+    final Timer                         timer  = new HashedWheelTimer();
     // 工作者列表
-    private List<Worker>         workers;
+    private List<Worker>                workers;
     // 调度器停止标志
-    volatile static boolean      isStop = false;
+    volatile static boolean             isStop = false;
     // 工作者与其对应定时任务的映射关系
-    private Map<Worker, Timeout> workerTaskMap;
+    private Map<String, WorkerSchedule> workerTaskMap;
+    private TaskflowConfig              config;
 
     /**
      * 打印所有工作者的名称,用于调试
@@ -58,92 +60,92 @@ public class WheelTimerWorkerScheduling implements WorkerScheduling {
 
     /**
      * 初始化工作者列表
+     *
      * @param list 工作者列表
      */
     @Override
-    public void initWorker(List<Worker> list) {
+    public void initWorker(TaskflowConfig config, List<Worker> list) {
         this.workers = Lists.newArrayList(list);
+        this.config = config;
         this.workerTaskMap = new ConcurrentHashMap<>(list.size());
         dumpWorkerName();
     }
 
     /**
-     * 启动所有工作者的调度
-     * @param isWorkerIdle 判断工作者是否空闲的函数
-     * @param workerProcess 工作者处理逻辑
-     */
-    private void startAllWorker(Function<Worker, Boolean> isWorkerIdle, BiConsumer<TimerTask, Worker> workerProcess) {
-        workers.forEach(worker -> addIfAbsent(new TimerTask() {
-            public void run(Timeout timeout) throws Exception {
-                workerTaskMap.remove(worker);
-                if (isWorkerIdle.apply(worker)) {
-                    workerProcess.accept(this, worker);
-                } else {
-                    addIfAbsent(this, worker, false);
-                }
-            }
-        }, worker, false));
-    }
-
-    /**
-     * 启动单任务处理模式
-     * @param isWorkerIdle 判断工作者是否空闲的函数
-     * @param consumer 任务处理函数
-     */
-    @Override
-    public void start(Function<Worker, Boolean> isWorkerIdle, Consumer<Worker> consumer) {
-        startAllWorker(isWorkerIdle, (timerTask, worker) -> {
-            try {
-                consumer.accept(worker);
-            } finally {
-                addIfAbsent(timerTask, worker, false);
-            }
-        });
-    }
-
-    /**
      * 启动批量任务处理模式
-     * @param isWorkerIdle 判断工作者是否空闲的函数
+     *
      * @param workerProcess 批量任务处理函数
      */
     @Override
-    public void startBatchTask(Function<Worker, Boolean> isWorkerIdle, Function<Worker, CompletableFuture<MultiTaskResult>> workerProcess) {
-        startAllWorker(isWorkerIdle, (timerTask, worker) -> {
-            CompletableFuture<MultiTaskResult> future = workerProcess.apply(worker);
-            future.whenComplete((r, e) -> {
-                if (e == null && r != null && r.isAllSuccessful() && r.hasTask()) {
-                    addIfAbsent(timerTask, worker, true);
-                } else {
-                    addIfAbsent(timerTask, worker, false);
+    public void start(TaskPollExecutor taskPollExecutor, WorkerProcess workerProcess) {
+        for (Worker worker : workers) {
+            addIfAbsent(new TimerTask() {
+                @Override
+                public void run(Timeout timeout) throws Exception {
+                    CompletableFuture.runAsync(() -> {
+                        workerTaskMap.remove(worker.getTaskDefName());
+                        if (taskPollExecutor.isBusy(worker)) {
+                            addIfAbsent(this, worker, false);
+                        } else {
+                            PollStatus status = workerProcess.process(this, worker);
+                            if (status == PollStatus.HAS_TASK) {
+                                addIfAbsent(this, worker, true);
+                            } else {
+                                addIfAbsent(this, worker, false);
+                            }
+                        }
+                    });
                 }
-            });
-        });
+            }, worker, false);
+        }
     }
 
     /**
      * 将任务添加到时间轮定时器中
+     *
      * @param timerTask 定时任务
-     * @param worker 关联的工作者
-     * @param now 是否立即执行
+     * @param worker    关联的工作者
+     * @param now       是否立即执行
      */
     private void addIfAbsent(TimerTask timerTask, Worker worker, boolean now) {
         if (!isStop) {
-            workerTaskMap.computeIfAbsent(worker, k -> {
+            workerTaskMap.computeIfAbsent(worker.getTaskDefName(), k -> {
+                Timeout timeout;
                 if (now) {
-                    return timer.newTimeout(timerTask, 1, TimeUnit.MILLISECONDS);
+                    timeout = timer.newTimeout(timerTask, 1, TimeUnit.MILLISECONDS);
+                } else if (config.isSupportWebsocket()) {
+                    timeout = timer.newTimeout(timerTask, TimeUnit.SECONDS.toMillis(30), TimeUnit.MILLISECONDS);
+                } else {
+                    timeout = timer.newTimeout(timerTask, worker.getPollingInterval(), TimeUnit.MILLISECONDS);
                 }
-                return timer.newTimeout(timerTask, worker.getPollingInterval(), TimeUnit.MILLISECONDS);
+                return WorkerSchedule.of(worker, timeout);
             });
         }
     }
 
     /**
      * 关闭调度器
+     *
      * @param timeout 超时时间
      */
     @Override
     public void shutdown(int timeout) {
         this.isStop = true;
         this.timer.stop();
+    }
+
+    @Override
+    public void triggerTask(SubTaskPayload payload) {
+        for (String taskName : payload.getTaskNames()) {
+            WorkerSchedule schedule = workerTaskMap.get(taskName);
+            if (schedule != null) {
+                try {
+                    log.info("Trigger TaskName: {}", taskName);
+                    schedule.triggerExecute();
+                } catch (Exception e) {
+                    log.error("triggerTask '{}' ,error:{},", taskName, e.getMessage(), e);
+                }
+            }
+        }
     }
 }
