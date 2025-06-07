@@ -3,7 +3,7 @@ taskflow-integrations
 <div align="left">
   <a href="javascript:void(0);"><img src="https://img.shields.io/badge/build-passing-brightgreen" /></a>
   <a href="javascript:void(0);" target="_blank"><img src="https://img.shields.io/badge/docs-latest-brightgreen" /></a>
-  <a href="https://javadoc.io/doc/cn.taskflow/taskflow-sdk/latest/index.html" target="_blank"><img src="https://javadoc.io/badge/cn.taskflow/taskflow-sdk/0.1.1-beta.svg" /></a>
+  <a href="https://javadoc.io/doc/cn.taskflow/taskflow-sdk/latest/index.html" target="_blank"><img src="https://javadoc.io/badge/cn.taskflow/taskflow-sdk/0.1.3-beta.svg" /></a>
   <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
   <a href="https://central.sonatype.com/artifact/cn.taskflow/taskflow-open-api?smo=true"><img src="https://img.shields.io/maven-metadata/v.svg?label=Maven%20Central&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcn%2Ftaskflow%2Ftaskflow-sdk%2Fmaven-metadata.xml" alt="License"></a>
 </div>
