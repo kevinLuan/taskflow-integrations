@@ -31,8 +31,8 @@ public class MainApplication {
     private static ApiClient getClient() throws IOException {
         TaskflowConfig config = new PropertiesReader("prod_config.properties").toConfig();
         ApiClient apiClient = new ApiClient(config);
-        apiClient.getApis().getTaskEngine().addWorkers(new MyWorker()).start();
-        return apiClient;
+        apiClient.addWorker(new MyWorker());
+        return apiClient.start();
     }
 
     public static void main(String[] args) throws IOException {

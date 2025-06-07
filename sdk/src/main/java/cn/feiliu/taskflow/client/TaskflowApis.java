@@ -14,23 +14,17 @@
  */
 package cn.feiliu.taskflow.client;
 
-import cn.feiliu.taskflow.core.TaskEngine;
-
 /**
  * @author SHOUSHEN.LUAN
  * @since 2024-10-04
  */
 public final class TaskflowApis {
-    final ApiClient          client;
-    private AuthClient       authClient;
-    private TaskEngine       taskEngine;
-    private final TaskClient taskClient;
-    private TaskDefClient    taskDefClient;
+    private final AuthClient    authClient;
+    private final TaskClient    taskClient;
+    private final TaskDefClient taskDefClient;
 
     TaskflowApis(ApiClient client) {
-        this.client = client;
         this.authClient = new AuthClient(client);
-        this.taskEngine = new TaskEngine(client);
         this.taskClient = new TaskClient(client);
         this.taskDefClient = new TaskDefClient(client);
     }
@@ -42,15 +36,6 @@ public final class TaskflowApis {
      */
     public AuthClient getAuthClient() {
         return this.authClient;
-    }
-
-    /**
-     * 获取任务引擎客户端
-     *
-     * @return
-     */
-    public TaskEngine getTaskEngine() {
-        return taskEngine;
     }
 
     /**
@@ -71,7 +56,4 @@ public final class TaskflowApis {
         return taskDefClient;
     }
 
-    public void shutdown() {
-        taskEngine.shutdown();
-    }
 }

@@ -17,16 +17,15 @@ package cn.feiliu.taskflow.client.spring;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.utils.TaskflowConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
 
 @Slf4j
 public class ApiClientAutoConfiguration {
 
     @Bean
-    public ApiClient getApiClient(Environment env) {
+    public TaskflowConfig getConfig(Environment env) {
         TaskflowConfig config = new TaskflowConfig();
         config.setBaseUrl(env.getProperty("taskflow.base-url"));
         config.setKeyId(env.getProperty("taskflow.key-id"));
@@ -35,12 +34,19 @@ public class ApiClientAutoConfiguration {
         config.setAutoRegister(env.getProperty("taskflow.auto-register", Boolean.class));
         config.setUpdateExisting(env.getProperty("taskflow.update-existing", Boolean.class));
         config.setWebSocketUrl(env.getProperty("taskflow.web-socket-url"));
-        ApiClient apiClient = new ApiClient(config);
-        return apiClient;
+        return config;
     }
 
-    @Bean("taskflowReadyListener")
-    public ApplicationListener<ContextRefreshedEvent> taskflowReadyListener(ApiClient apiClient) {
-        return new TaskflowReadyListener(apiClient);
+    @Bean("workerTasksScanner")
+    public WorkerTasksScanner workerTasksScanner() {
+        return new WorkerTasksScanner();
+    }
+
+    @Bean("apiClient")
+    @DependsOn("workerTasksScanner")
+    public ApiClient apiClient(TaskflowConfig config, WorkerTasksScanner workerTasksScanner) {
+        ApiClient apiClient = new ApiClient(config);
+        apiClient.addWorker(workerTasksScanner.getWorkerBeans());
+        return apiClient.start();
     }
 }

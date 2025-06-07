@@ -16,6 +16,7 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.common.dto.ApiResponse;
 import cn.feiliu.taskflow.common.exceptions.ApiException;
+import cn.feiliu.taskflow.core.TaskEngine;
 import cn.feiliu.taskflow.core.TokenManager;
 import cn.feiliu.taskflow.executor.extension.TaskHandlerManager;
 import cn.feiliu.taskflow.http.ApiCallback;
@@ -68,6 +69,7 @@ public final class ApiClient {
     @Getter
     private final TaskHandlerManager  taskHandlerManager  = new TaskHandlerManager();
     private final TaskflowConfig      config;
+    private final TaskEngine          taskEngine;
 
     /**
      * 构造函数
@@ -81,7 +83,7 @@ public final class ApiClient {
         this.tokenManager = new TokenManager(this.apis.getAuthClient(), config.getKeyId(), config.getKeySecret());
         //所有的对象初始化完成后，最后执行初始调度执行
         this.tokenManager.shouldStartSchedulerAndInitializeToken();
-
+        this.taskEngine = new TaskEngine(this);
     }
 
     /**
@@ -161,7 +163,6 @@ public final class ApiClient {
     @SneakyThrows
     public void shutdown() {
         tokenManager.close();
-        apis.shutdown();
     }
 
     /**
@@ -466,6 +467,33 @@ public final class ApiClient {
 
     public boolean isSupportWebSocket() {
         return config.isSupportWebsocket();
+    }
+
+    /**
+     * 添加自定义算子节点(工作节点)
+     *
+     * @param workerBeans
+     * @return
+     */
+    public ApiClient addWorker(Collection<Object> workerBeans) {
+        this.taskEngine.addWorkers(workerBeans.toArray());
+        return this;
+    }
+
+    /**
+     * 添加自定义算子节点(工作节点)
+     *
+     * @param workerBeans
+     * @return
+     */
+    public ApiClient addWorker(Object... workerBeans) {
+        this.taskEngine.addWorkers(workerBeans);
+        return this;
+    }
+
+    public ApiClient start() {
+        this.taskEngine.start();
+        return this;
     }
 
 }
