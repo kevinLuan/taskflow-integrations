@@ -8,4 +8,3 @@ target/
 .vscode/
 .flattened-pom.xml
 */.flattened-pom.xml
-/grpc-proto/src/main/java/*

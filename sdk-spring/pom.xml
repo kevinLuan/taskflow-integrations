@@ -9,7 +9,7 @@
         <version>${revision}</version>
     </parent>
     <name>${project.artifactId}</name>
-    <artifactId>taskflow-client-spring</artifactId>
+    <artifactId>taskflow-sdk-spring</artifactId>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
