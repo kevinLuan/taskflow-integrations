@@ -24,7 +24,7 @@
         <slf4j.version>1.7.36</slf4j.version>
         <log4j2.version>2.20.0</log4j2.version>
         <lombok.version>1.18.24</lombok.version>
-        <ok-http.version>3.9.0</ok-http.version>
+        <ok-http.version>4.10.0</ok-http.version>
         <jackson.version>2.13.0</jackson.version>
         <junit-jupiter.version>5.9.0</junit-jupiter.version>
         <spring.verison>5.3.24</spring.verison>
