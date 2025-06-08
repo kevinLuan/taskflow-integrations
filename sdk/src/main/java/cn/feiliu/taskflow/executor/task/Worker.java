@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public interface Worker {
@@ -84,14 +85,14 @@ public interface Worker {
      *
      * @return
      */
-    String[] getInputNames();
+    Optional<String[]> getInputNames();
 
     /**
      * 获取输出名称
      *
      * @return
      */
-    String[] getOutputNames();
+    Optional<String[]> getOutputNames();
 
     /**
      * 节点标签名称

@@ -85,17 +85,24 @@ public class TaskDefClient {
      */
     public void updateTaskDef(Worker worker) {
         TaskDefinition taskDefinition = taskDefResourceApi.getTaskDef(worker.getTaskDefName());
-        Map<String, Object> template = new HashMap<>();
-        for (String inputName : worker.getInputNames()) {
-            template.put(inputName, "");
-        }
+        worker.getInputNames().ifPresent((names) -> {
+            Map<String, Object> template = new HashMap<>();
+            for (String inputName : names) {
+                template.put(inputName, "");
+            }
+            if (template.size() > 0) {
+                taskDefinition.getInputTemplate().putAll(template);
+                taskDefinition.setInputKeys(Lists.newArrayList(template.keySet()));
+            }
+        });
         getTag(worker).ifPresent(taskDefinition::setTag);
         if (StringUtils.isNotBlank(worker.getDescription())) {
             taskDefinition.setDescription(worker.getDescription());
         }
-        taskDefinition.getInputTemplate().putAll(template);
-        taskDefinition.setInputKeys(Lists.newArrayList(template.keySet()));
-        taskDefinition.setOutputKeys(Lists.newArrayList(worker.getOutputNames()));
+        worker.getOutputNames().ifPresent(outputName -> {
+            taskDefinition.setOutputKeys(Lists.newArrayList(outputName));
+        });
+
         taskDefResourceApi.updateTaskDef(taskDefinition);
         log.info("update task def {} success", worker.getTaskDefName());
     }
@@ -121,12 +128,14 @@ public class TaskDefClient {
         getTag(worker).ifPresent(taskDef::setTag);
         taskDef.setDescription(worker.getDescription());
         Map<String, Object> template = new HashMap<>();
-        for (String inputName : worker.getInputNames()) {
+        String[] inputs = worker.getInputNames().orElse(new String[0]);
+        for (String inputName : inputs) {
             taskDef.addInputKey(inputName);
             template.put(inputName, "");
         }
         taskDef.getInputTemplate().putAll(template);
-        for (String outputName : worker.getOutputNames()) {
+        String[] outputs = worker.getOutputNames().orElse(new String[0]);
+        for (String outputName : outputs) {
             taskDef.addOutputKey(outputName);
         }
         return taskDef;

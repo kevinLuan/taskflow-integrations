@@ -61,18 +61,29 @@ public class AnnotatedWorker implements Worker {
      *
      * @return
      */
-    public String[] getInputNames() {
+    public Optional<String[]> getInputNames() {
         List<String> names = Lists.newArrayList();
+        if (workerMethod.getParameterCount() == 1) {
+            Class<?> type = workerMethod.getParameterTypes()[0];
+            if (type == ExecutingTask.class) {
+                return Optional.empty();
+            } else {
+                if (Map.class.isAssignableFrom(type)) {
+                    if (!workerMethod.isAnnotationPresent(InputParam.class)) {
+                        return Optional.empty();
+                    }
+                }
+            }
+        }
         for (Parameter parameter : workerMethod.getParameters()) {
             if (parameter.isAnnotationPresent(InputParam.class)) {
                 names.add(parameter.getAnnotation(InputParam.class).value());
             } else {
-                if (!Map.class.isAssignableFrom(parameter.getType()) && parameter.getType() != ExecutingTask.class) {
-                    names.add(parameter.getName());
-                }
+                throw new IllegalStateException(String.format("工作任务：'%s' ，参数：'%s' 缺少 @InputParam 注解", getTaskDefName(),
+                    parameter.getName()));
             }
         }
-        return names.toArray(new String[names.size()]);
+        return Optional.of(names.toArray(new String[names.size()]));
     }
 
     /**
@@ -80,25 +91,27 @@ public class AnnotatedWorker implements Worker {
      *
      * @return
      */
-    public String[] getOutputNames() {
+    public Optional<String[]> getOutputNames() {
         if (workerMethod.getReturnType() == void.class) {
-            return new String[0];
+            return Optional.of(new String[0]);
         }
         OutputParam opAnnotation = workerMethod.getAnnotatedReturnType().getAnnotation(OutputParam.class);
         if (opAnnotation == null) {
             opAnnotation = workerMethod.getAnnotation(OutputParam.class);
         }
         if (opAnnotation != null) {
-            return new String[] { opAnnotation.value() };
+            return Optional.of(new String[] { opAnnotation.value() });
         } else {
             if (TaskHelper.isJavaType(workerMethod.getReturnType())) {
-                return new String[] { "result" };
+                return Optional.of(new String[] { "result" });
+            } else if (TaskExecResult.class.isAssignableFrom(workerMethod.getReturnType())) {
+                return Optional.empty();
             } else {
                 String[] array = FieldUtils.getJavaFieldNames(workerMethod.getReturnType());
                 if (array != null && array.length > 0) {
-                    return array;
+                    return Optional.of(array);
                 } else {
-                    return new String[] { "result" };
+                    return Optional.of(new String[] { "result" });
                 }
             }
         }

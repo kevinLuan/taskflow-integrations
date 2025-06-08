@@ -63,13 +63,13 @@ public class DynamicForkWorker implements Worker {
     }
 
     @Override
-    public String[] getInputNames() {
-        return new String[0];//TODO
+    public Optional<String[]> getInputNames() {
+        return Optional.empty();
     }
 
     @Override
-    public String[] getOutputNames() {
-        return new String[] { DynamicFork.FORK_TASK_PARAM, DynamicFork.FORK_TASK_INPUT_PARAM };
+    public Optional<String[]> getOutputNames() {
+        return Optional.of(new String[] { DynamicFork.FORK_TASK_PARAM, DynamicFork.FORK_TASK_INPUT_PARAM });
     }
 
     private Object getInvocationParameters(Function<?, DynamicForkInput> function, ExecutingTask task) {
