@@ -20,6 +20,7 @@ import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.common.exceptions.ApiException;
 import cn.feiliu.taskflow.executor.task.AnnotatedWorker;
 import cn.feiliu.taskflow.executor.task.Worker;
+import cn.feiliu.taskflow.executor.task.WorkerWrapper;
 import cn.feiliu.taskflow.utils.TaskflowConfig;
 import cn.feiliu.taskflow.ws.AutoReconnectClient;
 import cn.feiliu.taskflow.ws.MessageType;
@@ -44,24 +45,20 @@ import static cn.feiliu.common.api.utils.CommonUtils.f;
  * @since 2024-06-15
  */
 public class TaskEngine {
-    private static final Logger    LOGGER                  = LoggerFactory.getLogger(TaskEngine.class);
+    private static final Logger          LOGGER          = LoggerFactory.getLogger(TaskEngine.class);
     @Getter
-    private ApiClient              client;
+    private ApiClient                    client;
 
-    private TaskRunnerConfigurer   taskRunner;
+    private TaskRunnerConfigurer         taskRunner;
 
-    protected List<Worker>         workers                 = new ArrayList<>();
+    protected List<Worker>               workerList      = new ArrayList<>();
 
-    private Map<String, Method>    workerToMethod          = new HashMap<>();
+    private Map<String, Method>          workerToMethod  = new HashMap<>();
 
-    protected Map<String, Integer> workerToThreadCount     = new HashMap<>();
+    protected Map<String, WorkerWrapper> workerMapping   = new HashMap<>();
 
-    private Map<String, Integer>   workerToPollingInterval = new HashMap<>();
-
-    protected Map<String, String>  workerDomains           = new HashMap<>();
-
-    private Map<String, Object>    workerClassObjs         = new HashMap<>();
-    private AutoReconnectClient    wcClient;
+    private Map<String, Object>          workerClassObjs = new HashMap<>();
+    private AutoReconnectClient          wcClient;
 
     public TaskEngine(ApiClient client) {
         this.client = client;
@@ -112,24 +109,27 @@ public class TaskEngine {
      * @param bean
      */
     private void addWorker(Object bean) {
-        Class<?> clazz = bean.getClass();
-        for (Method method : clazz.getMethods()) {
-            WorkerTask annotation = method.getAnnotation(WorkerTask.class);
-            if (annotation == null) {
-                continue;
+        if (bean instanceof Worker) {
+            Worker worker = (Worker) bean;
+            client.getTaskHandlerManager().registerTask(worker);
+            String name = worker.getTaskDefName();
+            workerMapping.put(name, WorkerWrapper.of(worker));
+            workerClassObjs.put(name, bean);
+            Method method = client.getTaskHandlerManager().getTaskHandler(name).get().getWorkerMethod();
+            workerToMethod.put(name, method);
+        } else {
+            Class<?> clazz = bean.getClass();
+            for (Method method : clazz.getMethods()) {
+                WorkerTask worker = method.getAnnotation(WorkerTask.class);
+                if (worker == null) {
+                    continue;
+                }
+                client.getTaskHandlerManager().registerTask(worker, bean, method);
+                workerMapping.put(worker.value(), WorkerWrapper.of(worker));
+                workerClassObjs.put(worker.value(), bean);
+                workerToMethod.put(worker.value(), method);
             }
-            addMethod(annotation, method, bean);
         }
-    }
-
-    private void addMethod(WorkerTask worker, Method method, Object bean) {
-        client.getTaskHandlerManager().registerTask(worker, bean, method);
-        String name = worker.value();
-        workerToThreadCount.put(name, Math.max(worker.threadCount(), 1));
-        workerToPollingInterval.put(name, Math.max(worker.pollingInterval(), 100));
-        workerDomains.put(name, worker.domain());
-        workerClassObjs.put(name, bean);
-        workerToMethod.put(name, method);
     }
 
     /**
@@ -137,15 +137,11 @@ public class TaskEngine {
      */
     private TaskEngine initWorkerTasks() {
         this.initWorkerExecutor();
-        if (workers.isEmpty()) {
-            LOGGER.warn("No workers to start");
-            return this;
+        if (workerList.isEmpty()) {
+            LOGGER.info("No workers to start");
         }
-        LOGGER.info("Starting workers with threadCount {}", workerToThreadCount);
-        LOGGER.info("Worker domains {}", workerDomains);
-        this.taskRunner = new TaskRunnerConfigurer.Builder(client, workers)//
-            .withTaskThreadCount(workerToThreadCount)//
-            .withTaskToDomain(workerDomains)//
+        this.taskRunner = new TaskRunnerConfigurer.Builder(client, workerList)//
+            .withWorkerMapping(workerMapping)//
             .build();
         this.taskRunner.init();
         registerAndUpdateTasks();
@@ -164,10 +160,10 @@ public class TaskEngine {
      * 注册和更新任务定义
      */
     private void registerAndUpdateTasks() {
-        if (workers.size() > 0) {
+        if (workerList.size() > 0) {
             Set<String> taskDefNames = getClient().getApis().getTaskDefClient().getTaskNames();
             List<String> missingNames = new ArrayList<>();
-            for (Worker worker : this.workers) {
+            for (Worker worker : this.workerList) {
                 if (worker.getTaskDefName().matches("^[a-zA-Z][a-zA-Z0-9_]{0,29}$")) {
                     if (taskDefNames.contains(worker.getTaskDefName())) {
                         if (getClient().getConfig().isUpdateExisting()) {
@@ -236,7 +232,7 @@ public class TaskEngine {
         });
         wcClient.setOnConnectedCallback(() -> {
             LOGGER.info("🎉 WebSocket连接成功建立");
-            List<String> names = workers.stream().map((w) -> w.getTaskDefName()).collect(Collectors.toList());
+            List<String> names = workerList.stream().map((w) -> w.getTaskDefName()).collect(Collectors.toList());
             wcClient.subTasks(names);
             wcClient.sendPing();
         });
@@ -250,9 +246,10 @@ public class TaskEngine {
         workerToMethod.forEach(
                 (taskName, method) -> {
                     Object obj = workerClassObjs.get(taskName);
-                    AnnotatedWorker executor = new AnnotatedWorker(taskName, method, obj);
-                    executor.setPollingInterval(workerToPollingInterval.get(taskName));
-                    workers.add(executor);
+                    WorkerWrapper workerWrapper = workerMapping.get(taskName);
+                    AnnotatedWorker executor = new AnnotatedWorker(workerWrapper, method, obj);
+                    executor.setPollingInterval(workerMapping.get(taskName).pollingInterval());
+                    workerList.add(executor);
                 });
     }
 
@@ -262,7 +259,7 @@ public class TaskEngine {
      * @return
      */
     public List<Worker> getWorkers() {
-        return Collections.unmodifiableList(workers);
+        return Collections.unmodifiableList(workerList);
     }
 
     @VisibleForTesting
@@ -274,7 +271,7 @@ public class TaskEngine {
      * 广播全部任务更新一次
      */
     private void broadcast() {
-        for (Worker worker : workers) {
+        for (Worker worker : workerList) {
             SubTaskPayload payload = SubTaskPayload.createSimple(worker.getTaskDefName());
             taskRunner.getWorkerScheduling().triggerTask(payload);
         }

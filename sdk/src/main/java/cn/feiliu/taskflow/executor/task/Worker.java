@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 public interface Worker {
     Logger logger = LoggerFactory.getLogger(Worker.class);
@@ -39,7 +40,7 @@ public interface Worker {
      * @param task 要执行的任务
      * @return {@link TaskExecResult} 对象。如果任务尚未完成，返回状态为 IN_PROGRESS
      */
-    TaskExecResult execute(ExecutingTask task)throws Throwable;
+    TaskExecResult execute(ExecutingTask task) throws Throwable;
 
     /**
      * 当任务协调器无法将任务更新到服务器时调用。客户端应该存储任务ID（在数据库中）
@@ -75,18 +76,48 @@ public interface Worker {
      * @return 服务器应该被轮询工作者任务的时间间隔（毫秒）
      */
     default int getPollingInterval() {
-        return 1000;
+        return (int) TimeUnit.SECONDS.toMillis(1);
     }
 
     /**
      * 获取输入参数名称
+     *
      * @return
      */
     String[] getInputNames();
 
     /**
      * 获取输出名称
+     *
      * @return
      */
     String[] getOutputNames();
+
+    /**
+     * 节点标签名称
+     *
+     * @return
+     */
+    String getTag();
+
+    /**
+     * 节点描述
+     *
+     * @return
+     */
+    String getDescription();
+
+    default String getDomain() {
+        return null;
+    }
+
+    /**
+     * 获取执行线程数量
+     *
+     * @return
+     */
+    default int getThreadCount() {
+        return 1;
+    }
+
 }

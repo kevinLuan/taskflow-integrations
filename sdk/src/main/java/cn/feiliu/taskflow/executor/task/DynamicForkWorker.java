@@ -94,4 +94,14 @@ public class DynamicForkWorker implements Worker {
         }
         return EncoderFactory.getJsonEncoder().convert(task.getInputData(), parameterType);
     }
+
+    @Override
+    public String getTag() {
+        return "动态ForkWorker";
+    }
+
+    @Override
+    public String getDescription() {
+        return "";
+    }
 }

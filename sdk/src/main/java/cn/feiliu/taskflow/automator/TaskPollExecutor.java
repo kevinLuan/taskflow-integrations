@@ -23,6 +23,7 @@ import cn.feiliu.taskflow.common.dto.tasks.TaskExecResult;
 import cn.feiliu.taskflow.common.enums.TaskStatus;
 import cn.feiliu.taskflow.common.enums.TaskUpdateStatus;
 import cn.feiliu.taskflow.executor.task.Worker;
+import cn.feiliu.taskflow.executor.task.WorkerWrapper;
 import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -50,7 +51,7 @@ public class TaskPollExecutor {
     // 轮询信号量映射表
     private final Map<String, PollingSemaphore> pollingSemaphoreMap;
     // 任务类型到域的映射
-    protected final Map<String /*任务类型*/, String /*domain*/> taskToDomain;
+    private final Map<String /*taskType*/, WorkerWrapper> workerMapping;
     // 所有工作节点的标识
     protected static final String ALL_WORKERS = "all";
     @SuppressWarnings("FieldCanBeLocal")
@@ -66,29 +67,25 @@ public class TaskPollExecutor {
      * @param apiClient        API客户端
      * @param threadCount      线程数
      * @param updateRetryCount 更新重试次数
-     * @param taskToDomain     任务类型到域的映射
      * @param workerNamePrefix 工作线程名称前缀
-     * @param taskThreadCount  每个任务类型的线程数配置
      */
     TaskPollExecutor(
             ApiClient apiClient,
             int threadCount,
             int updateRetryCount,
-            Map<String, String> taskToDomain,
-            String workerNamePrefix,
-            Map<String, Integer> taskThreadCount) {
+            Map<String /*taskType*/, WorkerWrapper> workerMapping,
+            String workerNamePrefix) {
         this.apiClient = apiClient;
         this.updateRetryCount = updateRetryCount;
-        this.taskToDomain = taskToDomain;
+        this.workerMapping = workerMapping;
 
         this.pollingSemaphoreMap = new HashMap<>();
         int totalThreadCount = 0;
-        if (!taskThreadCount.isEmpty()) {
-            for (Map.Entry<String, Integer> entry : taskThreadCount.entrySet()) {
+        if (!workerMapping.isEmpty()) {
+            for (Map.Entry<String, WorkerWrapper> entry : workerMapping.entrySet()) {
                 String taskType = entry.getKey();
-                int count = entry.getValue();
-                totalThreadCount += count;
-                pollingSemaphoreMap.put(taskType, new PollingSemaphore(count));
+                totalThreadCount += entry.getValue().threadCount();
+                pollingSemaphoreMap.put(taskType, new PollingSemaphore(entry.getValue().threadCount()));
             }
         } else {
             totalThreadCount = threadCount;
@@ -257,7 +254,7 @@ public class TaskPollExecutor {
     PollStatus fastPollAndExecute(Worker worker) {
         String taskType = worker.getTaskDefName();
         PollingSemaphore pollingSemaphore = getPollingSemaphore(worker);
-        String domain = taskToDomain.get(taskType);
+        String domain = workerMapping.get(taskType).domain();
         Optional<Integer> availablePermitsOpt = pollingSemaphore.tryAcquireAvailablePermits();
         if (availablePermitsOpt.isPresent()) {
             final int maxAmount = availablePermitsOpt.get();
@@ -311,34 +308,48 @@ public class TaskPollExecutor {
      * @return 任务执行Future列表
      */
     private void submitTasks(Worker worker, List<ExecutingTask> tasks, String domain, PollingSemaphore pollingSemaphore) {
-        List<CompletableFuture<ExecutingTask>> futures = new ArrayList<>();
         String taskType = worker.getTaskDefName();
-        for (ExecutingTask task : tasks) {
-            try {
-                if (Objects.nonNull(task) && StringUtils.isNotBlank(task.getTaskId())) {
-                    LOGGER.info("Polled task: {} of type: {}, from worker: {}", task.getTaskId(), taskType, worker.getIdentity());
-                    futures.add(executingTask(worker, task, pollingSemaphore));
-                } else {
-                    // 没有获取到任务,释放许可
-                    pollingSemaphore.complete();
-                    futures.add(CompletableFuture.completedFuture(null));
+        if (tasks.size() == 1) {
+            ExecutingTask task = tasks.get(0);
+            if (Objects.nonNull(task) && StringUtils.isNotBlank(task.getTaskId())) {
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Task execution started - taskId: {}, type: {}, worker: {}, timestamp: {}",
+                            task.getTaskId(), taskType, worker.getIdentity(), System.currentTimeMillis());
                 }
-            } finally {
+                syncExecutingTask(worker, task, pollingSemaphore);
+            } else {
                 pollingSemaphore.complete();
             }
+        } else {
+            List<CompletableFuture<ExecutingTask>> futures = new ArrayList<>();
+            for (ExecutingTask task : tasks) {
+                try {
+                    if (Objects.nonNull(task) && StringUtils.isNotBlank(task.getTaskId())) {
+                        if (LOGGER.isInfoEnabled()) {
+                            LOGGER.info("Task execution started - taskId: {}, type: {}, worker: {}, timestamp: {}",
+                                    task.getTaskId(), taskType, worker.getIdentity(), System.currentTimeMillis());
+                        }
+                        futures.add(asyncExecutingTask(worker, task, pollingSemaphore));
+                    } else {
+                        pollingSemaphore.complete();
+                    }
+                } finally {
+                    pollingSemaphore.complete();
+                }
+            }
+            CompletableFuture.anyOf(futures.toArray(new CompletableFuture[futures.size()])).join();
         }
-        CompletableFuture.anyOf(futures.toArray(new CompletableFuture[futures.size()])).join();
     }
 
     /**
-     * 执行单个任务
+     * 异步执行单个任务
      *
      * @param worker           工作节点
      * @param task             待执行的任务
      * @param pollingSemaphore 轮询信号量
      * @return 任务执行Future
      */
-    private CompletableFuture<ExecutingTask> executingTask(Worker worker, ExecutingTask task, PollingSemaphore pollingSemaphore) {
+    private CompletableFuture<ExecutingTask> asyncExecutingTask(Worker worker, ExecutingTask task, PollingSemaphore pollingSemaphore) {
         CompletableFuture<ExecutingTask> future = CompletableFuture.supplyAsync(() -> {
             try {
                 doExecuteTask(worker, task);
@@ -352,5 +363,24 @@ public class TaskPollExecutor {
             return task;
         }, executorService);
         return future.whenComplete(this::finalizeTask);
+    }
+
+    /**
+     * 同步执行任务
+     *
+     * @param worker
+     * @param task
+     * @param pollingSemaphore
+     */
+    private void syncExecutingTask(Worker worker, ExecutingTask task, PollingSemaphore pollingSemaphore) {
+        try {
+            doExecuteTask(worker, task);
+        } catch (Throwable t) {
+            task.setStatus(TaskStatus.FAILED);
+            TaskExecResult result = new TaskExecResult(task);
+            handleException(t, result, worker, task);
+        } finally {
+            pollingSemaphore.complete();
+        }
     }
 }

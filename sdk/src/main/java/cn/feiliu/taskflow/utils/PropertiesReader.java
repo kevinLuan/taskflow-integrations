@@ -19,7 +19,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -45,7 +48,10 @@ public class PropertiesReader {
             if (input == null) {
                 throw new NotFoundException("无法找到属性文件: " + filename);
             }
-            properties.load(input);
+            // 使用 InputStreamReader 强制指定 UTF-8 编码
+            try (InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+                properties.load(reader);
+            }
         }
     }
 
@@ -63,6 +69,12 @@ public class PropertiesReader {
             throw new NotFoundException(String.format("未找到配置键: '%s' 在 %s 中", key, filename));
         }
         return value;
+    }
+
+    public Optional<String> findProperty(String key) {
+        Objects.requireNonNull(key, "属性键不能为空");
+        String value = properties.getProperty(key);
+        return Optional.ofNullable(value);
     }
 
     /**
@@ -90,6 +102,10 @@ public class PropertiesReader {
             }
             return null;
         });
+    }
+
+    public Optional<Boolean> findBoolean(String key) {
+        return Optional.ofNullable(getParsedValue(key, value -> Boolean.parseBoolean(value)));
     }
 
     /**
@@ -179,12 +195,12 @@ public class PropertiesReader {
 
     public TaskflowConfig toConfig() {
         TaskflowConfig config = new TaskflowConfig();
-        config.setBaseUrl(getProperty("taskflow.base-url"));
         config.setKeyId(getProperty("taskflow.key-id"));
         config.setKeySecret(getProperty("taskflow.key-secret"));
-        config.setAutoRegister(getBoolean("taskflow.auto-register"));
-        config.setUpdateExisting(getBoolean("taskflow.update-existing"));
-        config.setWebSocketUrl(getProperty("taskflow.web-socket-url"));
+        findProperty("taskflow.base-url").ifPresent(config::setBaseUrl);
+        findBoolean("taskflow.auto-register").ifPresent(config::setAutoRegister);
+        findBoolean("taskflow.update-existing").ifPresent(config::setUpdateExisting);
+        findProperty("taskflow.web-socket-url").ifPresent(config::setWebSocketUrl);
         return config;
     }
 }

@@ -16,12 +16,10 @@ package cn.feiliu.taskflow.executor.extension;
 
 import cn.feiliu.taskflow.annotations.WorkerTask;
 import cn.feiliu.taskflow.common.utils.Assertions;
+import cn.feiliu.taskflow.executor.task.Worker;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -49,6 +47,15 @@ public class TaskHandlerManager {
             throw new IllegalArgumentException("taskName:`" + worker.value() + "` already exists");
         }
         taskMap.put(worker.value(), new TaskHandler(worker, bean, method));
+    }
+
+    public void registerTask(Worker worker) {
+        Objects.requireNonNull(worker);
+        Assertions.assertTaskName(worker.getTaskDefName());
+        if (taskMap.containsKey(worker.getTaskDefName())) {
+            throw new IllegalArgumentException("taskName:`" + worker.getTaskDefName() + "` already exists");
+        }
+        taskMap.put(worker.getTaskDefName(), new TaskHandler(worker));
     }
 
     /**

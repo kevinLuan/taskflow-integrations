@@ -16,7 +16,7 @@ package cn.feiliu.taskflow.client;
 
 import cn.feiliu.taskflow.common.def.TaskDefinition;
 import cn.feiliu.taskflow.common.dto.tasks.TaskBasicInfo;
-import cn.feiliu.taskflow.executor.extension.TaskHandler;
+import cn.feiliu.taskflow.common.utils.StringUtils;
 import cn.feiliu.taskflow.executor.task.Worker;
 import cn.feiliu.taskflow.http.TaskDefResourceApi;
 import com.google.common.collect.Lists;
@@ -90,7 +90,9 @@ public class TaskDefClient {
             template.put(inputName, "");
         }
         getTag(worker).ifPresent(taskDefinition::setTag);
-        getDescription(worker).ifPresent(taskDefinition::setDescription);
+        if (StringUtils.isNotBlank(worker.getDescription())) {
+            taskDefinition.setDescription(worker.getDescription());
+        }
         taskDefinition.getInputTemplate().putAll(template);
         taskDefinition.setInputKeys(Lists.newArrayList(template.keySet()));
         taskDefinition.setOutputKeys(Lists.newArrayList(worker.getOutputNames()));
@@ -99,26 +101,14 @@ public class TaskDefClient {
     }
 
     private Optional<String> getTag(Worker worker) {
-        Optional<TaskHandler> optional = apiClient.getTaskHandlerManager().getTaskHandler(worker.getTaskDefName());
-        if (optional.isPresent()) {
-            TaskHandler taskHandler = optional.get();
-            String tag = taskHandler.getWorker().tag();
-            if (tag != null) {
-                tag = tag.trim();
-                if (tag.length() > 10) {
-                    tag = tag.substring(0, 10);
-                }
+        if (worker.getTag() != null) {
+            String tag = worker.getTag().trim();
+            if (tag.length() > 10) {
+                tag = tag.substring(0, 10);
             }
-            return Optional.of(tag);
-        }
-        return Optional.empty();
-    }
-
-    private Optional<String> getDescription(Worker worker) {
-        Optional<TaskHandler> optional = apiClient.getTaskHandlerManager().getTaskHandler(worker.getTaskDefName());
-        if (optional.isPresent()) {
-            TaskHandler taskHandler = optional.get();
-            return Optional.ofNullable(taskHandler.getWorker().description());
+            if (StringUtils.isNotBlank(tag)) {
+                return Optional.of(tag);
+            }
         }
         return Optional.empty();
     }
@@ -129,7 +119,7 @@ public class TaskDefClient {
         taskDef.setRetryDelaySeconds(1);
         taskDef.setConcurrentExecLimit(10);
         getTag(worker).ifPresent(taskDef::setTag);
-        getDescription(worker).ifPresent(taskDef::setDescription);
+        taskDef.setDescription(worker.getDescription());
         Map<String, Object> template = new HashMap<>();
         for (String inputName : worker.getInputNames()) {
             taskDef.addInputKey(inputName);

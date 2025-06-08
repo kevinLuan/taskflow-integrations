@@ -23,17 +23,17 @@ import lombok.Data;
 @Data
 public class TaskflowConfig {
     /*飞流云平台 host */
-    private String  baseUrl;
+    private String  baseUrl        = "https://developer.taskflow.cn/api";
     /*开发者key*/
     private String  keyId;
     /*开发者秘钥*/
     private String  keySecret;
     /*自动注册*/
-    private Boolean autoRegister;
+    private Boolean autoRegister   = true;
     /*存在则更新*/
-    private Boolean updateExisting;
+    private Boolean updateExisting = true;
     /*web socket url*/
-    private String  webSocketUrl;
+    private String  webSocketUrl   = "wss://developer.taskflow.cn";
 
     public boolean isSupportWebsocket() {
         return webSocketUrl != null;

@@ -39,7 +39,7 @@ import static cn.feiliu.common.api.utils.CommonUtils.f;
 
 public class AnnotatedWorker implements Worker {
     private static Logger         log             = LoggerFactory.getLogger(AnnotatedWorker.class);
-    private String                name;
+    private WorkerWrapper         workerWrapper;
 
     private Method                workerMethod;
 
@@ -50,8 +50,8 @@ public class AnnotatedWorker implements Worker {
     private Set<TaskUpdateStatus> failedStatuses  = Sets.newHashSet(TaskUpdateStatus.FAILED,
                                                       TaskUpdateStatus.FAILED_WITH_TERMINAL_ERROR);
 
-    public AnnotatedWorker(String name, Method workerMethod, Object obj) {
-        this.name = name;
+    public AnnotatedWorker(WorkerWrapper workerWrapper, Method workerMethod, Object obj) {
+        this.workerWrapper = workerWrapper;
         this.workerMethod = workerMethod;
         this.obj = obj;
     }
@@ -105,8 +105,18 @@ public class AnnotatedWorker implements Worker {
     }
 
     @Override
+    public String getTag() {
+        return workerWrapper.tag();
+    }
+
+    @Override
+    public String getDescription() {
+        return workerWrapper.description();
+    }
+
+    @Override
     public String getTaskDefName() {
-        return name;
+        return workerWrapper.value();
     }
 
     @Override
@@ -186,8 +196,7 @@ public class AnnotatedWorker implements Worker {
         final Object value = task.getInputData().get(inputParam.value());
         if (value == null) {
             if (inputParam.required()) {
-                throw new IllegalArgumentException(f("The required %s('%s') parameter is missing", name,
-                    inputParam.value()));
+                throw new IllegalArgumentException(String.format("缺少必须得参数：'%s'", inputParam.value()));
             }
             return null;
         }
@@ -214,7 +223,7 @@ public class AnnotatedWorker implements Worker {
         try {
             return EncoderFactory.getJsonEncoder().convert(value, List.class);
         } catch (Throwable t) {
-            String msg = String.format("The required %s('%s') parameter is missing", name, ip.value());
+            String msg = String.format("数据转换 List 类型出错, 参数:'%s', 数据: `%s`", ip.value(), value);
             throw new IllegalArgumentException(msg, t);
         }
     }
@@ -223,7 +232,7 @@ public class AnnotatedWorker implements Worker {
         try {
             return EncoderFactory.getJsonEncoder().convert(value, type);
         } catch (Throwable e) {
-            String msg = String.format("The required %s('%s') parameter is missing", name, ip.value());
+            String msg = String.format("数据转换出错，参数:'%s', 类型: '%s', 数据: `%s`", ip.value(), type, value);
             throw new IllegalArgumentException(msg, e);
         }
     }

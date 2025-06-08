@@ -17,6 +17,8 @@ package cn.feiliu.taskflow.client.spring;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.utils.TaskflowConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
@@ -27,13 +29,12 @@ public class ApiClientAutoConfiguration {
     @Bean
     public TaskflowConfig getConfig(Environment env) {
         TaskflowConfig config = new TaskflowConfig();
-        config.setBaseUrl(env.getProperty("taskflow.base-url"));
-        config.setKeyId(env.getProperty("taskflow.key-id"));
-        config.setKeySecret(env.getProperty("taskflow.key-secret"));
-        config.setWebSocketUrl(env.getProperty("taskflow.web-socket-url"));
-        config.setAutoRegister(env.getProperty("taskflow.auto-register", Boolean.class));
-        config.setUpdateExisting(env.getProperty("taskflow.update-existing", Boolean.class));
-        config.setWebSocketUrl(env.getProperty("taskflow.web-socket-url"));
+        config.setKeyId(env.getRequiredProperty("taskflow.key-id"));
+        config.setKeySecret(env.getRequiredProperty("taskflow.key-secret"));
+        config.setBaseUrl(env.getProperty("taskflow.base-url", config.getBaseUrl()));
+        config.setWebSocketUrl(env.getProperty("taskflow.web-socket-url", config.getWebSocketUrl()));
+        config.setAutoRegister(env.getProperty("taskflow.auto-register", Boolean.class, true));
+        config.setUpdateExisting(env.getProperty("taskflow.update-existing", Boolean.class, true));
         return config;
     }
 
@@ -45,8 +46,18 @@ public class ApiClientAutoConfiguration {
     @Bean("apiClient")
     @DependsOn("workerTasksScanner")
     public ApiClient apiClient(TaskflowConfig config, WorkerTasksScanner workerTasksScanner) {
-        ApiClient apiClient = new ApiClient(config);
-        apiClient.addWorker(workerTasksScanner.getWorkerBeans());
-        return apiClient.start();
+        return new ApiClient(config);
+    }
+
+    @Bean
+    public ApplicationListener<ApplicationReadyEvent> apiClientInitializer(ApiClient apiClient,
+                                                                           WorkerTasksScanner workerTasksScanner) {
+        return new ApplicationListener<ApplicationReadyEvent>() {
+            @Override
+            public void onApplicationEvent(ApplicationReadyEvent event) {
+                apiClient.addWorker(workerTasksScanner.getWorkerBeans());
+                apiClient.start();
+            }
+        };
     }
 }

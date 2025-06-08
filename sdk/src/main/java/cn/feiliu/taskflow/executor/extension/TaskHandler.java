@@ -15,6 +15,9 @@
 package cn.feiliu.taskflow.executor.extension;
 
 import cn.feiliu.taskflow.annotations.WorkerTask;
+import cn.feiliu.taskflow.common.dto.tasks.ExecutingTask;
+import cn.feiliu.taskflow.executor.task.Worker;
+import lombok.SneakyThrows;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -26,6 +29,7 @@ import java.util.Objects;
  * @since 2024-02-29
  */
 public class TaskHandler {
+    /*对于自定义 Worker 实现类的话，这里的注解会存在为空*/
     private final WorkerTask worker;
     private final Object     bean;
     private final Method     workerMethod;
@@ -36,8 +40,12 @@ public class TaskHandler {
         this.workerMethod = Objects.requireNonNull(workerMethod, "workerMethod is null");
     }
 
-    public WorkerTask getWorker() {
-        return worker;
+    @SneakyThrows
+    public TaskHandler(Worker worker) {
+        Objects.requireNonNull(worker, "worker is null");
+        this.worker = null;
+        this.bean = worker;
+        this.workerMethod = Worker.class.getDeclaredMethod("execute", ExecutingTask.class);
     }
 
     public Object getBean() {

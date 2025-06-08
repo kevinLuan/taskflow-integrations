@@ -16,7 +16,12 @@ package cn.feiliu.taskflow.client.spring;
 
 import cn.feiliu.taskflow.annotations.WorkerTask;
 import cn.feiliu.taskflow.executor.task.Worker;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Service;
 
@@ -25,28 +30,39 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-class WorkerTasksScanner implements BeanPostProcessor {
-
+public class WorkerTasksScanner implements ApplicationListener<ApplicationReadyEvent> {
+    static final Logger                 logger      = LoggerFactory.getLogger(WorkerTasksScanner.class);
     private final Map<Class<?>, Object> workerBeans = new ConcurrentHashMap<>();
 
+    @Autowired
+    private ApplicationContext          applicationContext;
+
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) {
-        if (Worker.class.isAssignableFrom(bean.getClass())) {
-            workerBeans.put(bean.getClass(), bean);
-        } else if (bean.getClass().isAnnotationPresent(Service.class)) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        String[] names = applicationContext.getBeanNamesForType(Worker.class);
+        for (String name : names) {
+            Object bean = applicationContext.getBean(name);
+            workerBeans.putIfAbsent(bean.getClass(), bean);
+        }
+        Map<String, Object> beans = applicationContext.getBeansWithAnnotation(Service.class);
+        /*这里不考虑使用 @Component 原因 考虑到暴露的方法通常应该是一个业务方法*/
+        //applicationContext.getBeansWithAnnotation(Component.class);
+        for (Object bean : beans.values()) {
             Method[] methods = bean.getClass().getDeclaredMethods();
             for (Method method : methods) {
                 WorkerTask annotation = AnnotationUtils.findAnnotation(method, WorkerTask.class);
                 if (annotation != null) {
-                    workerBeans.put(bean.getClass(), bean);
+                    workerBeans.putIfAbsent(bean.getClass(), bean);
                     break;
                 }
             }
         }
-        return bean;
     }
 
     public Collection<Object> getWorkerBeans() {
+        workerBeans.forEach((k, v) -> {
+            logger.info("register worker bean name:{} , {}", k, v);
+        });
         return workerBeans.values();
     }
 }

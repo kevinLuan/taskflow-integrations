@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 @Target({ ElementType.METHOD })
 public @interface WorkerTask {
     /**
-     * 任务的名称
+     * 任务的名称 (格式要求：字母开头，包含字母、数字、下划线限制 30 字符)
      *
      * @return 任务名称
      */

@@ -19,6 +19,7 @@ import cn.feiliu.taskflow.automator.scheduling.WheelTimerWorkerScheduling;
 import cn.feiliu.taskflow.automator.scheduling.WorkerScheduling;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.executor.task.Worker;
+import cn.feiliu.taskflow.executor.task.WorkerWrapper;
 import com.google.common.base.Preconditions;
 import io.netty.util.TimerTask;
 import org.slf4j.Logger;
@@ -35,23 +36,22 @@ import static cn.feiliu.common.api.utils.CommonUtils.f;
  * 配置通过注册的{@link Worker}自动轮询和执行任务
  */
 public class TaskRunnerConfigurer {
-    private static final Logger                                         LOGGER                    = LoggerFactory
-                                                                                                      .getLogger(TaskRunnerConfigurer.class);
-    private static final String                                         INVALID_THREAD_COUNT      = "Invalid worker thread count specified, use either shared thread pool or config thread count per task";
-    private static final String                                         MISSING_TASK_THREAD_COUNT = "Missing task thread count config for %s";
+    private static final Logger                      LOGGER                    = LoggerFactory
+                                                                                   .getLogger(TaskRunnerConfigurer.class);
+    private static final String                      INVALID_THREAD_COUNT      = "Invalid worker thread count specified, use either shared thread pool or config thread count per task";
+    private static final String                      MISSING_TASK_THREAD_COUNT = "Missing task thread count config for %s";
 
-    private final WorkerScheduling                                      workerScheduling          = new WheelTimerWorkerScheduling();
-    protected final ApiClient                                           apiClient;
-    protected final List<Worker>                                        workers                   = new LinkedList<>();
-    private final int                                                   sleepWhenRetry;                                                                                                                    // 重试前休眠时间
-    protected final int                                                 updateRetryCount;                                                                                                                  // 更新重试次数
-    protected final int                                                 threadCount;                                                                                                                       // 线程数
-    protected final int                                                 shutdownGracePeriodSeconds;                                                                                                        // 优雅关闭等待时间(秒)
-    protected final String                                              workerNamePrefix;                                                                                                                  // 工作线程名称前缀
-    protected final Map<String /*taskType*/, String /*domain*/>       taskToDomain;                                                                                                                      // 任务类型到域的映射
-    protected final Map<String /*taskType*/, Integer /*threadCount*/> taskThreadCount;                                                                                                                   // 每个任务类型的线程数配置
+    private final WorkerScheduling                   workerScheduling          = new WheelTimerWorkerScheduling();
+    protected final ApiClient                        apiClient;
+    protected final List<Worker>                     workers                   = new LinkedList<>();
+    private final int                                sleepWhenRetry;                                                                                                                    // 重试前休眠时间
+    protected final int                              updateRetryCount;                                                                                                                  // 更新重试次数
+    protected final int                              threadCount;                                                                                                                       // 线程数
+    protected final int                              shutdownGracePeriodSeconds;                                                                                                        // 优雅关闭等待时间(秒)
+    protected final String                           workerNamePrefix;                                                                                                                  // 工作线程名称前缀
+    private Map<String /*taskType*/, WorkerWrapper> workerMapping             = new HashMap<>();
 
-    protected final TaskPollExecutor                                    taskPollExecutor;                                                                                                                  // 任务轮询执行器
+    protected final TaskPollExecutor                 taskPollExecutor;                                                                                                                  // 任务轮询执行器
 
     /**
      * @see Builder
@@ -59,30 +59,32 @@ public class TaskRunnerConfigurer {
      */
     private TaskRunnerConfigurer(Builder builder) {
         // 只允许使用共享线程池或每个任务独立的线程池
-        if (builder.threadCount != -1 && !builder.taskThreadCount.isEmpty()) {
+        if (builder.threadCount != -1 && !builder.workerMapping.isEmpty()) {
             throw new IllegalArgumentException(INVALID_THREAD_COUNT);
-        } else if (!builder.taskThreadCount.isEmpty()) {
+        } else if (!builder.workerMapping.isEmpty()) {
             for (Worker worker : builder.workers) {
-                if (!builder.taskThreadCount.containsKey(worker.getTaskDefName())) {
+                if (!builder.workerMapping.containsKey(worker.getTaskDefName())) {
                     throw new IllegalArgumentException(f(MISSING_TASK_THREAD_COUNT, worker.getTaskDefName()));
                 }
                 workers.add(worker);
             }
-            this.taskThreadCount = builder.taskThreadCount;
             this.threadCount = -1;
         } else {
             builder.workers.forEach(workers::add);
-            this.taskThreadCount = builder.taskThreadCount;
-            this.threadCount = (builder.threadCount == -1) ? workers.size() : builder.threadCount;
+            if (builder.threadCount < 1) {
+                this.threadCount = Math.max(1, workers.size());
+            } else {
+                this.threadCount = builder.threadCount;
+            }
         }
 
         this.apiClient = builder.apiClient;
         this.sleepWhenRetry = builder.sleepWhenRetry;
         this.updateRetryCount = builder.updateRetryCount;
         this.workerNamePrefix = builder.workerNamePrefix;
-        this.taskToDomain = builder.taskToDomain;
+        this.workerMapping = builder.workerMapping;
         this.shutdownGracePeriodSeconds = builder.shutdownGracePeriodSeconds;
-        this.taskPollExecutor = new TaskPollExecutor(apiClient, threadCount, updateRetryCount, taskToDomain, workerNamePrefix, taskThreadCount);
+        this.taskPollExecutor = new TaskPollExecutor(apiClient, threadCount, updateRetryCount, workerMapping, workerNamePrefix);
     }
 
     /**
@@ -90,15 +92,14 @@ public class TaskRunnerConfigurer {
      */
     public static class Builder {
 
-        private String                                              workerNamePrefix           = "workflow-worker-%d";
-        private int                                                 sleepWhenRetry             = 500;
-        private int                                                 updateRetryCount           = 3;
-        private int                                                 threadCount                = -1;
-        private int                                                 shutdownGracePeriodSeconds = 10;
-        private final Iterable<Worker>                              workers;
-        private final ApiClient                                     apiClient;
-        private Map<String /*taskType*/, String /*domain*/>       taskToDomain               = new HashMap<>();
-        private Map<String /*taskType*/, Integer /*threadCount*/> taskThreadCount            = new HashMap<>();
+        private String                                   workerNamePrefix           = "workflow-worker-%d";
+        private int                                      sleepWhenRetry             = 500;
+        private int                                      updateRetryCount           = 3;
+        private int                                      threadCount                = -1;
+        private int                                      shutdownGracePeriodSeconds = 10;
+        private final Iterable<Worker>                   workers;
+        private final ApiClient                          apiClient;
+        private Map<String /*taskType*/, WorkerWrapper> workerMapping              = new HashMap<>();
 
         public Builder(ApiClient apiClient, Iterable<Worker> workers) {
             Preconditions.checkNotNull(apiClient, "apiClient cannot be null");
@@ -159,21 +160,8 @@ public class TaskRunnerConfigurer {
             return this;
         }
 
-        /**
-         * @param taskToDomain 任务类型到域的映射关系
-         * @return Builder实例
-         */
-        public Builder withTaskToDomain(Map<String, String> taskToDomain) {
-            this.taskToDomain = taskToDomain;
-            return this;
-        }
-
-        /**
-         * @param taskThreadCount 每个任务类型的线程数配置
-         * @return Builder实例
-         */
-        public Builder withTaskThreadCount(Map<String, Integer> taskThreadCount) {
-            this.taskThreadCount = taskThreadCount;
+        public Builder withWorkerMapping(Map<String, WorkerWrapper> workerMapping) {
+            this.workerMapping = workerMapping;
             return this;
         }
 
@@ -192,13 +180,6 @@ public class TaskRunnerConfigurer {
      */
     public int getThreadCount() {
         return threadCount;
-    }
-
-    /**
-     * @return 每个任务类型的线程数
-     */
-    public Map<String, Integer> getTaskThreadCount() {
-        return taskThreadCount;
     }
 
     /**
@@ -235,9 +216,8 @@ public class TaskRunnerConfigurer {
     public synchronized void init() {
         if (workers.isEmpty()) {
             LOGGER.warn("没有工作线程需要启动");
-        } else {
-            workerScheduling.initWorker(apiClient.getConfig(), workers);
         }
+        workerScheduling.initWorker(apiClient.getConfig(), workers);
     }
 
     /**
