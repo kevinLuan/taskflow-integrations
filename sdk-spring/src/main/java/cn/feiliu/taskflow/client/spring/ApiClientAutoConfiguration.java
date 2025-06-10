@@ -33,9 +33,11 @@ public class ApiClientAutoConfiguration {
 
     @Bean
     public TaskflowConfig taskflowConfig(TaskflowProperties properties) {
-        log.info("Initializing TaskFlow configuration with properties: keyId={}, baseUrl={}, autoRegister={}, updateExisting={}", 
-                properties.getKeyId(), properties.getBaseUrl(), properties.getAutoRegister(), properties.getUpdateExisting());
-        
+        log.info(
+            "Initializing TaskFlow configuration with properties: keyId={}, baseUrl={}, autoRegister={}, updateExisting={}",
+            properties.getKeyId(), properties.getBaseUrl(), properties.getAutoRegister(),
+            properties.getUpdateExisting());
+
         // 验证必需的配置项
         if (properties.getKeyId() == null || properties.getKeyId().trim().isEmpty()) {
             throw new IllegalArgumentException("TaskFlow keyId不能为空，请在配置文件中设置taskflow.key-id");
@@ -43,7 +45,7 @@ public class ApiClientAutoConfiguration {
         if (properties.getKeySecret() == null || properties.getKeySecret().trim().isEmpty()) {
             throw new IllegalArgumentException("TaskFlow keySecret不能为空，请在配置文件中设置taskflow.key-secret");
         }
-        
+
         TaskflowConfig config = new TaskflowConfig();
         config.setKeyId(properties.getKeyId());
         config.setKeySecret(properties.getKeySecret());

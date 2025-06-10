@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.http;
 
+import cn.feiliu.common.api.model.resp.DataResult;
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.common.dto.ApiResponse;
 import cn.feiliu.taskflow.common.dto.TokenResponse;
 import cn.feiliu.taskflow.common.exceptions.ApiException;
 import okhttp3.Call;
@@ -36,7 +36,7 @@ public class TokenResourceApi {
      * @return ApiResponse<TokenResponse> 包含Token信息的API响应对象
      * @throws ApiException 如果调用API失败，例如服务器错误或无法反序列化响应体
      */
-    public static ApiResponse<TokenResponse> refreshTokenWithHttpInfo(ApiClient apiClient) throws ApiException {
+    public static DataResult<TokenResponse> refreshTokenWithHttpInfo(ApiClient apiClient) throws ApiException {
         Call call = apiClient.buildPostCall("/auth/token", null);
         return apiClient.execute(call, TokenResponse.class);
     }

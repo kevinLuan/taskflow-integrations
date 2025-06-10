@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.http.types;
 
-import cn.feiliu.taskflow.common.dto.ApiResponse;
+import cn.feiliu.common.api.model.resp.DataResult;
 import com.google.inject.util.Types;
 
 import java.lang.reflect.Type;
@@ -27,19 +27,19 @@ import java.util.Map;
  */
 public class TypeFactory {
 
-    public static <T> ResponseTypeHandler<ApiResponse<T>> empty() {
+    public static <T> ResponseTypeHandler<DataResult<T>> empty() {
         return new ResponseTypeHandler<>(null);
     }
 
-    public static <T> ResponseTypeHandler<ApiResponse<T>> of(Type elementType) {
+    public static <T> ResponseTypeHandler<DataResult<T>> of(Type elementType) {
         return new ResponseTypeHandler<>(elementType);
     }
 
-    public static <T> ResponseTypeHandler<ApiResponse<List<T>>> ofList(Class<T> elementType) {
+    public static <T> ResponseTypeHandler<DataResult<List<T>>> ofList(Class<T> elementType) {
         return new ResponseTypeHandler<>(Types.listOf(elementType));
     }
 
-    public static <T> ResponseTypeHandler<ApiResponse<Map<String, T>>> ofMap(Class<T> elementType) {
+    public static <T> ResponseTypeHandler<DataResult<Map<String, T>>> ofMap(Class<T> elementType) {
         return new ResponseTypeHandler<>(Types.mapOf(String.class, elementType));
     }
 }

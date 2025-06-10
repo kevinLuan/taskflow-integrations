@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client;
 
-import cn.feiliu.taskflow.common.dto.ApiResponse;
+import cn.feiliu.common.api.model.resp.DataResult;
 import cn.feiliu.taskflow.common.dto.TokenResponse;
 import cn.feiliu.taskflow.http.TokenResourceApi;
 
@@ -46,7 +46,7 @@ public class AuthClient {
      * @return TokenResponse 包含新的Token信息的响应对象
      */
     public TokenResponse refreshToken() {
-        ApiResponse<TokenResponse> response = TokenResourceApi.refreshTokenWithHttpInfo(apiClient);
+        DataResult<TokenResponse> response = TokenResourceApi.refreshTokenWithHttpInfo(apiClient);
         return response.getData();
     }
 }

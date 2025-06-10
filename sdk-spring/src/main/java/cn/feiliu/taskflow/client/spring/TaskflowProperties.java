@@ -24,43 +24,43 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "taskflow")
 public class TaskflowProperties {
-    
+
     /**
      * 是否启用TaskFlow功能
      */
-    private boolean enabled = true;
-    
+    private boolean enabled        = true;
+
     /**
      * 飞流云平台 host
      */
-    private String baseUrl = "https://developer.taskflow.cn/api";
-    
+    private String  baseUrl        = "https://developer.taskflow.cn/api";
+
     /**
      * 开发者key
      * 注意：此配置项为必需项，请在配置文件中设置taskflow.key-id
      */
-    private String keyId;
-    
+    private String  keyId;
+
     /**
      * 开发者秘钥
      * 注意：此配置项为必需项，请在配置文件中设置taskflow.key-secret
      */
-    private String keySecret;
-    
+    private String  keySecret;
+
     /**
      * 自动注册
      */
-    private Boolean autoRegister = true;
-    
+    private Boolean autoRegister   = true;
+
     /**
      * 存在则更新
      */
     private Boolean updateExisting = true;
-    
+
     /**
      * web socket url
      */
-    private String webSocketUrl = "wss://developer.taskflow.cn";
+    private String  webSocketUrl   = "wss://developer.taskflow.cn";
 
     public boolean isEnabled() {
         return enabled;
@@ -129,4 +129,4 @@ public class TaskflowProperties {
     public boolean isUpdateExisting() {
         return updateExisting != null && updateExisting;
     }
-} 
+}
