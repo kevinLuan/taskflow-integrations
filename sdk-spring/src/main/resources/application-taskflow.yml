@@ -1,0 +1,22 @@
+# TaskFlow 配置示例
+taskflow:
+  # 是否启用TaskFlow功能 (默认: true)
+  enabled: true
+  
+  # 飞流云平台API地址 (默认: https://developer.taskflow.cn/api)
+  base-url: https://developer.taskflow.cn/api
+  
+  # 开发者应用key (必需)
+  key-id: your-app-key-id
+  
+  # 开发者应用秘钥 (必需) 
+  key-secret: your-app-secret
+  
+  # 是否自动注册不存在的任务 (默认: true)
+  auto-register: true
+  
+  # 是否更新已存在的任务 (默认: true)
+  update-existing: true
+  
+  # WebSocket连接地址 (默认: wss://developer.taskflow.cn)
+  web-socket-url: wss://developer.taskflow.cn 

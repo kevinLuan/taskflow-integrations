@@ -15,8 +15,8 @@
 package cn.feiliu.taskflow.utils;
 
 import cn.feiliu.common.api.encoder.EncoderFactory;
+import cn.feiliu.common.api.model.resp.DataResult;
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.common.dto.ApiResponse;
 import cn.feiliu.taskflow.common.exceptions.ApiException;
 import cn.feiliu.taskflow.http.Pair;
 import cn.feiliu.taskflow.http.types.ResponseTypeHandler;
@@ -321,21 +321,21 @@ public class ClientHelper {
      * @return ApiResponse对象
      * @throws ApiException 如果反序列化失败时抛出
      */
-    public static <T> ApiResponse<T> deserialize(ApiClient client, Response response, ResponseTypeHandler responseType)
-                                                                                                                       throws ApiException {
+    public static <T> DataResult<T> deserialize(ApiClient client, Response response, ResponseTypeHandler responseType)
+                                                                                                                      throws ApiException {
         Type returnType = responseType.getElementType();
         if ("byte[]".equals(returnType.toString())) {
             // 处理二进制响应（字节数组）
             try {
                 byte[] data = response.body().bytes();
-                return (ApiResponse<T>) ApiResponse.ok(data);
+                return (DataResult<T>) DataResult.ok(data);
             } catch (IOException e) {
                 throw new ApiException(e);
             }
         } else if (returnType.equals(File.class)) {
             // 处理文件下载
             File file = downloadFileFromResponse(client, response);
-            return (ApiResponse<T>) ApiResponse.ok(file);
+            return (DataResult<T>) DataResult.ok(file);
         }
         String respBody;
         try {
@@ -347,7 +347,7 @@ public class ClientHelper {
             throw new ApiException(e);
         }
         if (respBody == null || "".equals(respBody)) {
-            return ApiResponse.ok(null);
+            return DataResult.ok(null);
         }
 
         String contentType = response.headers().get("Content-Type");
@@ -359,7 +359,7 @@ public class ClientHelper {
             return EncoderFactory.getJsonEncoder().decode(respBody, responseType.getType());
         } else if (returnType.equals(String.class)) {
             // 期望字符串，返回原始响应体
-            return (ApiResponse<T>) ApiResponse.ok(respBody);
+            return (DataResult<T>) DataResult.ok(respBody);
         } else {
             throw new ApiException("Content type \"" + contentType + "\" is not supported for type: " + returnType,
                 response.code(), response.headers().toMultimap());

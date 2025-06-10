@@ -14,9 +14,9 @@
  */
 package cn.feiliu.taskflow.http;
 
+import cn.feiliu.common.api.model.resp.DataResult;
 import cn.feiliu.taskflow.client.ApiClient;
 import cn.feiliu.taskflow.common.def.TaskDefinition;
-import cn.feiliu.taskflow.common.dto.ApiResponse;
 import cn.feiliu.taskflow.common.dto.tasks.*;
 import cn.feiliu.taskflow.http.types.TypeFactory;
 import okhttp3.Call;
@@ -51,7 +51,7 @@ public class TaskDefResourceApi {
     public List<TaskBasicInfo> getTaskDefs() {
         String path = "/taskdef/list";
         Call call = apiClient.buildGetCall(path, new ArrayList<>());
-        ApiResponse<List<TaskBasicInfo>> resp = apiClient.doExecute(call, TypeFactory.ofList(TaskBasicInfo.class));
+        DataResult<List<TaskBasicInfo>> resp = apiClient.doExecute(call, TypeFactory.ofList(TaskBasicInfo.class));
         return resp.getData();
     }
 
@@ -64,7 +64,7 @@ public class TaskDefResourceApi {
     public TaskDefinition createTaskDef(TaskDefinition taskDefinition) {
         String path = "/taskdef/create";
         Call call = apiClient.buildPostCall(path, taskDefinition, new ArrayList<>());
-        ApiResponse<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
+        DataResult<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
         return resp.getData();
     }
 
@@ -78,7 +78,7 @@ public class TaskDefResourceApi {
         Objects.requireNonNull(taskDefName, "taskDefName can't be null");
         String path = "/taskdef/" + taskDefName;
         Call call = apiClient.buildGetCall(path, new ArrayList<>());
-        ApiResponse<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
+        DataResult<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
         return resp.getData();
     }
 
@@ -91,7 +91,7 @@ public class TaskDefResourceApi {
     public TaskDefinition updateTaskDef(TaskDefinition taskDefinition) {
         String path = "/taskdef/update";
         Call call = apiClient.buildPostCall(path, taskDefinition, new ArrayList<>());
-        ApiResponse<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
+        DataResult<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
         return resp.getData();
     }
 }

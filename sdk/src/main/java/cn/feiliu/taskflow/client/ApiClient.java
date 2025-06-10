@@ -14,7 +14,7 @@
  */
 package cn.feiliu.taskflow.client;
 
-import cn.feiliu.taskflow.common.dto.ApiResponse;
+import cn.feiliu.common.api.model.resp.DataResult;
 import cn.feiliu.taskflow.common.exceptions.ApiException;
 import cn.feiliu.taskflow.core.TaskEngine;
 import cn.feiliu.taskflow.core.TokenManager;
@@ -246,7 +246,7 @@ public final class ApiClient {
      * @return ApiResponse&lt;T&gt;
      * @throws ApiException 如果执行调用失败
      */
-    public <T> ApiResponse<T> execute(Call call) throws ApiException {
+    public <T> DataResult<T> execute(Call call) throws ApiException {
         return execute(call, null);
     }
 
@@ -259,7 +259,7 @@ public final class ApiClient {
      * @return 包含响应状态、头部和数据的ApiResponse对象
      * @throws ApiException 如果执行调用失败
      */
-    public <T> ApiResponse<T> execute(Call call, Type returnType) throws ApiException {
+    public <T> DataResult<T> execute(Call call, Type returnType) throws ApiException {
         return doExecute(call, TypeFactory.of(returnType));
     }
 
@@ -272,7 +272,7 @@ public final class ApiClient {
      * @return ApiResponse对象
      * @throws ApiException 如果执行调用失败
      */
-    public <T> ApiResponse<T> doExecute(Call call, ResponseTypeHandler responseType) throws ApiException {
+    public <T> DataResult<T> doExecute(Call call, ResponseTypeHandler responseType) throws ApiException {
         try {
             Response response = call.execute();
             responseType = Optional.ofNullable(responseType).orElseGet(() -> TypeFactory.empty());

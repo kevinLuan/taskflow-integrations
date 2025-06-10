@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.http;
 
+import cn.feiliu.common.api.model.resp.DataResult;
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.common.dto.ApiResponse;
 import cn.feiliu.taskflow.common.dto.tasks.ExecutingTask;
 import cn.feiliu.taskflow.common.dto.tasks.PollData;
 import cn.feiliu.taskflow.common.dto.tasks.TaskExecResult;
@@ -79,7 +79,7 @@ public class TaskResourceApi {
         if (timeout != null)
             queryParams.addAll(ClientHelper.parameterToPair("timeout", timeout));
         Call call = apiClient.buildGetCall(path, queryParams);
-        ApiResponse<List<ExecutingTask>> resp = apiClient.doExecute(call, TypeFactory.ofList(ExecutingTask.class));
+        DataResult<List<ExecutingTask>> resp = apiClient.doExecute(call, TypeFactory.ofList(ExecutingTask.class));
         return resp.getData();
     }
 
@@ -92,7 +92,7 @@ public class TaskResourceApi {
     public List<PollData> getAllPollData() throws ApiException {
         String path = "/tasks/queue/polldata/all";
         Call call = apiClient.buildGetCall(path, new ArrayList<>());
-        ApiResponse<List<PollData>> resp = apiClient.doExecute(call, TypeFactory.ofList(PollData.class));
+        DataResult<List<PollData>> resp = apiClient.doExecute(call, TypeFactory.ofList(PollData.class));
         return resp.getData();
     }
 
@@ -110,7 +110,7 @@ public class TaskResourceApi {
         String path = "/tasks/queue/polldata";
         List<Pair> queryParams = Lists.newArrayList(ClientHelper.parameterToPair("taskType", taskType));
         Call call = apiClient.buildGetCall(path, queryParams);
-        ApiResponse<List<PollData>> resp = apiClient.doExecute(call, TypeFactory.ofList(PollData.class));
+        DataResult<List<PollData>> resp = apiClient.doExecute(call, TypeFactory.ofList(PollData.class));
         return resp.getData();
     }
 
@@ -127,7 +127,7 @@ public class TaskResourceApi {
         }
         String localVarPath = f("/tasks/%s", taskId);
         Call call = apiClient.buildGetCall(localVarPath, new ArrayList<>());
-        ApiResponse<ExecutingTask> resp = apiClient.execute(call, ExecutingTask.class);
+        DataResult<ExecutingTask> resp = apiClient.execute(call, ExecutingTask.class);
         return resp.getData();
     }
 
@@ -142,7 +142,7 @@ public class TaskResourceApi {
         Assertion.assertNotNull(taskId, "taskId");
         String path = f("/tasks/%s/log", taskId);
         Call call = apiClient.buildGetCall(path, new ArrayList<>());
-        ApiResponse<List<TaskLog>> resp = apiClient.doExecute(call, TypeFactory.ofList(TaskLog.class));
+        DataResult<List<TaskLog>> resp = apiClient.doExecute(call, TypeFactory.ofList(TaskLog.class));
         return resp.getData();
     }
 
@@ -179,7 +179,7 @@ public class TaskResourceApi {
         if (domain != null)
             queryParams.addAll(ClientHelper.parameterToPair("domain", domain));
         Call call = apiClient.buildGetCall(path, queryParams);
-        ApiResponse<ExecutingTask> resp = apiClient.execute(call, ExecutingTask.class);
+        DataResult<ExecutingTask> resp = apiClient.execute(call, ExecutingTask.class);
         return resp.getData();
     }
 
@@ -194,7 +194,7 @@ public class TaskResourceApi {
         Assertion.assertNotNull(taskType, "taskType");
         String path = f("/tasks/queue/requeue/%s", taskType);
         Call call = apiClient.buildPostCall(path, new ArrayList<>());
-        ApiResponse<String> resp = apiClient.execute(call, String.class);
+        DataResult<String> resp = apiClient.execute(call, String.class);
         return resp.getData();
     }
 
@@ -209,7 +209,7 @@ public class TaskResourceApi {
         Assertion.assertNotNull(taskResult, "taskResult");
         String path = "/tasks/update";
         Call call = apiClient.buildPostCall(path, taskResult);
-        ApiResponse<String> resp = apiClient.execute(call, String.class);
+        DataResult<String> resp = apiClient.execute(call, String.class);
         return resp.getData();
     }
 
@@ -249,7 +249,7 @@ public class TaskResourceApi {
     public String updateTaskByRefName(Map<String, Object> output, String workflowId, String taskRefName, String status)
                                                                                                                        throws ApiException {
         Call call = updateTaskByRefNameCall(output, workflowId, taskRefName, status);
-        ApiResponse<String> resp = apiClient.execute(call, String.class);
+        DataResult<String> resp = apiClient.execute(call, String.class);
         return resp.getData();
     }
 

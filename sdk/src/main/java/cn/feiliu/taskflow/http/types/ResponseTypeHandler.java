@@ -14,8 +14,8 @@
  */
 package cn.feiliu.taskflow.http.types;
 
+import cn.feiliu.common.api.model.resp.DataResult;
 import cn.feiliu.taskflow.client.ApiClient;
-import cn.feiliu.taskflow.common.dto.ApiResponse;
 import cn.feiliu.taskflow.common.exceptions.ApiException;
 import cn.feiliu.taskflow.utils.ClientHelper;
 import com.google.inject.util.Types;
@@ -35,7 +35,7 @@ public class ResponseTypeHandler<T> {
 
     public ResponseTypeHandler(Type elementType) {
         this.elementType = Optional.ofNullable(elementType).orElseGet(() -> void.class);
-        if (elementType == ApiResponse.class) {
+        if (elementType == DataResult.class) {
             throw new IllegalArgumentException("Invalid elementType");
         }
     }
@@ -46,7 +46,7 @@ public class ResponseTypeHandler<T> {
      * @return
      */
     public final Type getType() {
-        return Types.newParameterizedType(ApiResponse.class, getElementType());
+        return Types.newParameterizedType(DataResult.class, getElementType());
     }
 
     /**
@@ -62,20 +62,20 @@ public class ResponseTypeHandler<T> {
         return getElementType() == null || getElementType() == Void.class || getElementType() == void.class;
     }
 
-    public <T> ApiResponse<T> handleResponse(ApiClient client, Response response) {
+    public <T> DataResult<T> handleResponse(ApiClient client, Response response) {
         if (response.isSuccessful()) {
             if (isVoid() && response.code() == 204) {
                 // 如果未定义returnType，则返回null，或者状态码为204(无内容)
                 if (response.body() != null) {
                     response.body().close();
                 }
-                return ApiResponse.ok(null);
+                return DataResult.ok(null);
             } else {
-                ApiResponse<T> apiResponse = ClientHelper.deserialize(client, response, this);
-                if (apiResponse.isSuccessful()) {
-                    return apiResponse;
+                DataResult<T> dataResult = ClientHelper.deserialize(client, response, this);
+                if (dataResult.isSuccessful()) {
+                    return dataResult;
                 } else {
-                    throw apiResponse.makeException();
+                    throw new ApiException(dataResult.getCode(), dataResult.getMsg());
                 }
             }
         } else {
