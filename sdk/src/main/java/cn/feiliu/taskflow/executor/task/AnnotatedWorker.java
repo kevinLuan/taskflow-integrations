@@ -128,6 +128,11 @@ public class AnnotatedWorker implements Worker {
     }
 
     @Override
+    public boolean isOpen() {
+        return workerWrapper.open();
+    }
+
+    @Override
     public String getTaskDefName() {
         return workerWrapper.value();
     }

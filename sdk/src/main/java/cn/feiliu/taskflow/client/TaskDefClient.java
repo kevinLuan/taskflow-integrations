@@ -85,6 +85,7 @@ public class TaskDefClient {
      */
     public void updateTaskDef(Worker worker) {
         TaskDefinition taskDefinition = taskDefResourceApi.getTaskDef(worker.getTaskDefName());
+        taskDefinition.setName(worker.getTaskDefName());
         worker.getInputNames().ifPresent((names) -> {
             Map<String, Object> template = new HashMap<>();
             for (String inputName : names) {
@@ -102,7 +103,7 @@ public class TaskDefClient {
         worker.getOutputNames().ifPresent(outputName -> {
             taskDefinition.setOutputKeys(Lists.newArrayList(outputName));
         });
-
+        taskDefinition.setOpenTask(worker.isOpen());
         taskDefResourceApi.updateTaskDef(taskDefinition);
         log.info("update task def {} success", worker.getTaskDefName());
     }
@@ -125,6 +126,7 @@ public class TaskDefClient {
         taskDef.setName(worker.getTaskDefName());
         taskDef.setRetryDelaySeconds(1);
         taskDef.setConcurrentExecLimit(10);
+        taskDef.setOpenTask(worker.isOpen());
         getTag(worker).ifPresent(taskDef::setTag);
         taskDef.setDescription(worker.getDescription());
         Map<String, Object> template = new HashMap<>();

@@ -104,4 +104,9 @@ public class DynamicForkWorker implements Worker {
     public String getDescription() {
         return "";
     }
+
+    @Override
+    public boolean isOpen() {
+        return false;
+    }
 }

@@ -20,6 +20,8 @@ import cn.feiliu.taskflow.common.def.TaskDefinition;
 import cn.feiliu.taskflow.common.dto.tasks.*;
 import cn.feiliu.taskflow.http.types.TypeFactory;
 import okhttp3.Call;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.Objects;
  * 任务资源API类
  */
 public class TaskDefResourceApi {
+    static Logger     logger = LoggerFactory.getLogger(TaskDefResourceApi.class);
     private ApiClient apiClient;
 
     public TaskDefResourceApi(ApiClient apiClient) {
@@ -63,6 +66,7 @@ public class TaskDefResourceApi {
      */
     public TaskDefinition createTaskDef(TaskDefinition taskDefinition) {
         String path = "/taskdef/create";
+        logger.info("createTaskDef: `{}`", taskDefinition.getName());
         Call call = apiClient.buildPostCall(path, taskDefinition, new ArrayList<>());
         DataResult<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
         return resp.getData();
@@ -77,6 +81,7 @@ public class TaskDefResourceApi {
     public TaskDefinition getTaskDef(String taskDefName) {
         Objects.requireNonNull(taskDefName, "taskDefName can't be null");
         String path = "/taskdef/" + taskDefName;
+        logger.info("getTaskDef: `{}`", taskDefName);
         Call call = apiClient.buildGetCall(path, new ArrayList<>());
         DataResult<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
         return resp.getData();
@@ -90,6 +95,7 @@ public class TaskDefResourceApi {
      */
     public TaskDefinition updateTaskDef(TaskDefinition taskDefinition) {
         String path = "/taskdef/update";
+        logger.info("UpdatingTaskDef: `{}`", taskDefinition.getName());
         Call call = apiClient.buildPostCall(path, taskDefinition, new ArrayList<>());
         DataResult<TaskDefinition> resp = apiClient.doExecute(call, TypeFactory.of(TaskDefinition.class));
         return resp.getData();

@@ -61,6 +61,13 @@ public @interface WorkerTask {
     int pollingInterval() default 1000;
 
     /**
+     * 开放的节点
+     *
+     * @return
+     */
+    boolean open() default false;
+
+    /**
      * Task execution domain
      *
      * @return domain name
