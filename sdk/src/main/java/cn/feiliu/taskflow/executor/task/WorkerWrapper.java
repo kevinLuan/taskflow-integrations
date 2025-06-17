@@ -88,6 +88,15 @@ public class WorkerWrapper implements WorkerTask {
     }
 
     @Override
+    public boolean open() {
+        if (workerTask != null) {
+            return workerTask.open();
+        } else {
+            return worker.isOpen();
+        }
+    }
+
+    @Override
     public String domain() {
         if (workerTask != null) {
             return workerTask.domain();

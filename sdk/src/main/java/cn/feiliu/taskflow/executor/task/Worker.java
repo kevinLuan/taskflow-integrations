@@ -108,6 +108,14 @@ public interface Worker {
      */
     String getDescription();
 
+    /**
+     * 是否开放工作节点
+     * @return
+     */
+    default boolean isOpen(){
+        return false;
+    }
+
     default String getDomain() {
         return null;
     }
