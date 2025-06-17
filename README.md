@@ -8,7 +8,7 @@ taskflow-integrations
   <a href="https://central.sonatype.com/artifact/cn.taskflow/taskflow-sdk?smo=true"><img src="https://img.shields.io/maven-metadata/v.svg?label=Maven%20Central&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcn%2Ftaskflow%2Ftaskflow-sdk%2Fmaven-metadata.xml" alt="License"></a>
 </div>
 
-[简体中文](./README-zh_CN) | English 
+[简体中文](./README-zh_CN.md) | English 
 
 # overview
 
